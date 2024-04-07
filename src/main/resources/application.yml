@@ -1,0 +1,20 @@
+server:
+  error:
+    include-stacktrace: always
+spring:
+  application:
+    name: gadgetarium
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    password: rootroot
+    url: jdbc:postgresql://localhost:5432/gadgetarium
+    username: postgres
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    open-in-view: false
+app:
+  jwt:
+    secret:
+      gadgetarium
