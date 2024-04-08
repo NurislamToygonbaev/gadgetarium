@@ -1,13 +1,34 @@
 package gadgetarium.entities;
 
 import gadgetarium.enums.Role;
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.Builder;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.List;
+
+import static jakarta.persistence.CascadeType.REMOVE;
+import static jakarta.persistence.CascadeType.REFRESH;
+import static jakarta.persistence.CascadeType.DETACH;
+import static jakarta.persistence.CascadeType.MERGE;
 
 @Entity
 @Table(name = "users")
@@ -32,23 +53,53 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = {DETACH, MERGE, REFRESH})
     private List<Order> orders;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user", cascade = {REMOVE, MERGE, REFRESH})
     private List<Feedback> feedbacks;
 
-    @ManyToMany
+    @ManyToMany(cascade = {REFRESH, MERGE})
     private List<SubGadget> basket;
 
-    @ManyToMany
+    @ManyToMany(cascade = {REFRESH, MERGE})
     private List<SubGadget> comparison;
 
-    @ManyToMany
+    @ManyToMany(cascade = {REFRESH, MERGE})
     private List<SubGadget> viewed;
 
-    @ManyToMany
+    @ManyToMany(cascade = {REFRESH, MERGE})
     private List<SubGadget> likes;
+
+    private void addOrder(Order order){
+        if (this.orders == null) this.orders = new ArrayList<>();
+        this.orders.add(order);
+    }
+
+    private void addFeedback(Feedback feedback){
+        if (this.feedbacks == null) this.feedbacks = new ArrayList<>();
+        this.feedbacks.add(feedback);
+    }
+
+    private void addBasket(SubGadget basket){
+        if (this.basket == null) this.basket = new ArrayList<>();
+        this.basket.add(basket);
+    }
+
+    private void addComparison(SubGadget comparison){
+        if (this.comparison == null) this.comparison = new ArrayList<>();
+        this.comparison.add(comparison);
+    }
+
+    private void addViewed(SubGadget viewed){
+        if (this.viewed == null) this.viewed = new ArrayList<>();
+        this.viewed.add(viewed);
+    }
+
+    private void addLikes(SubGadget likes){
+        if (this.likes == null) this.likes = new ArrayList<>();
+        this.likes.add(likes);
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

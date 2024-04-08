@@ -1,8 +1,19 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.GenerationType;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.Builder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Getter
@@ -21,4 +32,9 @@ public class Banner {
 
     @ElementCollection
     private List<String> images;
+
+    private void addImages(String image){
+        if (this.images == null) this.images = new ArrayList<>();
+        this.images.add(image);
+    }
 }

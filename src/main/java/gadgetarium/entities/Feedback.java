@@ -1,11 +1,24 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import jakarta.persistence.Id;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.ElementCollection;
+import jakarta.persistence.ManyToOne;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.Builder;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+
+import static jakarta.persistence.CascadeType.DETACH;
 
 @Getter
 @Setter
@@ -28,9 +41,14 @@ public class Feedback {
     @ElementCollection
     private List<String> images;
 
-    @ManyToOne
+    @ManyToOne(cascade = {DETACH})
     private Gadget gadget;
 
-    @ManyToOne
+    @ManyToOne(cascade = {DETACH})
     private User user;
+
+    private void addImage(String image){
+        if (this.images == null) this.images = new ArrayList<>();
+        this.images.add(image);
+    }
 }
