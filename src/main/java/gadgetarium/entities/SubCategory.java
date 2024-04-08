@@ -24,5 +24,5 @@ public class SubCategory {
     private Category category;
 
     @OneToMany(mappedBy = "subCategory")
-    private List<Gadget> gadgets;
+    private List<Brand> brands;
 }

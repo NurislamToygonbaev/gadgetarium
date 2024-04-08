@@ -24,6 +24,7 @@ public class SubGadget {
     private BigDecimal price;
     private int quantity;
     private int rating;
+    private String mainColour;
 
     @ElementCollection
     private List<String> images;

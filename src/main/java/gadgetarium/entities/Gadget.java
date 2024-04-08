@@ -22,24 +22,18 @@ public class Gadget {
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gadget_seq")
     @SequenceGenerator(name = "gadget_seq", allocationSize = 1)
     private Long id;
-    private String brandName;
-    private String brandLogo;
     private int warranty;
     private LocalDate releaseDate;
     private Long article;
     private String videoUrl;
     private String PDFUrl;
     private String description;
-    private String mainColour;
 
     @Enumerated(EnumType.STRING)
     private Memory memory;
 
     @Enumerated(EnumType.STRING)
     private Ram ram;
-
-    @ManyToOne
-    private SubCategory subCategory;
 
     @OneToOne(mappedBy = "gadget")
     private SubGadget subGadget;
@@ -49,4 +43,7 @@ public class Gadget {
 
     @ManyToMany
     private List<Order> orders;
+
+    @ManyToOne
+    private Brand brand;
 }
