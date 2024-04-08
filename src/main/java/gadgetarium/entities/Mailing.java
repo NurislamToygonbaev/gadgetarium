@@ -1,6 +1,4 @@
 package gadgetarium.entities;
-
-
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,9 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.time.LocalDate;
-
 @Getter
 @Setter
 @Entity
@@ -22,8 +18,8 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class Mailing {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "mailing_seq")
     @SequenceGenerator(name = "mailing_seq", allocationSize = 1)

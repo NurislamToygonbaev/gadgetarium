@@ -1,5 +1,4 @@
 package gadgetarium.entities;
-
 import gadgetarium.enums.Payment;
 import gadgetarium.enums.Status;
 import jakarta.persistence.Table;
@@ -17,16 +16,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.CascadeType.MERGE;
 import static jakarta.persistence.CascadeType.DETACH;
-
 @Getter
 @Setter
 @Entity
@@ -34,8 +30,8 @@ import static jakarta.persistence.CascadeType.DETACH;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-
 public class Order {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_seq")
     @SequenceGenerator(name = "order_seq", allocationSize = 1)

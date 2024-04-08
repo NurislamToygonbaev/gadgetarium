@@ -1,5 +1,4 @@
 package gadgetarium.entities;
-
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,10 +11,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.util.ArrayList;
 import java.util.List;
-
 @Getter
 @Setter
 @Entity
@@ -23,8 +20,8 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class Banner {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "banner_seq")
     @SequenceGenerator(name = "banner_seq", allocationSize = 1)

@@ -1,5 +1,4 @@
 package gadgetarium.entities;
-
 import gadgetarium.enums.Role;
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
@@ -16,28 +15,23 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
 import java.util.Collection;
-
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.CascadeType.DETACH;
 import static jakarta.persistence.CascadeType.MERGE;
-
 @Entity
 @Table(name = "users")
 @Getter @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class User implements UserDetails {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
     @SequenceGenerator(name = "user_seq", allocationSize = 1)

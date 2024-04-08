@@ -1,6 +1,7 @@
 package gadgetarium.exceptions;
 
 public class BedRequestException extends RuntimeException {
+
     public BedRequestException() {
     }
 

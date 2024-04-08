@@ -1,5 +1,4 @@
 package gadgetarium.config.jwt;
-
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import gadgetarium.entities.User;
 import gadgetarium.repositories.UserRepository;
@@ -15,11 +14,10 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-
 @Component
 @RequiredArgsConstructor
-
 public class JwtFilter extends OncePerRequestFilter {
+
     private final JwtService jwtService;
     private final UserRepository userRepo;
 
@@ -47,7 +45,7 @@ public class JwtFilter extends OncePerRequestFilter {
                                 )
                         );
             }catch (JWTVerificationException e){
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
                         "Invalid JWT Token");
             }
         }

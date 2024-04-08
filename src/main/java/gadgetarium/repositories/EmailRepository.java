@@ -1,5 +1,4 @@
 package gadgetarium.repositories;
-
 import gadgetarium.entities.Email;
 import org.springframework.data.jpa.repository.JpaRepository;
 

@@ -1,6 +1,7 @@
 package gadgetarium.exceptions;
 
 public class AlreadyExistsException extends RuntimeException {
+
     public AlreadyExistsException() {
     }
 

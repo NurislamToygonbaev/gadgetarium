@@ -1,5 +1,4 @@
 package gadgetarium.entities;
-
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
 import jakarta.persistence.Table;
@@ -19,18 +18,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.CascadeType.MERGE;
 import static jakarta.persistence.CascadeType.DETACH;
 import static jakarta.persistence.CascadeType.PERSIST;
-
-
 @Getter
 @Setter
 @Entity
@@ -38,8 +33,8 @@ import static jakarta.persistence.CascadeType.PERSIST;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class Gadget {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gadget_seq")
     @SequenceGenerator(name = "gadget_seq", allocationSize = 1)

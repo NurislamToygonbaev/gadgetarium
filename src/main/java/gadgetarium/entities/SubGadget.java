@@ -1,5 +1,4 @@
 package gadgetarium.entities;
-
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -13,17 +12,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.CascadeType.MERGE;
-
 @Getter
 @Setter
 @Entity
@@ -31,8 +27,8 @@ import static jakarta.persistence.CascadeType.MERGE;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-
 public class SubGadget {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sub_gadget_seq")
     @SequenceGenerator(name = "sub_gadget_seq", allocationSize = 1)

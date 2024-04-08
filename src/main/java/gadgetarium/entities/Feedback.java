@@ -1,5 +1,4 @@
 package gadgetarium.entities;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -13,13 +12,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.CascadeType.DETACH;
-
 @Getter
 @Setter
 @Entity
@@ -27,8 +24,8 @@ import static jakarta.persistence.CascadeType.DETACH;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class Feedback {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "feedback_seq")
     @SequenceGenerator(name = "feedback_seq", allocationSize = 1)
