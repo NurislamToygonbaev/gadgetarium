@@ -1,5 +1,9 @@
 package gadgetarium.exceptions.handler;
-import gadgetarium.exceptions.*;
+
+import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.exceptions.NotFoundException;
+import gadgetarium.exceptions.AlreadyExistsException;
+import gadgetarium.exceptions.ForbiddenException;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.response.ExceptionResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -8,13 +12,14 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 @RestControllerAdvice
 @Slf4j
 public class HandlerException {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ExceptionResponse notFound(NotFoundException notFoundException){
+    public ExceptionResponse notFound(NotFoundException notFoundException) {
         log.error(notFoundException.getMessage());
         return ExceptionResponse.builder()
                 .httpStatus(HttpStatus.NOT_FOUND)
@@ -25,7 +30,7 @@ public class HandlerException {
 
     @ExceptionHandler(ForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ExceptionResponse forbidden(ForbiddenException e){
+    public ExceptionResponse forbidden(ForbiddenException e) {
         log.error(e.getMessage());
         return ExceptionResponse.builder()
                 .httpStatus(HttpStatus.FORBIDDEN)
@@ -36,7 +41,7 @@ public class HandlerException {
 
     @ExceptionHandler(AlreadyExistsException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ExceptionResponse alreadyExists(AlreadyExistsException e){
+    public ExceptionResponse alreadyExists(AlreadyExistsException e) {
         log.error(e.getMessage());
         return ExceptionResponse.builder()
                 .httpStatus(HttpStatus.CONFLICT)
@@ -45,9 +50,9 @@ public class HandlerException {
                 .build();
     }
 
-    @ExceptionHandler(BedRequestException.class)
+    @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse badRequest(BedRequestException e){
+    public ExceptionResponse badRequest(BadRequestException e) {
         log.error(e.getMessage());
         return ExceptionResponse.builder()
                 .httpStatus(HttpStatus.BAD_REQUEST)
@@ -58,7 +63,7 @@ public class HandlerException {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse argumentNotValid(MethodArgumentNotValidException e){
+    public ExceptionResponse argumentNotValid(MethodArgumentNotValidException e) {
         log.error(e.getMessage());
         return ExceptionResponse.builder()
                 .httpStatus(HttpStatus.BAD_REQUEST)
@@ -69,7 +74,7 @@ public class HandlerException {
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse illegalArgumentException(IllegalArgumentException e){
+    public ExceptionResponse illegalArgumentException(IllegalArgumentException e) {
         log.error(e.getMessage());
         return ExceptionResponse.builder()
                 .httpStatus(HttpStatus.BAD_REQUEST)

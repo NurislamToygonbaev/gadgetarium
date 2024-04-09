@@ -1,4 +1,5 @@
 package gadgetarium.entities;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.Id;
@@ -12,11 +13,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import static jakarta.persistence.CascadeType.DETACH;
+
 @Getter
 @Setter
 @Entity
@@ -44,7 +47,7 @@ public class Feedback {
     @ManyToOne(cascade = {DETACH})
     private User user;
 
-    private void addImage(String image){
+    private void addImage(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
     }

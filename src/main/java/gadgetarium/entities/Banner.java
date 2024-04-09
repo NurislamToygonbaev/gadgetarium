@@ -1,4 +1,5 @@
 package gadgetarium.entities;
+
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -11,8 +12,10 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
+
 import java.util.ArrayList;
 import java.util.List;
+
 @Getter
 @Setter
 @Entity
@@ -30,7 +33,7 @@ public class Banner {
     @ElementCollection
     private List<String> images;
 
-    private void addImages(String image){
+    private void addImages(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
     }

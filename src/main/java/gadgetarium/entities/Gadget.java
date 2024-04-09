@@ -1,4 +1,5 @@
 package gadgetarium.entities;
+
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
 import jakarta.persistence.Table;
@@ -18,14 +19,17 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.CascadeType.MERGE;
 import static jakarta.persistence.CascadeType.DETACH;
 import static jakarta.persistence.CascadeType.PERSIST;
+
 @Getter
 @Setter
 @Entity
@@ -64,12 +68,12 @@ public class Gadget {
     @ManyToOne(cascade = {DETACH})
     private Brand brand;
 
-    private void addFeedback(Feedback feedback){
+    private void addFeedback(Feedback feedback) {
         if (this.feedbacks == null) this.feedbacks = new ArrayList<>();
         this.feedbacks.add(feedback);
     }
 
-    private void addOrder(Order order){
+    private void addOrder(Order order) {
         if (this.orders == null) this.orders = new ArrayList<>();
         this.orders.add(order);
     }

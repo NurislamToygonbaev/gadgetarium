@@ -1,4 +1,5 @@
 package gadgetarium.entities;
+
 import gadgetarium.enums.Payment;
 import gadgetarium.enums.Status;
 import jakarta.persistence.Table;
@@ -16,13 +17,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.CascadeType.MERGE;
 import static jakarta.persistence.CascadeType.DETACH;
+
 @Getter
 @Setter
 @Entity
@@ -53,7 +57,7 @@ public class Order {
     @ManyToOne(cascade = {DETACH})
     private User user;
 
-    private void addGadget(Gadget gadget){
+    private void addGadget(Gadget gadget) {
         if (this.gadgets == null) this.gadgets = new ArrayList<>();
         this.gadgets.add(gadget);
     }

@@ -1,4 +1,5 @@
 package gadgetarium.entities;
+
 import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,11 +13,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
+
 import java.util.ArrayList;
 import java.util.List;
+
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
 import static jakarta.persistence.CascadeType.MERGE;
+
 @Getter
 @Setter
 @Entity
@@ -38,7 +42,7 @@ public class SubCategory {
     @OneToMany(mappedBy = "subCategory", cascade = {MERGE, REFRESH, REMOVE})
     private List<Brand> brands;
 
-    private void addBrand(Brand brand){
+    private void addBrand(Brand brand) {
         if (this.brands == null) this.brands = new ArrayList<>();
         this.brands.add(brand);
     }
