@@ -4,8 +4,8 @@ import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Target;
-import java.lang.annotation.Retention;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EmailValidation {
 
-    String message() default "{Email musts contain @gmail.com symbol and didn't register before}";
+    String message() default "{Email must's contain @ symbol and ends with .com}";
 
     Class<?>[] groups() default {};
 

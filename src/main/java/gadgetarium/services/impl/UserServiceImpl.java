@@ -46,7 +46,6 @@ public class UserServiceImpl implements UserService {
                 .token(token)
                 .message("Sign up was successful!")
                 .build();
-
     }
 
     @Override

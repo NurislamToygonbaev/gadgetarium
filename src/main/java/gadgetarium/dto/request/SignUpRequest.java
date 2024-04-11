@@ -1,7 +1,6 @@
 package gadgetarium.dto.request;
 
 import gadgetarium.validation.email.EmailValidation;
-import gadgetarium.validation.nounEmail.RealEmailValidation;
 import gadgetarium.validation.password.PasswordValidation;
 import gadgetarium.validation.phoneNumber.PhoneNumberValidation;
 import jakarta.validation.constraints.Email;
@@ -24,7 +23,6 @@ public class SignUpRequest{
         private String phoneNumber;
         @Email
         @EmailValidation
-        @RealEmailValidation
         private String email;
         @PasswordValidation
         private String password;
