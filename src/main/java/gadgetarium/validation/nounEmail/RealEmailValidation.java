@@ -1,20 +1,20 @@
-package gadgetarium.validation.phoneNumber;
+package gadgetarium.validation.nounEmail;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Target;
-import java.lang.annotation.Retention;
 import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
-@Constraint(validatedBy = {PhoneNumberValidator.class})
+@Constraint(validatedBy = {RealEmailValidator.class})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PhoneNumberValidation {
+public @interface RealEmailValidation {
 
-    String message() default "{Phone number must be start with +996 and length 13}";
+    String message() default "{Email must be real}";
 
     Class<?>[] groups() default {};
 

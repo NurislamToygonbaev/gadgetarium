@@ -1,4 +1,4 @@
-package gadgetarium.validation.phoneNumber;
+package gadgetarium.validation.email;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -9,12 +9,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
-@Constraint(validatedBy = {PhoneNumberValidator.class})
+@Constraint(validatedBy = {EmailValidator.class})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PhoneNumberValidation {
+public @interface EmailValidation {
 
-    String message() default "{Phone number must be start with +996 and length 13}";
+    String message() default "{Email musts contain @gmail.com symbol and didn't register before}";
 
     Class<?>[] groups() default {};
 
