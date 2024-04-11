@@ -16,6 +16,8 @@ repositories {
 }
 
 dependencies {
+    implementation group: 'com.google.firebase', name: 'firebase-admin', version: '9.2.0'
+    implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.2.RELEASE'
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '3.2.3'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
     implementation 'com.auth0:java-jwt:4.4.0'
