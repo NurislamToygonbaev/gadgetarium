@@ -1,0 +1,30 @@
+app:
+    jwt:
+        secret: gadgetarium
+
+server:
+    error:
+        include-stacktrace: always
+spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        password: rootroot
+        url: jdbc:postgresql://localhost:5432/gadgetarium
+        username: postgres
+    jpa:
+        hibernate:
+            ddl-auto: create
+        show-sql: true
+        open-in-view: false
+
+    mail:
+        host: smtp.gmail.com
+        port: 587
+        username: ntoygonbaev098@gmail.com
+        password: rexu gvod yszc tnhg
+        properties:
+            mail:
+                smtp:
+                    auth: true
+                    starttls:
+                        enable: true

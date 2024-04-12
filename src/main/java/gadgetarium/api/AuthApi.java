@@ -47,7 +47,7 @@ public class AuthApi {
     }
 
     @Operation(description = "Метод  для изменение пароля")
-    @PutMapping("/change")
+    @PatchMapping("/change")
     public SignResponse changePassword(@RequestBody @Valid PasswordRequest request) {
         return userService.changePassword(request);
     }
