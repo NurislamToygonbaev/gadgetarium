@@ -41,13 +41,13 @@ public class AuthApi {
     }
 
     @Operation(description = "Метод чтоб ввести code")
-    @PostMapping("/code")
+    @PostMapping("/one-time-code")
     public HttpResponse checkingCOde(@RequestParam int code){
         return userService.checkingCode(code);
     }
 
     @Operation(description = "Метод  для изменение пароля")
-    @PatchMapping("/change")
+    @PatchMapping("/change-password")
     public SignResponse changePassword(@RequestBody @Valid PasswordRequest request) {
         return userService.changePassword(request);
     }
