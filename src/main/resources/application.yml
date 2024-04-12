@@ -8,9 +8,6 @@ server:
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
-        password: rootroot
-        url: jdbc:postgresql://localhost:5432/gadgetarium
-        username: postgres
     jpa:
         hibernate:
             ddl-auto: create
