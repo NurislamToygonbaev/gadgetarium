@@ -60,6 +60,8 @@ public class UserServiceImpl implements UserService {
         userRepo.save(buildedUser);
         return SignResponse.builder()
                 .id(buildedUser.getId())
+                .role(buildedUser.getRole())
+                .phoneNumber(buildedUser.getPhoneNumber())
                 .token(jwtService.createToken(buildedUser))
                 .email(buildedUser.getEmail())
                 .response(HttpResponse.builder()
@@ -79,6 +81,8 @@ public class UserServiceImpl implements UserService {
         }
         return SignResponse.builder()
                 .id(userByEmail.getId())
+                .role(userByEmail.getRole())
+                .phoneNumber(userByEmail.getPhoneNumber())
                 .token(jwtService.createToken(userByEmail))
                 .email(userByEmail.getEmail())
                 .response(HttpResponse.builder()
@@ -129,6 +133,8 @@ public class UserServiceImpl implements UserService {
         user.setPassword(passwordEncoder.encode(request.password()));
         return SignResponse.builder()
                 .id(user.getId())
+                .role(user.getRole())
+                .phoneNumber(user.getPhoneNumber())
                 .token(jwtService.createToken(user))
                 .email(user.getEmail())
                 .response(HttpResponse.builder()
