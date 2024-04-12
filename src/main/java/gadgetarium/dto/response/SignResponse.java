@@ -5,8 +5,9 @@ import org.springframework.http.HttpStatus;
 
 @Builder
 public record SignResponse(
-        HttpStatus httpStatus,
+        Long id,
+        String email,
         String token,
-        String message
+        HttpResponse response
 ) {
 }
