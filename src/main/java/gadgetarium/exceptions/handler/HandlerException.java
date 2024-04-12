@@ -8,6 +8,7 @@ import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.response.ExceptionResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -78,6 +79,17 @@ public class HandlerException {
         log.error(e.getMessage());
         return ExceptionResponse.builder()
                 .httpStatus(HttpStatus.BAD_REQUEST)
+                .exceptionClassName(e.getClass().getSimpleName())
+                .message(e.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ExceptionResponse authenticationException(AuthenticationException e){
+        log.error(e.getMessage());
+        return ExceptionResponse.builder()
+                .httpStatus(HttpStatus.UNAUTHORIZED)
                 .exceptionClassName(e.getClass().getSimpleName())
                 .message(e.getMessage())
                 .build();
