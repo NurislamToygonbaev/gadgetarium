@@ -102,6 +102,7 @@ public class UserServiceImpl implements UserService {
         mimeMessageHelper.setTo(email);
         Random random = new Random();
         code = random.nextInt(9000) + 1000;
+
         String text = "<p style=font-size:20px; color: black>Ваш одноразовый код: <span style=font-size:30px;>" + code + "</span></p>.<br>"
                 + "<p style=font-size:20px; color: black>Никому не передайте этот код.</p>";
         mimeMessageHelper.setText(text, true);
