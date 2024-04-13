@@ -11,12 +11,14 @@ import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
 import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.repositories.PasswordResetTokenRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.UserService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -34,10 +36,6 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
-    private final JavaMailSender javaMailSender;
-
-    private int code;
-    private String userName;
 
     private void checkEmail(String email){
         boolean existsByEmail = userRepo.existsByEmail(email);
@@ -91,58 +89,4 @@ public class UserServiceImpl implements UserService {
                         .build())
                 .build();
     }
-
-    @Override
-    public HttpResponse oneTimePassword(String email) throws MessagingException {
-        User user = userRepo.getByEmail(email);
-        userName = user.getEmail();
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage, true);
-        mimeMessageHelper.setFrom("ntoygonbaev098@gmail.com");
-        mimeMessageHelper.setTo(email);
-        Random random = new Random();
-        code = random.nextInt(9000) + 1000;
-
-        String text = "<p style=font-size:20px; color: black>Ваш одноразовый код: <span style=font-size:30px;>" + code + "</span></p>.<br>"
-                + "<p style=font-size:20px; color: black>Никому не передайте этот код.</p>";
-        mimeMessageHelper.setText(text, true);
-        mimeMessageHelper.setSubject("FORGOT PASSWORD");
-        javaMailSender.send(mimeMessage);
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("Если код не пришел. Смотрите СПАМ")
-                .build();
-    }
-
-    @Override
-    public HttpResponse checkingCode(int codeRequest) {
-        if (code != codeRequest){
-            throw new BadRequestException("Invalid code");
-        }
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("correct")
-                .build();
-    }
-
-    @Override @Transactional
-    public SignResponse changePassword(PasswordRequest request) {
-        if (!request.password().equals(request.confirmPassword())) {
-            throw new BadRequestException("Invalid password");
-        }
-        User user = userRepo.getByEmail(userName);
-        user.setPassword(passwordEncoder.encode(request.password()));
-        return SignResponse.builder()
-                .id(user.getId())
-                .role(user.getRole())
-                .phoneNumber(user.getPhoneNumber())
-                .token(jwtService.createToken(user))
-                .email(user.getEmail())
-                .response(HttpResponse.builder()
-                        .status(HttpStatus.OK)
-                        .message("Successfully changed")
-                        .build())
-                .build();
-    }
-
 }

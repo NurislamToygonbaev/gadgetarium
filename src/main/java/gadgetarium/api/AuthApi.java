@@ -14,6 +14,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
@@ -33,24 +36,5 @@ public class AuthApi {
     public SignResponse signIn(@RequestBody @Valid SignInRequest signInRequest){
         return userService.signIn(signInRequest);
     }
-
-    @Operation(description = "Метод  чтоб ввести email")
-    @PostMapping("/email")
-    public HttpResponse oneTimePassword(@RequestParam String email) throws MessagingException {
-        return userService.oneTimePassword(email);
-    }
-
-    @Operation(description = "Метод чтоб ввести code")
-    @PostMapping("/one-time-code")
-    public HttpResponse checkingCOde(@RequestParam int code){
-        return userService.checkingCode(code);
-    }
-
-    @Operation(description = "Метод  для изменение пароля")
-    @PatchMapping("/change-password")
-    public SignResponse changePassword(@RequestBody @Valid PasswordRequest request) {
-        return userService.changePassword(request);
-    }
-
 
 }

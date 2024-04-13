@@ -5,14 +5,17 @@ app:
 server:
     error:
         include-stacktrace: always
+
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
+
     jpa:
         hibernate:
             ddl-auto: create
         show-sql: true
         open-in-view: false
+
 
     mail:
         host: smtp.gmail.com
@@ -25,3 +28,9 @@ spring:
                     auth: true
                     starttls:
                         enable: true
+
+    sql:
+      init:
+          continue-on-error: true
+          mode: always
+

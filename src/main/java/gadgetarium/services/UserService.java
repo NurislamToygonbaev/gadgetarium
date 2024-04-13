@@ -12,10 +12,4 @@ public interface UserService {
     SignResponse signUp(SignUpRequest signUpRequest);
 
     SignResponse signIn(SignInRequest signInRequest);
-
-    HttpResponse oneTimePassword(String email) throws MessagingException;
-
-    HttpResponse checkingCode(int code);
-
-    SignResponse changePassword(PasswordRequest request);
 }
