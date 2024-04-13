@@ -1,5 +1,6 @@
 package gadgetarium.services.impl;
 
+import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.services.GadgetService;
 import lombok.RequiredArgsConstructor;
@@ -12,4 +13,10 @@ import org.springframework.stereotype.Service;
 public class GadgetServiceImpl implements GadgetService {
 
     private final GadgetRepository gadgetRepo;
+
+    @Override
+    public GadgetResponse getGadgetById(Long id) {
+
+        return null;
+    }
 }
