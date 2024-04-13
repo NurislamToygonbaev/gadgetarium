@@ -19,10 +19,11 @@ public class FirebaseInitializer {
             InputStream serviceAccount = getClass().getResourceAsStream("/serviceAccountKey.json");
             FirebaseOptions options = new FirebaseOptions.Builder()
                     .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                    .setDatabaseUrl("https://console.firebase.google.com/u/0/project/gadgedtarium/overview")
                     .build();
             FirebaseApp.initializeApp(options);
+            System.out.println("Firebase успешно инициализирован!");
         } catch (IOException e) {
+            System.err.println("Ошибка при чтении файла serviceAccountKey.json:");
             e.printStackTrace();
         }
     }
