@@ -33,7 +33,7 @@ public class Banner {
     @ElementCollection
     private List<String> images;
 
-    private void addImages(String image) {
+    public void addImages(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
     }

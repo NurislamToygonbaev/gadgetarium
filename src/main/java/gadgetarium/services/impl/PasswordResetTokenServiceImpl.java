@@ -1,6 +1,7 @@
 package gadgetarium.services.impl;
 
 import gadgetarium.config.jwt.JwtService;
+import gadgetarium.dto.request.PasswordRequest;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.SignResponse;
 import gadgetarium.entities.PasswordResetToken;
@@ -73,9 +74,9 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
     @Override
     @Transactional
-    public SignResponse resetPassword(String token, String newPassword, String confirmPassword) {
+    public SignResponse resetPassword(String token, PasswordRequest request) {
         PasswordResetToken passwordResetToken = passwordResetTokenRepo.getByToken(token);
-        if (!newPassword.equals(confirmPassword)) {
+        if (!request.password().equals(request.confirmPassword())) {
             throw new BadRequestException("Пароли не совподают");
         }
 
@@ -85,7 +86,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         }
 
         User user = passwordResetToken.getUser();
-        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPassword(passwordEncoder.encode(request.password()));
         userRepo.save(user);
         passwordResetTokenRepo.delete(passwordResetToken);
         log.info("success changed password");
