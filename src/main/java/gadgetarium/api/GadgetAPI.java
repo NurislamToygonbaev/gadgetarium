@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/gadget")
 @Slf4j
 public class GadgetAPI {
-    private GadgetService gadgetService;
+
+    private final GadgetService gadgetService;
 
     @Secured("ADMIN")
     @GetMapping("/get-all")

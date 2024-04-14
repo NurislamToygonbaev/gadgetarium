@@ -1,17 +1,19 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.enums.Discount;
-import gadgetarium.enums.Sort;
 import gadgetarium.validation.number.NumberValidation;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.Builder;
 
 @Builder
 public record PaginationRequest(
-        Sort sort,
-        Discount discount,
+        @NotEmpty
+        String sort,
         @NumberValidation
         int page,
         @NumberValidation
-        int size
+        int size,
+        @NotEmpty
+        String discount
 ) {
 }
