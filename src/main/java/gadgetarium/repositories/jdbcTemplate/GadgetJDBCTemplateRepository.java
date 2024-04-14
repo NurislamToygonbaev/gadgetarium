@@ -1,11 +1,8 @@
-package gadgetarium.services;
+package gadgetarium.repositories.jdbcTemplate;
 
 import gadgetarium.dto.request.PaginationRequest;
-import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
 
-public interface GadgetService {
-    GadgetResponse getGadgetById(Long id);
-
+public interface GadgetJDBCTemplateRepository {
     ResultPaginationGadget getAll(PaginationRequest request);
 }
