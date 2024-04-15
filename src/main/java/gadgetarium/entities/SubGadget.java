@@ -35,7 +35,7 @@ public class SubGadget {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sub_gadget_seq")
-    @SequenceGenerator(name = "sub_gadget_seq", allocationSize = 1)
+    @SequenceGenerator(name = "sub_gadget_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private String nameOfGadget;
     private BigDecimal price;

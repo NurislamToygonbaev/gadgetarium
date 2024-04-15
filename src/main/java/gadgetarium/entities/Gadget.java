@@ -41,7 +41,7 @@ public class Gadget {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gadget_seq")
-    @SequenceGenerator(name = "gadget_seq", allocationSize = 1)
+    @SequenceGenerator(name = "gadget_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private int warranty;
     private LocalDate releaseDate;
