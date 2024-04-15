@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/gadget")
 @Slf4j
 public class GadgetAPI {
-    private GadgetService gadgetService;
+    private final GadgetService gadgetService;
 
     @Secured("ADMIN")
-    @GetMapping("/getGadget/{id}")
-    public GadgetResponse getGadget(@PathVariable Long id){
-        return gadgetService.getGadgetById(id);
+    @GetMapping("/getGadget/{gadgetId}")
+    public GadgetResponse getGadget(@PathVariable Long gadgetId){
+        return gadgetService.getGadgetById(gadgetId);
     }
 }
