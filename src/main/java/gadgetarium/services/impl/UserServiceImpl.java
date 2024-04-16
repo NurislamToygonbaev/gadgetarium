@@ -1,9 +1,13 @@
 package gadgetarium.services.impl;
 
 import gadgetarium.config.jwt.JwtService;
+import gadgetarium.dto.request.SelectCategoryRequest;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
+import gadgetarium.dto.response.ComparedGadgetsResponse;
+import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.SignResponse;
+import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
@@ -15,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -28,7 +35,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public SignResponse signUp(SignUpRequest signUpRequest) {
         boolean existsByEmail = userRepo.existsByEmail(signUpRequest.getEmail());
-        if (existsByEmail) throw new AlreadyExistsException("User with email " + signUpRequest.getEmail() + " already exists.");
+        if (existsByEmail)
+            throw new AlreadyExistsException("User with email " + signUpRequest.getEmail() + " already exists.");
         User buildedUser = User.builder()
                 .firstName(signUpRequest.getFirstName())
                 .lastName(signUpRequest.getLastName())
@@ -53,14 +61,24 @@ public class UserServiceImpl implements UserService {
         User userByEmail = userRepo.getByEmail(signInRequest.email());
         String password = userByEmail.getPassword();
         String decodedPassword = signInRequest.password();
-        if(!passwordEncoder.matches(decodedPassword, password)){
+        if (!passwordEncoder.matches(decodedPassword, password)) {
             throw new AuthenticationException("Incorrect email and/or password.");
         }
-        String token  = jwtService.createToken(userByEmail);
+        String token = jwtService.createToken(userByEmail);
         return SignResponse.builder()
                 .httpStatus(HttpStatus.OK)
                 .token(token)
                 .message("Sign in was successful!")
                 .build();
     }
+
+    @Override
+    public ComparedGadgetsResponse compare(String diffClear, SelectCategoryRequest selectCategoryRequest) {
+//        List<SubGadget> subGadgets = new ArrayList<>();
+//        List<GadgetResponse> gadgetResponses = new ArrayList<>();
+//        for (SubGadget gadget : subGadgets) {
+        return null;
+    }
+
+
 }
