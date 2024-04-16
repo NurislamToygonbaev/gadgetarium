@@ -1,17 +1,20 @@
 package gadgetarium.services.impl;
 
+import gadgetarium.dto.request.PaginationRequest;
 import gadgetarium.dto.response.GadgetResponse;
+import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
-import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubGadgetRepository;
+import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.GadgetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -21,7 +24,8 @@ import java.util.List;
 public class GadgetServiceImpl implements GadgetService {
 
     private final GadgetRepository gadgetRepo;
-    private final SubGadgetRepository  subGadgetRepo;
+    private final SubGadgetRepository subGadgetRepo;
+    private final GadgetJDBCTemplateRepository gadgetJDBCTemplateRepo;
 
     @Override
     @Transactional
@@ -48,26 +52,26 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getWarranty(),
                 gadget.getMemory().name(),
                 gadget.getSubGadget().getCharacteristics()
-                );
+        );
     }
 
     @Override
     public GadgetResponse getGadgetSelectColour(String colour, String nameOfGadget) {
         List<SubGadget> gadgets = subGadgetRepo.findByNameOfGadget(nameOfGadget);
 
-        if (gadgets.isEmpty()){
+        if (gadgets.isEmpty()) {
             throw new NotFoundException("Gadget with name: " + nameOfGadget + " not found!");
         }
 
         SubGadget gadget = null;
 
         for (SubGadget foundGadget : gadgets) {
-            if (foundGadget.getMainColour().equalsIgnoreCase(colour)){
+            if (foundGadget.getMainColour().equalsIgnoreCase(colour)) {
                 gadget = foundGadget;
                 break;
             }
         }
-        if (gadget == null){
+        if (gadget == null) {
             throw new NotFoundException("Gadget with colour: " + colour + " not found!");
         }
 
@@ -95,7 +99,11 @@ public class GadgetServiceImpl implements GadgetService {
 
     }
 
-    private BigDecimal checkCurrentPrice(BigDecimal price, int percent){
+    private BigDecimal checkCurrentPrice(BigDecimal price, int percent) {
         return price.subtract(price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100))));
+    }
+
+    public ResultPaginationGadget getAll(PaginationRequest request) {
+        return gadgetJDBCTemplateRepo.getAll(request);
     }
 }

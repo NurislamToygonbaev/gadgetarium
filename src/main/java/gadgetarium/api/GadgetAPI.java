@@ -1,6 +1,8 @@
 package gadgetarium.api;
 
+import gadgetarium.dto.request.PaginationRequest;
 import gadgetarium.dto.response.GadgetResponse;
+import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.services.GadgetService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,13 @@ import org.springframework.web.bind.annotation.*;
 public class GadgetAPI {
 
     private final GadgetService gadgetService;
+
+    @Secured("ADMIN")
+    @Operation(description = "Получение всех гаджетов!")
+    @GetMapping("/get-all")
+    public ResultPaginationGadget allGadgets(PaginationRequest request){
+        return gadgetService.getAll(request);
+    }
 
     @Secured("ADMIN")
     @Operation(description = "Получение гаджета по ID")
