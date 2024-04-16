@@ -8,8 +8,8 @@ import java.util.List;
 
 @Builder
 public record ResultPaginationGadget(
-        String sort,
-        String discount,
+        Sort sort,
+        Discount discount,
         int page,
         int size,
         List<PaginationGadget> paginationGadgets

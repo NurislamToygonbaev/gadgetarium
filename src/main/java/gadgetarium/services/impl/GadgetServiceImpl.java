@@ -1,8 +1,9 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.request.PaginationRequest;
 import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.enums.Discount;
+import gadgetarium.enums.Sort;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.GadgetService;
@@ -25,7 +26,7 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public ResultPaginationGadget getAll(PaginationRequest request) {
-        return gadgetJDBCTemplateRepo.getAll(request);
+    public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
+        return gadgetJDBCTemplateRepo.getAll(sort, discount, page, size);
     }
 }
