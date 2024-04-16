@@ -44,7 +44,7 @@ public class Brand {
     @OneToMany(mappedBy = "brand", cascade = {REFRESH, REMOVE, MERGE})
     private List<Gadget> gadgets;
 
-    private void addGadget(Gadget gadget) {
+    public void addGadget(Gadget gadget) {
         if (this.gadgets == null) this.gadgets = new ArrayList<>();
         this.gadgets.add(gadget);
     }

@@ -1,13 +1,6 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,10 +36,10 @@ public class SubGadget {
     private int rating;
     private String mainColour;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private Map<String, String> characteristics;
 
     @OneToOne(cascade = {REMOVE, MERGE, REFRESH})
@@ -55,12 +48,12 @@ public class SubGadget {
     @OneToOne(mappedBy = "subGadget", cascade = {REMOVE, REFRESH, MERGE})
     private Discount discount;
 
-    private void addImage(String image) {
+    public void addImage(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
     }
 
-    private void addCharacteristic(String key, String value) {
+    public void addCharacteristic(String key, String value) {
         if (this.characteristics == null) this.characteristics = new HashMap<>();
         this.characteristics.put(key, value);
     }

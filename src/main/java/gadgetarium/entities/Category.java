@@ -38,7 +38,7 @@ public class Category {
     @OneToMany(cascade = {REMOVE, MERGE, REFRESH}, mappedBy = "category")
     private List<SubCategory> subCategories;
 
-    private void addSubcategory(SubCategory subCategory) {
+    public void addSubcategory(SubCategory subCategory) {
         if (this.subCategories == null) this.subCategories = new ArrayList<>();
         this.subCategories.add(subCategory);
     }
