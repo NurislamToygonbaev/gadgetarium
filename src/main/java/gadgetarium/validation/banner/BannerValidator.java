@@ -8,6 +8,6 @@ public class BannerValidator implements ConstraintValidator<BannerValidation, Li
 
     @Override
     public boolean isValid(List<String> banners, ConstraintValidatorContext constraintValidatorContext) {
-        return banners.size() <= 6;
+        return banners.size() <= 6 && !banners.isEmpty();
     }
 }
