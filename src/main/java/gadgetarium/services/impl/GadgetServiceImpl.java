@@ -96,7 +96,6 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getGadget().getMemory().name(),
                 gadget.getCharacteristics()
         );
-
     }
 
     private BigDecimal checkCurrentPrice(BigDecimal price, int percent) {
