@@ -72,34 +72,42 @@ public class User implements UserDetails {
     @ManyToMany(cascade = {REFRESH, MERGE})
     private List<SubGadget> likes;
 
-    private void addOrder(Order order) {
+    @OneToMany(mappedBy = "user", cascade = {REMOVE, REFRESH})
+    private List<PasswordResetToken> passwordResetTokens;
+
+    public void addOrder(Order order) {
         if (this.orders == null) this.orders = new ArrayList<>();
         this.orders.add(order);
     }
 
-    private void addFeedback(Feedback feedback) {
+    public void addFeedback(Feedback feedback) {
         if (this.feedbacks == null) this.feedbacks = new ArrayList<>();
         this.feedbacks.add(feedback);
     }
 
-    private void addBasket(SubGadget basket) {
+    public void addBasket(SubGadget basket) {
         if (this.basket == null) this.basket = new ArrayList<>();
         this.basket.add(basket);
     }
 
-    private void addComparison(SubGadget comparison) {
+    public void addComparison(SubGadget comparison) {
         if (this.comparison == null) this.comparison = new ArrayList<>();
         this.comparison.add(comparison);
     }
 
-    private void addViewed(SubGadget viewed) {
+    public void addViewed(SubGadget viewed) {
         if (this.viewed == null) this.viewed = new ArrayList<>();
         this.viewed.add(viewed);
     }
 
-    private void addLikes(SubGadget likes) {
+    public void addLikes(SubGadget likes) {
         if (this.likes == null) this.likes = new ArrayList<>();
         this.likes.add(likes);
+    }
+
+    public void addPasswordResetToken(PasswordResetToken token) {
+        if (this.passwordResetTokens == null) this.passwordResetTokens = new ArrayList<>();
+        this.passwordResetTokens.add(token);
     }
 
     @Override

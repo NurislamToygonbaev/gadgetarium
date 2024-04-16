@@ -55,12 +55,12 @@ public class SubGadget {
     @OneToOne(mappedBy = "subGadget", cascade = {REMOVE, REFRESH, MERGE})
     private Discount discount;
 
-    private void addImage(String image) {
+    public void addImage(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
     }
 
-    private void addCharacteristic(String key, String value) {
+    public void addCharacteristic(String key, String value) {
         if (this.characteristics == null) this.characteristics = new HashMap<>();
         this.characteristics.put(key, value);
     }

@@ -42,7 +42,7 @@ public class SubCategory {
     @OneToMany(mappedBy = "subCategory", cascade = {MERGE, REFRESH, REMOVE})
     private List<Brand> brands;
 
-    private void addBrand(Brand brand) {
+    public void addBrand(Brand brand) {
         if (this.brands == null) this.brands = new ArrayList<>();
         this.brands.add(brand);
     }
