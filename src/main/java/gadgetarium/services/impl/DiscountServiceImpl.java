@@ -23,14 +23,13 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class DiscountServiceImpl implements DiscountService {
 
     private final DiscountRepository discountRepo;
     private final SubGadgetRepository subGadgetRepository;
 
     @PostConstruct
-    public void checkCurrentPrice() {
+    public void postCurrentPrice() {
         for (SubGadget subGadget : subGadgetRepository.findAll()) {
             if (subGadget.getCurrentPrice() == null) {
                 if (subGadget.getDiscount() != null) {
@@ -40,6 +39,7 @@ public class DiscountServiceImpl implements DiscountService {
         }
     }
 
+    @Transactional
     @Override
     public DiscountResponse create(List<Long> subGadgetsId, DiscountRequest discountRequest) {
         if (!discountRequest.endDay().isAfter(discountRequest.startDay()))
@@ -68,11 +68,13 @@ public class DiscountServiceImpl implements DiscountService {
                 .build();
     }
 
+    @Transactional
     public BigDecimal checkCurrentPrice(SubGadget subGadget) {
         BigDecimal returnCurrentPrice = BigDecimal.ZERO;
         if (subGadget.getDiscount() != null) {
             if (subGadget.getDiscount().getEndDate().isBefore(LocalDate.now())) {
                 subGadget.setCurrentPrice(subGadget.getPrice());
+                discountRepo.delete(subGadget.getDiscount());
                 returnCurrentPrice =  subGadget.getCurrentPrice();
             }
         } else returnCurrentPrice =  subGadget.getCurrentPrice();

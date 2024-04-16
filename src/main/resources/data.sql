@@ -1,6 +1,6 @@
 insert into users
 values (1, 'address', 'admin@gmail.com', 'administrator', 'https://s3.amazonaws.com/yourbucket/users/admin.png',
-        'admin', '$2a$12$2MAKJ64YWOW4FCA0rO4xOuULF6QbxFWl1AnTpfQViwtYQKB9H.kiG', '+996303333333', 'ADMIN'),
+        'admin', '$2a$12$8hnmf2jDWsdVnRPNmTuQLO5.IftEcUKPLOuZh6Or4nzjk2hAes6R2', '+996303333333', 'ADMIN'),
        (2, 'luksemburgskay23', 'nur@gmail.com', 'nurgazy', 'https://s3.amazonaws.com/yourbucket/users/nurgazy.png',
         'Temiraliev', '$2a$12$MKHTlq.lDW5TtEkEDn/mk.h3y25/0qCKIaPPKAPOlFmxn1dMlxCj2', '+996302233333', 'USER'),
        (3, 'Bishkek', 'nurislam@gmail.com', 'Nurislam', 'https://s3.amazonaws.com/yourbucket/users/nurislam.png',
