@@ -1,12 +1,12 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Table;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import jakarta.persistence.Id;
 import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.SequenceGenerator;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -42,7 +42,7 @@ public class SubGadget {
     private int quantity;
     private int rating;
     private String mainColour;
-
+    private BigDecimal currentPrice;
     @ElementCollection
     private List<String> images;
 
