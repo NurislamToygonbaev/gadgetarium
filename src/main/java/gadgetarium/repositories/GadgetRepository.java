@@ -14,4 +14,5 @@ public interface GadgetRepository extends JpaRepository<Gadget, Long> {
                 new NotFoundException("Gadget with id: "+gadgetId+" not found"));
     }
 
+
 }
