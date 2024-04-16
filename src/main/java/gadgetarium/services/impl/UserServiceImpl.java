@@ -1,20 +1,32 @@
 package gadgetarium.services.impl;
 
 import gadgetarium.config.jwt.JwtService;
+import gadgetarium.dto.request.PasswordRequest;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
+import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.SignResponse;
 import gadgetarium.entities.User;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
+import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.repositories.PasswordResetTokenRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.UserService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Random;
 
 @Slf4j
 @Service
@@ -25,10 +37,14 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
+    private void checkEmail(String email){
+        boolean existsByEmail = userRepo.existsByEmail(email);
+        if (existsByEmail) throw new AlreadyExistsException("User with email " + email + " already exists.");
+    }
+
     @Override
     public SignResponse signUp(SignUpRequest signUpRequest) {
-        boolean existsByEmail = userRepo.existsByEmail(signUpRequest.getEmail());
-        if (existsByEmail) throw new AlreadyExistsException("User with email " + signUpRequest.getEmail() + " already exists.");
+        checkEmail(signUpRequest.getEmail());
         User buildedUser = User.builder()
                 .firstName(signUpRequest.getFirstName())
                 .lastName(signUpRequest.getLastName())
@@ -40,11 +56,16 @@ public class UserServiceImpl implements UserService {
                 .role(Role.USER)
                 .build();
         userRepo.save(buildedUser);
-        String token = jwtService.createToken(buildedUser);
         return SignResponse.builder()
-                .httpStatus(HttpStatus.OK)
-                .token(token)
-                .message("Sign up was successful!")
+                .id(buildedUser.getId())
+                .role(buildedUser.getRole())
+                .phoneNumber(buildedUser.getPhoneNumber())
+                .token(jwtService.createToken(buildedUser))
+                .email(buildedUser.getEmail())
+                .response(HttpResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Sign in was successful!")
+                        .build())
                 .build();
     }
 
@@ -56,11 +77,16 @@ public class UserServiceImpl implements UserService {
         if(!passwordEncoder.matches(decodedPassword, password)){
             throw new AuthenticationException("Incorrect email and/or password.");
         }
-        String token  = jwtService.createToken(userByEmail);
         return SignResponse.builder()
-                .httpStatus(HttpStatus.OK)
-                .token(token)
-                .message("Sign in was successful!")
+                .id(userByEmail.getId())
+                .role(userByEmail.getRole())
+                .phoneNumber(userByEmail.getPhoneNumber())
+                .token(jwtService.createToken(userByEmail))
+                .email(userByEmail.getEmail())
+                .response(HttpResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Sign in was successful!")
+                        .build())
                 .build();
     }
 }
