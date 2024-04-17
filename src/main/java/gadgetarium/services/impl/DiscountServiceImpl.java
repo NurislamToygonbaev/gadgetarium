@@ -28,17 +28,6 @@ public class DiscountServiceImpl implements DiscountService {
     private final DiscountRepository discountRepo;
     private final SubGadgetRepository subGadgetRepository;
 
-    @PostConstruct
-    public void postCurrentPrice() {
-        for (SubGadget subGadget : subGadgetRepository.findAll()) {
-            if (subGadget.getCurrentPrice() == null) {
-                if (subGadget.getDiscount() != null) {
-                    subGadget.setCurrentPrice(subGadget.getPrice().multiply(BigDecimal.valueOf(subGadget.getDiscount().getPercent())).divide(BigDecimal.valueOf(100)));
-                } else subGadget.setCurrentPrice(subGadget.getPrice());
-            }
-        }
-    }
-
     @Transactional
     @Override
     public DiscountResponse create(List<Long> subGadgetsId, DiscountRequest discountRequest) {

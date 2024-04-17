@@ -26,7 +26,7 @@ public class Discount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "discount_seq")
-    @SequenceGenerator(name = "discount_seq", allocationSize = 1)
+    @SequenceGenerator(name = "discount_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private int percent;
     private LocalDate startDate;
