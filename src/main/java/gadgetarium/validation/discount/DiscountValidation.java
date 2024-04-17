@@ -1,5 +1,6 @@
-package gadgetarium.validation.email;
+package gadgetarium.validation.discount;
 
+import gadgetarium.validation.email.EmailValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 import java.lang.annotation.Documented;
@@ -9,12 +10,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Documented
-@Constraint(validatedBy = {EmailValidator.class})
+@Constraint(validatedBy = {DiscountValidator.class})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface EmailValidation {
+public @interface DiscountValidation {
 
-    String message() default "{Email must's contain @ symbol and ends with .com}";
+    String message() default "{Discount size must be greater than 0!}";
 
     Class<?>[] groups() default {};
 
