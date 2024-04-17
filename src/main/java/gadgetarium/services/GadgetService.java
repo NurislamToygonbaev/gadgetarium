@@ -6,7 +6,9 @@ import gadgetarium.enums.Discount;
 import gadgetarium.enums.Sort;
 
 public interface GadgetService {
-    GadgetResponse getGadgetById(Long id);
+    GadgetResponse getGadgetById(Long gadgetId);
+
+    GadgetResponse getGadgetSelectColour(String colour, String nameOfGadget);
 
     ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size);
 }

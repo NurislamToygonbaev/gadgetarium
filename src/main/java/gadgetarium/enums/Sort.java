@@ -6,5 +6,4 @@ public enum Sort {
     RECOMMENDED,
     LOW_TO_HIGH,
     HIGH_TO_LOW,
-    NULL
 }

@@ -30,71 +30,52 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
         int offset = (pageNumber - 1) * pageSize;
         int limit = pageSize;
-        String emptySort = "";
-        String emptyDiscount = "";
         String orderBy = "";
         String where = "";
 
         if (sort != null) {
-            if (sort.equals(Sort.NEW_PRODUCTS)) {
-                emptySort = " ga.release_date desc ";
-                orderBy = " order by " + emptySort;
-            } else if (sort.equals(Sort.PROMOTION)) {
+            if (sort.equals(Sort.NEW_PRODUCTS)) orderBy = " order by ga.release_date desc ";
+            else if (sort.equals(Sort.PROMOTION)) {
                 if (discount != null) {
-                    if (discount.equals(Discount.ALL_DISCOUNTS)){
-                        emptyDiscount = " d.percent is not null ";
-                        where = " where " + emptyDiscount;
-                    }
-                    else if (discount.equals(Discount.UP_TO_50)){
-                        emptyDiscount = " d.percent < 50 ";
-                        where = " where " + emptyDiscount;
-                    }
-                    else if (discount.equals(Discount.OVER_50)) {
-                        emptyDiscount = " d.percent > 50 ";
-                        where = " where " + emptyDiscount;
-                    }
+                    if (discount.equals(Discount.ALL_DISCOUNTS)) where = " where d.percent is not null ";
+                    else if (discount.equals(Discount.UP_TO_50)) where = " where d.percent < 50 ";
+                    else if (discount.equals(Discount.OVER_50)) where = " where d.percent > 50 ";
                 }
-            } else if (sort.equals(Sort.RECOMMENDED)) {
-                emptySort = " g.rating > 4 ";
-                where = " where " + emptySort;
-            } else if (sort.equals(Sort.HIGH_TO_LOW)) {
-                emptySort = " g.price desc ";
-                orderBy = " order by " + emptySort;
-            } else if (sort.equals(Sort.LOW_TO_HIGH)) {
-                emptySort = " g.price asc ";
-                orderBy = " order by " + emptySort;
-            }
+            } else if (sort.equals(Sort.RECOMMENDED)) where = " where g.rating > 4 ";
+            else if (sort.equals(Sort.HIGH_TO_LOW)) orderBy = " order by g.price desc ";
+            else if (sort.equals(Sort.LOW_TO_HIGH)) orderBy = " order by g.price asc ";
+
         }
 
         List<PaginationGadget> list = jdbcTemplate.query("""
-            select g.id,
-                   array_agg(gi.images) as images,
-                   ga.article,
-                   concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                   ga.release_date,
-                   g.quantity,
-                   d.percent,
-                   d.end_date,
-                   g.price
-            from sub_gadgets g
-            join sub_gadget_images gi on g.id = gi.sub_gadget_id
-            join discounts d on g.id = d.sub_gadget_id
-            join gadgets ga on ga.id = g.gadget_id
-            join brands b on ga.brand_id = b.id
-            """ + where + """
-            group by g.id, ga.article, g.name_of_gadget, ga.release_date,
-                       b.brand_name,  g.quantity, d.percent, g.price, d.end_date
-            """ + orderBy + """
-            limit ? offset ?
-            """,
+                        select g.id,
+                               array_agg(gi.images) as images,
+                               ga.article,
+                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
+                               ga.release_date,
+                               g.quantity,
+                               d.percent,
+                               d.end_date,
+                               g.price
+                        from sub_gadgets g
+                        join sub_gadget_images gi on g.id = gi.sub_gadget_id
+                        join gadgets ga on ga.id = g.gadget_id
+                        join brands b on ga.brand_id = b.id
+                        left outer join discounts d on g.id = d.sub_gadget_id
+                        """ + where + """
+                        group by g.id, ga.article, g.name_of_gadget, ga.release_date,
+                                   b.brand_name,  g.quantity, d.percent, g.price, d.end_date
+                        """ + orderBy + """
+                        limit ? offset ?
+                        """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
                     BigDecimal price = rs.getBigDecimal("price");
                     int percent = rs.getInt("percent");
                     BigDecimal currentPrice = price;
 
-                    Date endDate = rs.getDate("endDate");
-                    if (endDate != null && endDate.after(new Date())){
+                    Date endDate = rs.getDate("end_date");
+                    if (endDate != null && endDate.after(new Date())) {
                         currentPrice = price.subtract(price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100))));
                     }
 
@@ -113,8 +94,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         return ResultPaginationGadget.builder()
                 .sort(sort)
                 .discount(discount)
-                .page(page)
-                .size(size)
+                .page(pageNumber)
+                .size(pageSize)
                 .paginationGadgets(list)
                 .build();
     }
