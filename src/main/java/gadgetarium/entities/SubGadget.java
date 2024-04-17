@@ -35,6 +35,7 @@ public class SubGadget {
     private int quantity;
     private int rating;
     private String mainColour;
+    private BigDecimal currentPrice;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;

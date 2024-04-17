@@ -12,9 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
-
 import java.time.LocalDate;
-
 import static jakarta.persistence.CascadeType.DETACH;
 
 @Getter
