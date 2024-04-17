@@ -28,13 +28,14 @@ public class SubGadget {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sub_gadget_seq")
-    @SequenceGenerator(name = "sub_gadget_seq", allocationSize = 1)
+    @SequenceGenerator(name = "sub_gadget_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private String nameOfGadget;
     private BigDecimal price;
     private int quantity;
     private int rating;
     private String mainColour;
+    private BigDecimal currentPrice;
 
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;

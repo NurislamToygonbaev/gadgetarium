@@ -1,9 +1,10 @@
 package gadgetarium.repositories;
+
 import gadgetarium.entities.SubGadget;
 import gadgetarium.exceptions.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface SubGadgetRepository extends JpaRepository<SubGadget, Long> {
 
@@ -11,4 +12,6 @@ public interface SubGadgetRepository extends JpaRepository<SubGadget, Long> {
       return findById(subGadgetId).orElseThrow(() ->
               new NotFoundException("SubGadget with id: " + subGadgetId + " not found!"));
    }
+    List<SubGadget> findByNameOfGadget(String name);
+
 }

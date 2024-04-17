@@ -32,7 +32,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "user_seq")
-    @SequenceGenerator(name = "user_seq", allocationSize = 1, initialValue = 51)
+    @SequenceGenerator(name = "user_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private String firstName;
     private String lastName;

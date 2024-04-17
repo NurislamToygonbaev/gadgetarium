@@ -2,18 +2,7 @@ package gadgetarium.entities;
 
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
-import jakarta.persistence.ManyToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,7 +30,7 @@ public class Gadget {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "gadget_seq")
-    @SequenceGenerator(name = "gadget_seq", allocationSize = 1)
+    @SequenceGenerator(name = "gadget_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private int warranty;
     private LocalDate releaseDate;
@@ -56,10 +45,10 @@ public class Gadget {
     @Enumerated(EnumType.STRING)
     private Ram ram;
 
-    @OneToOne(mappedBy = "gadget", cascade = {PERSIST, REFRESH, REMOVE})
+    @OneToOne(mappedBy = "gadget", cascade = {PERSIST, REFRESH, REMOVE}, fetch = FetchType.EAGER)
     private SubGadget subGadget;
 
-    @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH})
+    @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Feedback> feedbacks;
 
     @ManyToMany(mappedBy = "gadgets", cascade = {DETACH, MERGE, REFRESH})
