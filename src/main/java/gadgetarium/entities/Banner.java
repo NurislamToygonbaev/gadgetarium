@@ -27,7 +27,7 @@ public class Banner {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "banner_seq")
-    @SequenceGenerator(name = "banner_seq", allocationSize = 1)
+    @SequenceGenerator(name = "banner_seq", allocationSize = 1, initialValue = 60)
     private Long id;
 
     @ElementCollection

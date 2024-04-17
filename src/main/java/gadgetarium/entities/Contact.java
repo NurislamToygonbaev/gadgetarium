@@ -23,7 +23,7 @@ public class Contact {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "contact_seq")
-    @SequenceGenerator(name = "contact_seq", allocationSize = 1)
+    @SequenceGenerator(name = "contact_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private String firstname;
     private String lastname;

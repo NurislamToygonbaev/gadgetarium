@@ -33,7 +33,7 @@ public class Brand {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "brand_seq")
-    @SequenceGenerator(name = "brand_seq", allocationSize = 1)
+    @SequenceGenerator(name = "brand_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private String brandName;
     private String logo;

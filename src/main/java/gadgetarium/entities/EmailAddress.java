@@ -23,7 +23,7 @@ public class EmailAddress {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "email_seq")
-    @SequenceGenerator(name = "email_seq", allocationSize = 1)
+    @SequenceGenerator(name = "email_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private String email;
 }
