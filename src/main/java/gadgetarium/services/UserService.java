@@ -1,13 +1,13 @@
 package gadgetarium.services;
 
-import gadgetarium.dto.request.SelectCategoryRequest;
-import gadgetarium.dto.request.PasswordRequest;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
 import gadgetarium.dto.response.ComparedGadgetsResponse;
 import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.ListComparisonResponse;
 import gadgetarium.dto.response.SignResponse;
-import jakarta.mail.MessagingException;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -15,5 +15,13 @@ public interface UserService {
 
     SignResponse signIn(SignInRequest signInRequest);
 
-    ComparedGadgetsResponse compare(String diffClear, SelectCategoryRequest selectCategoryRequest);
+    HttpResponse addCompare(Long subGadgetsId);
+
+    List<ListComparisonResponse> seeComparison();
+
+    ComparedGadgetsResponse compare(String selectCategory, boolean differences);
+
+    HttpResponse deleteSubGadget(Long subId);
+
+    HttpResponse deleteAllGadgets();
 }

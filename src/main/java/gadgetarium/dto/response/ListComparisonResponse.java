@@ -4,15 +4,15 @@ import gadgetarium.enums.Memory;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.util.Map;
+import java.util.List;
 
 @Builder
-public record SubGadgetResponse(
+public record ListComparisonResponse(
         Long id,
+        List<String> images,
         String nameOfGadget,
-        BigDecimal price,
-        String mainColour,
-        String brandName,
+        String mainColor,
         Memory memory,
-        Map<String, String> characteristics
+        BigDecimal price
+
 ){}

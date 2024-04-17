@@ -1,16 +1,7 @@
 package gadgetarium.entities;
 
 import gadgetarium.enums.Role;
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -63,7 +54,7 @@ public class User implements UserDetails {
     @ManyToMany(cascade = {REFRESH, MERGE})
     private List<SubGadget> basket;
 
-    @ManyToMany(cascade = {REFRESH, MERGE})
+    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> comparison;
 
     @ManyToMany(cascade = {REFRESH, MERGE})

@@ -1,11 +1,10 @@
 package gadgetarium.dto.response;
 import lombok.Builder;
 import java.util.List;
+import java.util.Map;
 
 @Builder
 public record ComparedGadgetsResponse(
-        int smartphones,
-        int laptops,
-        int headphones,
+        Map<String, Integer> categoryCounts,
         List<SubGadgetResponse> subGadgetResponses
 ){}
