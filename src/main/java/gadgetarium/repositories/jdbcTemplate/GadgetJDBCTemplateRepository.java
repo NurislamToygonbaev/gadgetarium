@@ -1,11 +1,10 @@
 package gadgetarium.repositories.jdbcTemplate;
 
-import gadgetarium.dto.request.PaginationRequest;
-import gadgetarium.dto.request.SelectCategoryRequest;
-import gadgetarium.dto.response.ComparedGadgetsResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.enums.Discount;
+import gadgetarium.enums.Sort;
 
 public interface GadgetJDBCTemplateRepository {
-    ResultPaginationGadget getAll(PaginationRequest request);
 
+    ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size);
 }

@@ -36,6 +36,7 @@ public class User implements UserDetails {
     private Long id;
     private String firstName;
     private String lastName;
+    @Column(length = 1000)
     private String image;
     private String phoneNumber;
     private String email;

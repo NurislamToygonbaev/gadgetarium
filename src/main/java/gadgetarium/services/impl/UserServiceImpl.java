@@ -80,7 +80,6 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(decodedPassword, password)) {
             throw new AuthenticationException("Incorrect email and/or password.");
         }
-        String token = jwtService.createToken(userByEmail);
         return SignResponse.builder()
                 .id(userByEmail.getId())
                 .role(userByEmail.getRole())
@@ -131,9 +130,9 @@ public class UserServiceImpl implements UserService {
         Map<String, Integer> categoryCounts = new HashMap<>();
 
         List<SubGadgetResponse> responses = comparison.stream()
-                .filter(name -> name.getGadget().getBrand().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(selectCategory))
+                .filter(name -> name.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(selectCategory))
                 .map(subGadget -> {
-                    String categoryName = subGadget.getGadget().getBrand().getSubCategory().getCategory().getCategoryName();
+                    String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
                     categoryCounts.put(categoryName, categoryCounts.getOrDefault(categoryName, 0) + 1);
                     return convertToSubGadget(subGadget);
                 })
@@ -201,11 +200,6 @@ public class UserServiceImpl implements UserService {
                 return new SubGadgetResponse(gadget.id(), gadget.nameOfGadget(), gadget.price(),
                         gadget.mainColour(), gadget.brandName(), gadget.memory(), gadget.characteristics(),
                         Collections.singletonList(differentField));
-            // Добавьте другие поля, если они также могут отличаться
-            // case "fieldName":
-            //     return new SubGadgetResponse(gadget.id(), gadget.nameOfGadget(), gadget.price(),
-            //             gadget.fieldName(), gadget.brandName(), gadget.memory(), gadget.characteristics(),
-            //             Collections.singletonList(differentField));
             default:
                 return gadget;
         }

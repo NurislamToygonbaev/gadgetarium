@@ -1,13 +1,6 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -36,16 +29,10 @@ public class Brand {
     @SequenceGenerator(name = "brand_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private String brandName;
+
+    @Column(length = 1000)
     private String logo;
 
-    @ManyToOne(cascade = {DETACH})
-    private SubCategory subCategory;
-
-    @OneToMany(mappedBy = "brand", cascade = {REFRESH, REMOVE, MERGE})
+    @OneToMany(mappedBy = "brand")
     private List<Gadget> gadgets;
-
-    public void addGadget(Gadget gadget) {
-        if (this.gadgets == null) this.gadgets = new ArrayList<>();
-        this.gadgets.add(gadget);
-    }
 }

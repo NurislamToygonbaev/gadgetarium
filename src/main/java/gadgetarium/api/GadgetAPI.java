@@ -3,6 +3,8 @@ package gadgetarium.api;
 import gadgetarium.dto.request.PaginationRequest;
 import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.enums.Discount;
+import gadgetarium.enums.Sort;
 import gadgetarium.services.GadgetService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +27,11 @@ public class GadgetAPI {
     @Secured("ADMIN")
     @Operation(description = "Получение всех гаджетов!")
     @GetMapping("/get-all")
-    public ResultPaginationGadget allGadgets(PaginationRequest request){
-        return gadgetService.getAll(request);
+    public ResultPaginationGadget allGadgets(@RequestParam Sort sort,
+                                             @RequestParam Discount discount,
+                                             @RequestParam int page,
+                                             @RequestParam int size){
+        return gadgetService.getAll(sort, discount, page, size);
     }
 
     @Secured("ADMIN")

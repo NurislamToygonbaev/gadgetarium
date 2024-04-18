@@ -9,10 +9,13 @@ server:
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
+        password: 1234
+        url: jdbc:postgresql://localhost:5432/gadgetarium
+        username: postgres
 
     jpa:
         hibernate:
-            ddl-auto: create
+            ddl-auto: update
         show-sql: true
         open-in-view: false
 

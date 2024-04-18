@@ -35,8 +35,11 @@ public class Gadget {
     private int warranty;
     private LocalDate releaseDate;
     private Long article;
+    @Column(length = 500)
     private String videoUrl;
+    @Column(length = 500)
     private String PDFUrl;
+    @Column(length = 500)
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -55,6 +58,9 @@ public class Gadget {
     private List<Order> orders;
 
     @ManyToOne(cascade = {DETACH})
+    private SubCategory subCategory;
+
+    @ManyToOne(fetch = FetchType.EAGER)
     private Brand brand;
 
     private void addFeedback(Feedback feedback) {
