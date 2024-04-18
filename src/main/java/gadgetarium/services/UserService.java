@@ -2,7 +2,10 @@ package gadgetarium.services;
 
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
-import gadgetarium.dto.response.*;
+import gadgetarium.dto.response.ComparedGadgetsResponse;
+import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.ListComparisonResponse;
+import gadgetarium.dto.response.SignResponse;
 
 import java.util.List;
 
@@ -21,6 +24,4 @@ public interface UserService {
     HttpResponse deleteSubGadget(Long subId);
 
     HttpResponse deleteAllGadgets();
-
-//    List<SubGadgetResponse> showDifferences(boolean isDifferences);
 }

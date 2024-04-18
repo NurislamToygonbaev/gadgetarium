@@ -9,10 +9,8 @@ import gadgetarium.entities.User;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
-import gadgetarium.repositories.CategoryRepository;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.UserRepository;
-import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +32,6 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     private final SubGadgetRepository subGadgetRepository;
     private final CurrentUser currentUser;
-    private final CategoryRepository categoryRepo;
-    private final GadgetJDBCTemplateRepository gadgetJDBCTemplateRepo;
 
     private void checkEmail(String email) {
         boolean existsByEmail = userRepo.existsByEmail(email);
@@ -123,24 +119,19 @@ public class UserServiceImpl implements UserService {
         return listComparisonResponses;
     }
 
-    @Override
     public ComparedGadgetsResponse compare(String selectCategory, boolean differences) {
         User user = currentUser.get();
         List<SubGadget> comparison = user.getComparison();
         Map<String, Integer> categoryCounts = new HashMap<>();
 
         List<SubGadgetResponse> responses = comparison.stream()
-                .filter(name -> name.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(selectCategory))
+                .filter(subGadget -> subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(selectCategory))
                 .map(subGadget -> {
                     String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
                     categoryCounts.put(categoryName, categoryCounts.getOrDefault(categoryName, 0) + 1);
-                    return convertToSubGadget(subGadget);
+                    return convertToSubGadget(subGadget, comparison);
                 })
                 .collect(Collectors.toList());
-
-        if (differences) {
-            responses = filterDifferentGadgets(responses);
-        }
 
         return ComparedGadgetsResponse.builder()
                 .categoryCounts(categoryCounts)
@@ -148,94 +139,59 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
-    private List<SubGadgetResponse> filterDifferentGadgets(List<SubGadgetResponse> responses) {
-        List<SubGadgetResponse> differentGadgets = new ArrayList<>();
+    private List<String> getDifferences(SubGadget subGadget, SubGadget previousGadget) {
+        List<String> differencesList = new ArrayList<>();
 
-        for (int i = 0; i < responses.size(); i++) {
-            SubGadgetResponse gadget1 = responses.get(i);
-
-            boolean isDifferent = false;
-
-            for (int j = i + 1; j < responses.size(); j++) {
-                SubGadgetResponse gadget2 = responses.get(j);
-
-                // Сравниваем гаджеты и проверяем отличия
-                String differentField = findFirstDifferentField(gadget1, gadget2);
-                if (differentField != null) {
-                    isDifferent = true;
-                    differentGadgets.add(createSubGadgetWithDifferentFields(gadget1, differentField));
-                    break; // Если найдено отличие, прекращаем дальнейшее сравнение
-                }
+        if (previousGadget != null) {
+            if (!Objects.equals(previousGadget.getPrice(), subGadget.getPrice())) {
+                differencesList.add("price");
             }
-
-            if (!isDifferent) {
-                // Если не найдено отличий, добавляем в список все поля гаджета
-                differentGadgets.add(gadget1);
+            if (!Objects.equals(previousGadget.getCharacteristics(), subGadget.getCharacteristics())) {
+                differencesList.add("characteristics");
+            }
+            if (!Objects.equals(previousGadget.getNameOfGadget(), subGadget.getNameOfGadget())) {
+                differencesList.add("nameOfGadget");
+            }
+            if (!Objects.equals(previousGadget.getGadget().getBrand().getBrandName(), subGadget.getGadget().getBrand().getBrandName())) {
+                differencesList.add("brandName");
+            }
+            if (!Objects.equals(previousGadget.getMainColour(), subGadget.getMainColour())) {
+                differencesList.add("mainColour");
+            }
+            if (!Objects.equals(previousGadget.getGadget().getMemory(), subGadget.getGadget().getMemory())) {
+                differencesList.add("memory");
             }
         }
 
-        return differentGadgets;
+        return differencesList;
     }
 
-    private String findFirstDifferentField(SubGadgetResponse gadget1, SubGadgetResponse gadget2) {
-        if (!Objects.equals(gadget1.id(), gadget2.id())) return "id";
-        if (!Objects.equals(gadget1.nameOfGadget(), gadget2.nameOfGadget())) return "nameOfGadget";
-        if (!Objects.equals(gadget1.brandName(), gadget2.brandName())) return "brandName";
-        if (!Objects.equals(gadget1.mainColour(), gadget2.mainColour())) return "mainColour";
-        if (!Objects.equals(gadget1.price(), gadget2.price())) return "price";
-        if (!Objects.equals(gadget1.memory(), gadget2.memory())) return "memory";
-        if (!Objects.equals(gadget1.characteristics(), gadget2.characteristics())) return "characteristics";
-        return null; // Возвращаем null, если все поля одинаковы
+    private SubGadgetResponse convertToSubGadget(SubGadget subGadget, List<SubGadget> comparison) {
+        SubGadget previousGadget = getPreviousGadget(subGadget, comparison);
+
+        List<String> differencesList = getDifferences(subGadget, previousGadget);
+
+        return new SubGadgetResponse(
+                subGadget.getId(),
+                subGadget.getNameOfGadget(),
+                subGadget.getPrice(),
+                subGadget.getMainColour(),
+                subGadget.getGadget().getBrand().getBrandName(),
+                subGadget.getGadget().getMemory(),
+                subGadget.getCharacteristics(),
+                differencesList
+        );
     }
 
-    private SubGadgetResponse convertToSubGadget(SubGadget subGadget) {
-        return new SubGadgetResponse(subGadget.getId(), subGadget.getNameOfGadget(), subGadget.getPrice(),
-                subGadget.getMainColour(), subGadget.getGadget().getBrand().getBrandName(),
-                subGadget.getGadget().getMemory(), subGadget.getCharacteristics(), null);
-    }
+    private SubGadget getPreviousGadget(SubGadget subGadget, List<SubGadget> comparison) {
+        int currentIndex = comparison.indexOf(subGadget);
 
-    private SubGadgetResponse createSubGadgetWithDifferentFields(SubGadgetResponse gadget, String differentField) {
-        switch (differentField) {
-            case "mainColour":
-                return new SubGadgetResponse(gadget.id(), gadget.nameOfGadget(), gadget.price(),
-                        gadget.mainColour(), gadget.brandName(), gadget.memory(), gadget.characteristics(),
-                        Collections.singletonList(differentField));
-            default:
-                return gadget;
+        if (currentIndex > 0) {
+            return comparison.get(currentIndex - 1);
+        } else {
+            return null;
         }
     }
-//    @Override
-//    public ComparedGadgetsResponse compare(String selectCategory) {
-//        User user = currentUser.get();
-//        List<SubGadget> comparison = user.getComparison();
-//        Map<String, Integer> categoryCounts = new HashMap<>();
-//
-//        List<SubGadgetResponse> responses = comparison.stream()
-//                .filter(name -> name.getGadget().getBrand().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(selectCategory))
-//                .map(subGadget -> {
-//                    String categoryName = subGadget.getGadget().getBrand().getSubCategory().getCategory().getCategoryName();
-//                    categoryCounts.put(categoryName, categoryCounts.getOrDefault(categoryName, 0) + 1);
-//                    return convertToSubGadget(subGadget);
-//                })
-//                .collect(Collectors.toList());
-//
-//        return ComparedGadgetsResponse.builder()
-//                .categoryCounts(categoryCounts)
-//                .subGadgetResponses(responses)
-//                .build();
-//    }
-//
-//    private SubGadgetResponse convertToSubGadget(SubGadget subGadget) {
-//        return SubGadgetResponse.builder()
-//                .id(subGadget.getId())
-//                .nameOfGadget(subGadget.getNameOfGadget())
-//                .brandName(subGadget.getGadget().getBrand().getBrandName())
-//                .mainColour(subGadget.getMainColour())
-//                .price(subGadget.getPrice())
-//                .memory(subGadget.getGadget().getMemory())
-//                .characteristics(subGadget.getCharacteristics())
-//                .build();
-//    }
 
     @Override
     @Transactional
@@ -268,11 +224,6 @@ public class UserServiceImpl implements UserService {
                 .message("Comparison cleared")
                 .build();
     }
-
-//    @Override
-//    public List<SubGadgetResponse> showDifferences(boolean isDifferences) {
-//        return null;
-//    }
 
     private ListComparisonResponse convert(SubGadget subGadget) {
         return new ListComparisonResponse(

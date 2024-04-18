@@ -31,17 +31,12 @@ public class ComparisonAPI {
         return userService.seeComparison();
     }
 
+    @Operation(description = "Метод для просмотра различий")
     @GetMapping("/compare")
     public ComparedGadgetsResponse compare(@RequestParam @Valid @StringValidation String categoryName,
                                            @RequestParam boolean isDifferences) {
-        return userService.compare(categoryName,isDifferences);
+        return userService.compare(categoryName, isDifferences);
     }
-//    @Operation(description = "Метод для просмотра различии определенного гаджета")
-//    @GetMapping("/differences")
-//    public List<SubGadgetResponse> showDifferences(@RequestParam boolean isDifferences){
-//        return userService.showDifferences(isDifferences);
-//
-//    }
 
     @Operation(description = "Метод для удаление одного гаджета в сравнении")
     @DeleteMapping("/delete/{subGadgetId}")
