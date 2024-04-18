@@ -2,10 +2,7 @@ package gadgetarium.services;
 
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
-import gadgetarium.dto.response.ComparedGadgetsResponse;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ListComparisonResponse;
-import gadgetarium.dto.response.SignResponse;
+import gadgetarium.dto.response.*;
 
 import java.util.List;
 
@@ -19,9 +16,11 @@ public interface UserService {
 
     List<ListComparisonResponse> seeComparison();
 
-    ComparedGadgetsResponse compare(String selectCategory, boolean differences);
+    ComparedGadgetsResponse compare(String selectCategory, boolean isDifferences);
 
     HttpResponse deleteSubGadget(Long subId);
 
     HttpResponse deleteAllGadgets();
+
+//    List<SubGadgetResponse> showDifferences(boolean isDifferences);
 }

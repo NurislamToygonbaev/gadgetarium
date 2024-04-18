@@ -4,7 +4,6 @@ import gadgetarium.config.jwt.JwtService;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
 import gadgetarium.dto.response.*;
-import gadgetarium.entities.Category;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.Role;
@@ -133,7 +132,11 @@ public class UserServiceImpl implements UserService {
 
         List<SubGadgetResponse> responses = comparison.stream()
                 .filter(name -> name.getGadget().getBrand().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(selectCategory))
-                .map(this::convertToSubGadget)
+                .map(subGadget -> {
+                    String categoryName = subGadget.getGadget().getBrand().getSubCategory().getCategory().getCategoryName();
+                    categoryCounts.put(categoryName, categoryCounts.getOrDefault(categoryName, 0) + 1);
+                    return convertToSubGadget(subGadget);
+                })
                 .collect(Collectors.toList());
 
         if (differences) {
@@ -151,20 +154,23 @@ public class UserServiceImpl implements UserService {
 
         for (int i = 0; i < responses.size(); i++) {
             SubGadgetResponse gadget1 = responses.get(i);
+
             boolean isDifferent = false;
 
             for (int j = i + 1; j < responses.size(); j++) {
                 SubGadgetResponse gadget2 = responses.get(j);
 
-                // Сравниваем все поля гаджетов
-                if (areGadgetsDifferent(gadget1, gadget2)) {
+                // Сравниваем гаджеты и проверяем отличия
+                String differentField = findFirstDifferentField(gadget1, gadget2);
+                if (differentField != null) {
                     isDifferent = true;
-                    break; // Если найдено различие, прекращаем дальнейшее сравнение
+                    differentGadgets.add(createSubGadgetWithDifferentFields(gadget1, differentField));
+                    break; // Если найдено отличие, прекращаем дальнейшее сравнение
                 }
             }
 
-            // Если найдено хотя бы одно различие для текущего гаджета, добавляем его в список
-            if (isDifferent) {
+            if (!isDifferent) {
+                // Если не найдено отличий, добавляем в список все поля гаджета
                 differentGadgets.add(gadget1);
             }
         }
@@ -172,35 +178,40 @@ public class UserServiceImpl implements UserService {
         return differentGadgets;
     }
 
-    private boolean areGadgetsDifferent(SubGadgetResponse gadget1, SubGadgetResponse gadget2) {
-        // Сравниваем все поля объектов
-        if (!Objects.equals(gadget1.id(), gadget2.id())) return true;
-        if (!Objects.equals(gadget1.nameOfGadget(), gadget2.nameOfGadget())) return true;
-        if (!Objects.equals(gadget1.brandName(), gadget2.brandName())) return true;
-        if (!Objects.equals(gadget1.mainColour(), gadget2.mainColour())) return true;
-        if (!Objects.equals(gadget1.price(), gadget2.price())) return true;
-        if (!Objects.equals(gadget1.memory(), gadget2.memory())) return true;
-        if (!Objects.equals(gadget1.characteristics(), gadget2.characteristics())) return true;
-
-        // Если не найдено ни одного отличия, возвращаем false
-        return false;
+    private String findFirstDifferentField(SubGadgetResponse gadget1, SubGadgetResponse gadget2) {
+        if (!Objects.equals(gadget1.id(), gadget2.id())) return "id";
+        if (!Objects.equals(gadget1.nameOfGadget(), gadget2.nameOfGadget())) return "nameOfGadget";
+        if (!Objects.equals(gadget1.brandName(), gadget2.brandName())) return "brandName";
+        if (!Objects.equals(gadget1.mainColour(), gadget2.mainColour())) return "mainColour";
+        if (!Objects.equals(gadget1.price(), gadget2.price())) return "price";
+        if (!Objects.equals(gadget1.memory(), gadget2.memory())) return "memory";
+        if (!Objects.equals(gadget1.characteristics(), gadget2.characteristics())) return "characteristics";
+        return null; // Возвращаем null, если все поля одинаковы
     }
 
     private SubGadgetResponse convertToSubGadget(SubGadget subGadget) {
-        return SubGadgetResponse.builder()
-                .id(subGadget.getId())
-                .nameOfGadget(subGadget.getNameOfGadget())
-                .brandName(subGadget.getGadget().getBrand().getBrandName())
-                .mainColour(subGadget.getMainColour())
-                .price(subGadget.getPrice())
-                .memory(subGadget.getGadget().getMemory())
-                .characteristics(subGadget.getCharacteristics())
-                .build();
+        return new SubGadgetResponse(subGadget.getId(), subGadget.getNameOfGadget(), subGadget.getPrice(),
+                subGadget.getMainColour(), subGadget.getGadget().getBrand().getBrandName(),
+                subGadget.getGadget().getMemory(), subGadget.getCharacteristics(), null);
     }
 
-
+    private SubGadgetResponse createSubGadgetWithDifferentFields(SubGadgetResponse gadget, String differentField) {
+        switch (differentField) {
+            case "mainColour":
+                return new SubGadgetResponse(gadget.id(), gadget.nameOfGadget(), gadget.price(),
+                        gadget.mainColour(), gadget.brandName(), gadget.memory(), gadget.characteristics(),
+                        Collections.singletonList(differentField));
+            // Добавьте другие поля, если они также могут отличаться
+            // case "fieldName":
+            //     return new SubGadgetResponse(gadget.id(), gadget.nameOfGadget(), gadget.price(),
+            //             gadget.fieldName(), gadget.brandName(), gadget.memory(), gadget.characteristics(),
+            //             Collections.singletonList(differentField));
+            default:
+                return gadget;
+        }
+    }
 //    @Override
-//    public ComparedGadgetsResponse compare(String selectCategory, boolean differences) {
+//    public ComparedGadgetsResponse compare(String selectCategory) {
 //        User user = currentUser.get();
 //        List<SubGadget> comparison = user.getComparison();
 //        Map<String, Integer> categoryCounts = new HashMap<>();
@@ -263,6 +274,11 @@ public class UserServiceImpl implements UserService {
                 .message("Comparison cleared")
                 .build();
     }
+
+//    @Override
+//    public List<SubGadgetResponse> showDifferences(boolean isDifferences) {
+//        return null;
+//    }
 
     private ListComparisonResponse convert(SubGadget subGadget) {
         return new ListComparisonResponse(

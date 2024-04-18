@@ -7,7 +7,6 @@ import gadgetarium.services.UserService;
 import gadgetarium.validation.email.StringValidation;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -31,12 +30,18 @@ public class ComparisonAPI {
     public List<ListComparisonResponse> listCompare() {
         return userService.seeComparison();
     }
-    @Operation(description = "Метод для просмотра различии определенного гаджета")
+
     @GetMapping("/compare")
     public ComparedGadgetsResponse compare(@RequestParam @Valid @StringValidation String categoryName,
-                                           @RequestParam boolean differences) {
-        return userService.compare(categoryName, differences);
+                                           @RequestParam boolean isDifferences) {
+        return userService.compare(categoryName,isDifferences);
     }
+//    @Operation(description = "Метод для просмотра различии определенного гаджета")
+//    @GetMapping("/differences")
+//    public List<SubGadgetResponse> showDifferences(@RequestParam boolean isDifferences){
+//        return userService.showDifferences(isDifferences);
+//
+//    }
 
     @Operation(description = "Метод для удаление одного гаджета в сравнении")
     @DeleteMapping("/delete/{subGadgetId}")

@@ -7,9 +7,6 @@ public class StringValidator implements ConstraintValidator<StringValidation, St
 
     @Override
     public boolean isValid(String soz, ConstraintValidatorContext constraintValidatorContext) {
-        if (soz == null || soz.trim().isEmpty()) {
-            return false;
-        }
         return !soz.matches("\\d+");
     }
 }
