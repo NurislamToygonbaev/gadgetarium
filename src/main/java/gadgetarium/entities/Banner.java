@@ -1,12 +1,7 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -30,6 +25,7 @@ public class Banner {
     @SequenceGenerator(name = "banner_seq", allocationSize = 1, initialValue = 60)
     private Long id;
 
+    @Size(max = 1000)
     @ElementCollection
     private List<String> images;
 

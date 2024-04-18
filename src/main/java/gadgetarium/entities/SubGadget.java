@@ -1,6 +1,7 @@
 package gadgetarium.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -37,6 +38,7 @@ public class SubGadget {
     private String mainColour;
     private BigDecimal currentPrice;
 
+    @Size(max = 1000)
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;
 

@@ -1,16 +1,7 @@
 package gadgetarium.entities;
 
 import gadgetarium.enums.Role;
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -45,6 +36,7 @@ public class User implements UserDetails {
     private Long id;
     private String firstName;
     private String lastName;
+    @Column(length = 1000)
     private String image;
     private String phoneNumber;
     private String email;
