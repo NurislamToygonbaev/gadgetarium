@@ -9,9 +9,6 @@ server:
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
-        password: 1234
-        url: jdbc:postgresql://localhost:5432/gadgetarium
-        username: postgres
 
     jpa:
         hibernate:
