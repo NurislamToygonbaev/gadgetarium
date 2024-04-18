@@ -1,13 +1,7 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -34,10 +28,14 @@ public class Feedback {
     @SequenceGenerator(name = "feedback_seq", allocationSize = 1, initialValue = 60)
     private Long id;
     private int rating;
+
+    @Column(length = 500)
     private String description;
     private LocalDateTime dateAndTime;
+    @Column(length = 500)
     private String responseAdmin;
 
+    @Size(max = 1000)
     @ElementCollection
     private List<String> images;
 
