@@ -3,6 +3,7 @@ package gadgetarium.api;
 import gadgetarium.dto.request.DiscountRequest;
 import gadgetarium.dto.response.DiscountResponse;
 import gadgetarium.services.DiscountService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +25,7 @@ public class DiscountApi {
     private final DiscountService discountService;
 
     @Secured("ADMIN")
+    @Operation(description = "СОЗДАТЬ СКИДКУ")
     @PostMapping("/create")
     public DiscountResponse create(@RequestParam @NotNull List<Long> subGadgetsId, @RequestBody @Valid DiscountRequest discountRequest){
         return discountService.create(subGadgetsId, discountRequest);

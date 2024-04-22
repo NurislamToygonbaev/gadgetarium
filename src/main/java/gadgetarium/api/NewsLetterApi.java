@@ -1,8 +1,8 @@
 package gadgetarium.api;
 
-import gadgetarium.dto.request.BannerRequest;
-import gadgetarium.dto.response.BannerResponse;
-import gadgetarium.services.BannerService;
+import gadgetarium.dto.request.NewsLetterRequest;
+import gadgetarium.dto.response.NewsLetterResponse;
+import gadgetarium.services.MailingService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,17 +14,17 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/banner")
+@RequestMapping("/api/news-letter")
 @RequiredArgsConstructor
 @Slf4j
-public class BannerApi {
+public class NewsLetterApi {
 
-    private final BannerService bannerService;
+    private final MailingService mailingService;
 
+    @PostMapping("/send")
+    @Operation(description = "СОЗДАТЬ РАССЫЛКУ")
     @Secured("ADMIN")
-    @Operation(description = "Загрузить баннер")
-    @PostMapping("/create")
-    public BannerResponse createBanner(@RequestBody @Valid BannerRequest bannerRequest){
-        return bannerService.create(bannerRequest);
+    public NewsLetterResponse sendNewsLetter(@RequestBody @Valid NewsLetterRequest newsLetterRequest){
+        return mailingService.sendNewsLetter(newsLetterRequest);
     }
 }

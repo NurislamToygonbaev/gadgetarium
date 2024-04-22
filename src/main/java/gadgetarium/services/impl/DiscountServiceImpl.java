@@ -8,7 +8,6 @@ import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.DiscountRepository;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.services.DiscountService;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,7 +38,7 @@ public class DiscountServiceImpl implements DiscountService {
             SubGadget subGadget = subGadgetRepository.findById(subGadgetsId.get(i)).orElseThrow(() ->
                     new NotAcceptableStatusException("SubGadget by id not found!"));
             if (subGadget.getDiscount() != null) {
-                throw new BadRequestException("Subgaddet with id " + subGadget.getId() + " already has discount!");
+                throw new BadRequestException("SubGadget with id " + subGadget.getId() + " already has discount!");
             }
             Discount buildDiscount = Discount.builder()
                     .percent(discountRequest.discountSize())
@@ -58,6 +57,7 @@ public class DiscountServiceImpl implements DiscountService {
     }
 
     @Transactional
+    @Override
     public BigDecimal checkCurrentPrice(SubGadget subGadget) {
         BigDecimal returnCurrentPrice = BigDecimal.ZERO;
         if (subGadget.getDiscount() != null) {
