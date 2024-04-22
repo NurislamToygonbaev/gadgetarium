@@ -9,6 +9,7 @@ server:
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
+
     jpa:
         hibernate:
             ddl-auto: create
@@ -33,3 +34,23 @@ spring:
           continue-on-error: true
           mode: always
 
+    servlet:
+        multipart:
+            enabled: true
+            file-size-threshold: 22MB
+            max-file-size: 100MB
+            max-request-size: 100MB
+
+cloud:
+      aws:
+          credentials:
+              access-key: AKIA6GBMDSJX4ELD67G5
+              secret-key: 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
+          region:
+              static: eu-north-1
+          stack:
+              auto: false
+
+application:
+      bucket:
+          name: gadgetarium-java12
