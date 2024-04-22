@@ -13,6 +13,7 @@ java {
 
 repositories {
     mavenCentral()
+    google()
 }
 
 dependencies {
@@ -33,7 +34,10 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-
+    //aws
+    implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.701'
+//    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.1012'
+    implementation 'javax.xml.bind:jaxb-api:2.3.1'
 }
 
 tasks.named('test') {
