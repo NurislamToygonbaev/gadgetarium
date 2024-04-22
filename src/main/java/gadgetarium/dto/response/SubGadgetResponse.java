@@ -10,11 +10,11 @@ import java.util.Map;
 @Builder
 public record SubGadgetResponse(
         Long id,
+        List<String> images,
         String nameOfGadget,
         BigDecimal price,
         String mainColour,
         String brandName,
         Memory memory,
-        Map<String, String> characteristics,
-        List<String> differentFields
-){}
+        Map<String, String> characteristics
+) implements SampleResponse{}

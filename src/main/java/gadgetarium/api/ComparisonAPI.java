@@ -1,12 +1,11 @@
 package gadgetarium.api;
 
+import gadgetarium.dto.request.CategoryNameRequest;
 import gadgetarium.dto.response.ComparedGadgetsResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ListComparisonResponse;
 import gadgetarium.services.UserService;
-import gadgetarium.validation.email.StringValidation;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +18,7 @@ public class ComparisonAPI {
 
     private final UserService userService;
 
-    @Operation(description = "Метод для добовления гаджетов в сравнении")
+    @Operation(description = "Метод для добовления гаджетов в сравнении или удалении")
     @PostMapping("/add-сompare/{subGadgetId}")
     public HttpResponse addCompare(@PathVariable Long subGadgetId) {
         return userService.addCompare(subGadgetId);
@@ -33,7 +32,7 @@ public class ComparisonAPI {
 
     @Operation(description = "Метод для просмотра различий")
     @GetMapping("/compare")
-    public ComparedGadgetsResponse compare(@RequestParam @Valid @StringValidation String categoryName,
+    public ComparedGadgetsResponse compare(CategoryNameRequest categoryName,
                                            @RequestParam boolean isDifferences) {
         return userService.compare(categoryName, isDifferences);
     }
