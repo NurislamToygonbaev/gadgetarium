@@ -40,10 +40,10 @@ public class SubCategory {
     private Category category;
 
     @OneToMany(mappedBy = "subCategory", cascade = {MERGE, REFRESH, REMOVE})
-    private List<Brand> brands;
+    private List<Gadget> gadgets;
 
-    public void addBrand(Brand brand) {
-        if (this.brands == null) this.brands = new ArrayList<>();
-        this.brands.add(brand);
+    public void addGadget(Gadget gadget) {
+        if (this.gadgets == null) this.gadgets = new ArrayList<>();
+        this.gadgets.add(gadget);
     }
 }

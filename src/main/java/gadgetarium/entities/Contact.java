@@ -1,11 +1,6 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,5 +24,7 @@ public class Contact {
     private String lastname;
     private String email;
     private String phoneNumber;
+
+    @Column(length = 1000)
     private String message;
 }

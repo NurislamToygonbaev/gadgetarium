@@ -1,10 +1,11 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.request.PaginationRequest;
 import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
+import gadgetarium.enums.Discount;
+import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubGadgetRepository;
@@ -56,6 +57,11 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
+    public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
+        return gadgetJDBCTemplateRepo.getAll(sort, discount, page, size);
+    }
+
+    @Override
     public GadgetResponse getGadgetSelectColour(String colour, String nameOfGadget) {
         List<SubGadget> gadgets = subGadgetRepo.findByNameOfGadget(nameOfGadget);
 
@@ -100,9 +106,5 @@ public class GadgetServiceImpl implements GadgetService {
 
     private BigDecimal checkCurrentPrice(BigDecimal price, int percent) {
         return price.subtract(price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100))));
-    }
-
-    public ResultPaginationGadget getAll(PaginationRequest request) {
-        return gadgetJDBCTemplateRepo.getAll(request);
     }
 }
