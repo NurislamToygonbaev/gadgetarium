@@ -45,28 +45,9 @@ public class UserServiceImpl implements UserService {
         if (existsByEmail)
             throw new AlreadyExistsException("User with email " + signUpRequest.getEmail() + " already exists.");
         checkEmail(signUpRequest.getEmail());
-        User buildedUser = User.builder()
-                .firstName(signUpRequest.getFirstName())
-                .lastName(signUpRequest.getLastName())
-                .image(signUpRequest.getImage())
-                .phoneNumber(signUpRequest.getPhoneNumber())
-                .email(signUpRequest.getEmail())
-                .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .address(signUpRequest.getAddress())
-                .role(Role.USER)
-                .build();
+        User buildedUser = User.builder().firstName(signUpRequest.getFirstName()).lastName(signUpRequest.getLastName()).image(signUpRequest.getImage()).phoneNumber(signUpRequest.getPhoneNumber()).email(signUpRequest.getEmail()).password(passwordEncoder.encode(signUpRequest.getPassword())).address(signUpRequest.getAddress()).role(Role.USER).build();
         userRepo.save(buildedUser);
-        return SignResponse.builder()
-                .id(buildedUser.getId())
-                .role(buildedUser.getRole())
-                .phoneNumber(buildedUser.getPhoneNumber())
-                .token(jwtService.createToken(buildedUser))
-                .email(buildedUser.getEmail())
-                .response(HttpResponse.builder()
-                        .status(HttpStatus.OK)
-                        .message("Sign in was successful!")
-                        .build())
-                .build();
+        return SignResponse.builder().id(buildedUser.getId()).role(buildedUser.getRole()).phoneNumber(buildedUser.getPhoneNumber()).token(jwtService.createToken(buildedUser)).email(buildedUser.getEmail()).response(HttpResponse.builder().status(HttpStatus.OK).message("Sign in was successful!").build()).build();
     }
 
     @Override
@@ -77,17 +58,7 @@ public class UserServiceImpl implements UserService {
         if (!passwordEncoder.matches(decodedPassword, password)) {
             throw new AuthenticationException("Incorrect email and/or password.");
         }
-        return SignResponse.builder()
-                .id(userByEmail.getId())
-                .role(userByEmail.getRole())
-                .phoneNumber(userByEmail.getPhoneNumber())
-                .token(jwtService.createToken(userByEmail))
-                .email(userByEmail.getEmail())
-                .response(HttpResponse.builder()
-                        .status(HttpStatus.OK)
-                        .message("Sign in was successful!")
-                        .build())
-                .build();
+        return SignResponse.builder().id(userByEmail.getId()).role(userByEmail.getRole()).phoneNumber(userByEmail.getPhoneNumber()).token(jwtService.createToken(userByEmail)).email(userByEmail.getEmail()).response(HttpResponse.builder().status(HttpStatus.OK).message("Sign in was successful!").build()).build();
     }
 
     @Override
@@ -97,18 +68,12 @@ public class UserServiceImpl implements UserService {
         SubGadget subGadget = subGadgetRepository.getByID(subGadgetsId);
         if (user.getComparison().contains(subGadget)) {
             user.getComparison().remove(subGadget);
-            return HttpResponse.builder()
-                    .status(HttpStatus.OK)
-                    .message("Gadget removed!")
-                    .build();
+            return HttpResponse.builder().status(HttpStatus.OK).message("Gadget removed!").build();
         } else {
             user.addComparison(subGadget);
             log.info("Gadget successfully added in comparison or deleted!");
         }
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("Gadget added successfully!")
-                .build();
+        return HttpResponse.builder().status(HttpStatus.OK).message("Gadget added successfully!").build();
     }
 
     @Override
@@ -120,96 +85,6 @@ public class UserServiceImpl implements UserService {
         return listComparisonResponses;
     }
 
-    //    public ComparedGadgetsResponse compare(CategoryNameRequest selectCategory, boolean differences) {
-//        User user = currentUser.get();
-//        List<SubGadget> comparison = user.getComparison();
-//        Map<String, Integer> categoryCounts = new HashMap<>();
-//        String select = "smartphones";
-//        String s = selectCategory.categoryName().isEmpty() ? select : selectCategory.categoryName();
-//
-//        List<SampleResponse> responses = comparison.stream()
-//                .filter(subGadget ->
-//                        subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(s))
-//                .map(subGadget -> {
-//                    String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
-//                    categoryCounts.put(categoryName + " quantity", categoryCounts.getOrDefault(categoryName + " quantity", 0) + 1);
-//                    return convertToSubGadget(subGadget, comparison, differences);
-//                })
-//                .collect(Collectors.toList());
-//
-//        return ComparedGadgetsResponse.builder()
-//                .categoryCounts(categoryCounts)
-//                .subGadgetResponses(responses)
-//                .build();
-//    }
-//
-//
-//    private SampleResponse convertToSubGadget(SubGadget subGadget, List<SubGadget> comparison, boolean differences) {
-//        Map<String, String> uniqueCharacteristics = new HashMap<>();
-//        List<String> uniqueFields = new ArrayList<>();
-//
-//        for (SubGadget other : comparison) {
-//            if (other.equals(subGadget)) {
-//                continue;
-//            }
-//
-//            if (differences) {
-//                populateUniqueFields(subGadget, other, uniqueFields);
-//                populateUniqueCharacteristics(subGadget, other, uniqueCharacteristics);
-//                break;
-//            }
-//        }
-//
-//        if (differences) {
-//            return new UniqueFieldsResponse(uniqueFields, uniqueCharacteristics);
-//        } else {
-//            return new SubGadgetResponse(
-//                    subGadget.getId(),
-//                    Collections.singletonList(subGadget.getImages().getFirst()),
-//                    subGadget.getNameOfGadget(),
-//                    subGadget.getPrice(),
-//                    subGadget.getMainColour(),
-//                    subGadget.getGadget().getBrand().getBrandName(),
-//                    subGadget.getGadget().getMemory(),
-//                    subGadget.getCharacteristics()
-//            );
-//        }
-//    }
-//
-//    private void populateUniqueFields(SubGadget subGadget, SubGadget other, List<String> uniqueFields) {
-//        uniqueFields.add(String.valueOf(subGadget.getId()));
-//        uniqueFields.add(subGadget.getImages().getFirst());
-//        if (!subGadget.getNameOfGadget().equals(other.getNameOfGadget())) {
-//            uniqueFields.add(subGadget.getNameOfGadget());
-//        }
-//        if (!Objects.equals(subGadget.getPrice(), other.getPrice())) {
-//            uniqueFields.add(String.valueOf(subGadget.getPrice()));
-//        }
-//        if (!subGadget.getMainColour().equals(other.getMainColour())) {
-//            uniqueFields.add(subGadget.getMainColour());
-//        }
-//        if (!subGadget.getGadget().getBrand().getBrandName().equals(other.getGadget().getBrand().getBrandName())) {
-//            uniqueFields.add(subGadget.getGadget().getBrand().getBrandName());
-//        }
-//        if (subGadget.getGadget().getMemory() != other.getGadget().getMemory()) {
-//            uniqueFields.add(String.valueOf(subGadget.getGadget().getMemory()));
-//        }
-//    }
-//
-//    private void populateUniqueCharacteristics(SubGadget subGadget, SubGadget other, Map<String, String> uniqueCharacteristics) {
-//        Map<String, String> currentCharacteristics = subGadget.getCharacteristics();
-//        Map<String, String> otherCharacteristics = other.getCharacteristics();
-//
-//        for (Map.Entry<String, String> entry : currentCharacteristics.entrySet()) {
-//            String characteristic = entry.getKey();
-//            String currentValue = entry.getValue();
-//            String otherValue = otherCharacteristics.get(characteristic);
-//
-//            if (!Objects.equals(currentValue, otherValue)) {
-//                uniqueCharacteristics.put(characteristic, currentValue);
-//            }
-//        }
-//    }
     public ComparedGadgetsResponse compare(CategoryNameRequest selectCategory, boolean differences) {
         User user = currentUser.get();
         List<SubGadget> comparison = user.getComparison();
@@ -217,20 +92,13 @@ public class UserServiceImpl implements UserService {
         String select = "smartphones";
         String s = selectCategory.categoryName().isEmpty() ? select : selectCategory.categoryName();
 
-        List<SampleResponse> responses = comparison.stream()
-                .filter(subGadget ->
-                        subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(s))
-                .map(subGadget -> {
-                    String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
-                    categoryCounts.put(categoryName + " quantity", categoryCounts.getOrDefault(categoryName + " quantity", 0) + 1);
-                    return convertToSubGadget(subGadget, comparison, differences);
-                })
-                .collect(Collectors.toList());
+        List<SampleResponse> responses = comparison.stream().filter(subGadget -> subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(s)).map(subGadget -> {
+            String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
+            categoryCounts.put(categoryName + " quantity", categoryCounts.getOrDefault(categoryName + " quantity", 0) + 1);
+            return convertToSubGadget(subGadget, comparison, differences);
+        }).collect(Collectors.toList());
 
-        return ComparedGadgetsResponse.builder()
-                .categoryCounts(categoryCounts)
-                .subGadgetResponses(responses)
-                .build();
+        return ComparedGadgetsResponse.builder().categoryCounts(categoryCounts).subGadgetResponses(responses).build();
     }
 
 
@@ -253,16 +121,7 @@ public class UserServiceImpl implements UserService {
         if (differences) {
             return new UniqueFieldResponse(uniqueFields, uniqueCharacteristics);
         } else {
-            return new SubGadgetResponse(
-                    subGadget.getId(),
-                    Collections.singletonList(subGadget.getImages().getFirst()),
-                    subGadget.getNameOfGadget(),
-                    subGadget.getPrice(),
-                    subGadget.getMainColour(),
-                    subGadget.getGadget().getBrand().getBrandName(),
-                    subGadget.getGadget().getMemory(),
-                    subGadget.getCharacteristics()
-            );
+            return new SubGadgetResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()), subGadget.getNameOfGadget(), subGadget.getPrice(), subGadget.getMainColour(), subGadget.getGadget().getBrand().getBrandName(), subGadget.getGadget().getMemory(), subGadget.getCharacteristics());
         }
     }
 
@@ -276,7 +135,6 @@ public class UserServiceImpl implements UserService {
         uniqueFields.setBrandName(!subGadget.getGadget().getBrand().getBrandName().equals(other.getGadget().getBrand().getBrandName()) ? subGadget.getGadget().getBrand().getBrandName() : null);
         uniqueFields.setMemory(!subGadget.getGadget().getMemory().equals(other.getGadget().getMemory()) ? subGadget.getGadget().getMemory() : null);
     }
-
 
 
     private void populateUniqueCharacteristics(SubGadget subGadget, SubGadget other, Map<String, String> uniqueCharacteristics) {
@@ -302,16 +160,10 @@ public class UserServiceImpl implements UserService {
         if (user.getComparison().contains(subGadget)) {
             user.getComparison().remove(subGadget);
             log.info("Gadget successfully removed from comparison!");
-            return HttpResponse.builder()
-                    .status(HttpStatus.OK)
-                    .message("Gadget successfully removed from comparison!")
-                    .build();
+            return HttpResponse.builder().status(HttpStatus.OK).message("Gadget successfully removed from comparison!").build();
         }
 
-        return HttpResponse.builder()
-                .status(HttpStatus.NOT_FOUND)
-                .message("There is no such gadget in comparison")
-                .build();
+        return HttpResponse.builder().status(HttpStatus.NOT_FOUND).message("There is no such gadget in comparison").build();
     }
 
     @Override
@@ -320,20 +172,10 @@ public class UserServiceImpl implements UserService {
         User user = currentUser.get();
         user.getComparison().clear();
         log.info("Comparison cleared");
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("Comparison cleared")
-                .build();
+        return HttpResponse.builder().status(HttpStatus.OK).message("Comparison cleared").build();
     }
 
     private ListComparisonResponse convert(SubGadget subGadget) {
-        return new ListComparisonResponse(
-                subGadget.getId(),
-                Collections.singletonList(subGadget.getImages().getFirst()),
-                subGadget.getNameOfGadget(),
-                subGadget.getMainColour(),
-                subGadget.getGadget().getMemory(),
-                subGadget.getPrice()
-        );
+        return new ListComparisonResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()), subGadget.getNameOfGadget(), subGadget.getMainColour(), subGadget.getGadget().getMemory(), subGadget.getPrice());
     }
 }
