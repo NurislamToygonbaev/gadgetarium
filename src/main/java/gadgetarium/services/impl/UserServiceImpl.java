@@ -121,7 +121,9 @@ public class UserServiceImpl implements UserService {
         if (differences) {
             return new UniqueFieldResponse(uniqueFields, uniqueCharacteristics);
         } else {
-            return new SubGadgetResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()), subGadget.getNameOfGadget(), subGadget.getPrice(), subGadget.getMainColour(), subGadget.getGadget().getBrand().getBrandName(), subGadget.getGadget().getMemory(), subGadget.getCharacteristics());
+            return new SubGadgetResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()),
+                    subGadget.getNameOfGadget(), subGadget.getPrice(), subGadget.getMainColour(),
+                    subGadget.getGadget().getBrand().getBrandName(), subGadget.getGadget().getMemory(), subGadget.getCharacteristics());
         }
     }
 
