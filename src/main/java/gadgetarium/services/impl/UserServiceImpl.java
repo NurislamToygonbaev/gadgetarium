@@ -120,6 +120,96 @@ public class UserServiceImpl implements UserService {
         return listComparisonResponses;
     }
 
+    //    public ComparedGadgetsResponse compare(CategoryNameRequest selectCategory, boolean differences) {
+//        User user = currentUser.get();
+//        List<SubGadget> comparison = user.getComparison();
+//        Map<String, Integer> categoryCounts = new HashMap<>();
+//        String select = "smartphones";
+//        String s = selectCategory.categoryName().isEmpty() ? select : selectCategory.categoryName();
+//
+//        List<SampleResponse> responses = comparison.stream()
+//                .filter(subGadget ->
+//                        subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(s))
+//                .map(subGadget -> {
+//                    String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
+//                    categoryCounts.put(categoryName + " quantity", categoryCounts.getOrDefault(categoryName + " quantity", 0) + 1);
+//                    return convertToSubGadget(subGadget, comparison, differences);
+//                })
+//                .collect(Collectors.toList());
+//
+//        return ComparedGadgetsResponse.builder()
+//                .categoryCounts(categoryCounts)
+//                .subGadgetResponses(responses)
+//                .build();
+//    }
+//
+//
+//    private SampleResponse convertToSubGadget(SubGadget subGadget, List<SubGadget> comparison, boolean differences) {
+//        Map<String, String> uniqueCharacteristics = new HashMap<>();
+//        List<String> uniqueFields = new ArrayList<>();
+//
+//        for (SubGadget other : comparison) {
+//            if (other.equals(subGadget)) {
+//                continue;
+//            }
+//
+//            if (differences) {
+//                populateUniqueFields(subGadget, other, uniqueFields);
+//                populateUniqueCharacteristics(subGadget, other, uniqueCharacteristics);
+//                break;
+//            }
+//        }
+//
+//        if (differences) {
+//            return new UniqueFieldsResponse(uniqueFields, uniqueCharacteristics);
+//        } else {
+//            return new SubGadgetResponse(
+//                    subGadget.getId(),
+//                    Collections.singletonList(subGadget.getImages().getFirst()),
+//                    subGadget.getNameOfGadget(),
+//                    subGadget.getPrice(),
+//                    subGadget.getMainColour(),
+//                    subGadget.getGadget().getBrand().getBrandName(),
+//                    subGadget.getGadget().getMemory(),
+//                    subGadget.getCharacteristics()
+//            );
+//        }
+//    }
+//
+//    private void populateUniqueFields(SubGadget subGadget, SubGadget other, List<String> uniqueFields) {
+//        uniqueFields.add(String.valueOf(subGadget.getId()));
+//        uniqueFields.add(subGadget.getImages().getFirst());
+//        if (!subGadget.getNameOfGadget().equals(other.getNameOfGadget())) {
+//            uniqueFields.add(subGadget.getNameOfGadget());
+//        }
+//        if (!Objects.equals(subGadget.getPrice(), other.getPrice())) {
+//            uniqueFields.add(String.valueOf(subGadget.getPrice()));
+//        }
+//        if (!subGadget.getMainColour().equals(other.getMainColour())) {
+//            uniqueFields.add(subGadget.getMainColour());
+//        }
+//        if (!subGadget.getGadget().getBrand().getBrandName().equals(other.getGadget().getBrand().getBrandName())) {
+//            uniqueFields.add(subGadget.getGadget().getBrand().getBrandName());
+//        }
+//        if (subGadget.getGadget().getMemory() != other.getGadget().getMemory()) {
+//            uniqueFields.add(String.valueOf(subGadget.getGadget().getMemory()));
+//        }
+//    }
+//
+//    private void populateUniqueCharacteristics(SubGadget subGadget, SubGadget other, Map<String, String> uniqueCharacteristics) {
+//        Map<String, String> currentCharacteristics = subGadget.getCharacteristics();
+//        Map<String, String> otherCharacteristics = other.getCharacteristics();
+//
+//        for (Map.Entry<String, String> entry : currentCharacteristics.entrySet()) {
+//            String characteristic = entry.getKey();
+//            String currentValue = entry.getValue();
+//            String otherValue = otherCharacteristics.get(characteristic);
+//
+//            if (!Objects.equals(currentValue, otherValue)) {
+//                uniqueCharacteristics.put(characteristic, currentValue);
+//            }
+//        }
+//    }
     public ComparedGadgetsResponse compare(CategoryNameRequest selectCategory, boolean differences) {
         User user = currentUser.get();
         List<SubGadget> comparison = user.getComparison();
@@ -132,7 +222,7 @@ public class UserServiceImpl implements UserService {
                         subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(s))
                 .map(subGadget -> {
                     String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
-                    categoryCounts.put(categoryName, categoryCounts.getOrDefault(categoryName, 0) + 1);
+                    categoryCounts.put(categoryName + " quantity", categoryCounts.getOrDefault(categoryName + " quantity", 0) + 1);
                     return convertToSubGadget(subGadget, comparison, differences);
                 })
                 .collect(Collectors.toList());
@@ -146,7 +236,7 @@ public class UserServiceImpl implements UserService {
 
     private SampleResponse convertToSubGadget(SubGadget subGadget, List<SubGadget> comparison, boolean differences) {
         Map<String, String> uniqueCharacteristics = new HashMap<>();
-        List<String> uniqueFields = new ArrayList<>();
+        CompareFieldResponse uniqueFields = new CompareFieldResponse();
 
         for (SubGadget other : comparison) {
             if (other.equals(subGadget)) {
@@ -161,11 +251,11 @@ public class UserServiceImpl implements UserService {
         }
 
         if (differences) {
-            return new UniqueFieldsResponse(uniqueFields, uniqueCharacteristics);
+            return new UniqueFieldResponse(uniqueFields, uniqueCharacteristics);
         } else {
             return new SubGadgetResponse(
                     subGadget.getId(),
-                    subGadget.getImages(),
+                    Collections.singletonList(subGadget.getImages().getFirst()),
                     subGadget.getNameOfGadget(),
                     subGadget.getPrice(),
                     subGadget.getMainColour(),
@@ -176,25 +266,18 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    private void populateUniqueFields(SubGadget subGadget, SubGadget other, List<String> uniqueFields) {
-        uniqueFields.add(String.valueOf(subGadget.getId()));
-        uniqueFields.addAll(subGadget.getImages());
-        if (!subGadget.getNameOfGadget().equals(other.getNameOfGadget())) {
-            uniqueFields.add(subGadget.getNameOfGadget());
-        }
-        if (!Objects.equals(subGadget.getPrice(), other.getPrice())) {
-            uniqueFields.add(String.valueOf(subGadget.getPrice()));
-        }
-        if (!subGadget.getMainColour().equals(other.getMainColour())) {
-            uniqueFields.add(subGadget.getMainColour());
-        }
-        if (!subGadget.getGadget().getBrand().getBrandName().equals(other.getGadget().getBrand().getBrandName())) {
-            uniqueFields.add(subGadget.getGadget().getBrand().getBrandName());
-        }
-        if (subGadget.getGadget().getMemory() != other.getGadget().getMemory()) {
-            uniqueFields.add(String.valueOf(subGadget.getGadget().getMemory()));
-        }
+    private void populateUniqueFields(SubGadget subGadget, SubGadget other, CompareFieldResponse uniqueFields) {
+        uniqueFields.setId(subGadget.getId());
+        uniqueFields.setImages(Collections.singletonList(other.getImages().getFirst()));
+
+        uniqueFields.setNameOfGadget(!subGadget.getNameOfGadget().equals(other.getNameOfGadget()) ? subGadget.getNameOfGadget() : null);
+        uniqueFields.setPrice(!subGadget.getPrice().equals(other.getPrice()) ? subGadget.getPrice() : null);
+        uniqueFields.setMainColour(!subGadget.getMainColour().equals(other.getMainColour()) ? subGadget.getMainColour() : null);
+        uniqueFields.setBrandName(!subGadget.getGadget().getBrand().getBrandName().equals(other.getGadget().getBrand().getBrandName()) ? subGadget.getGadget().getBrand().getBrandName() : null);
+        uniqueFields.setMemory(!subGadget.getGadget().getMemory().equals(other.getGadget().getMemory()) ? subGadget.getGadget().getMemory() : null);
     }
+
+
 
     private void populateUniqueCharacteristics(SubGadget subGadget, SubGadget other, Map<String, String> uniqueCharacteristics) {
         Map<String, String> currentCharacteristics = subGadget.getCharacteristics();
@@ -246,7 +329,7 @@ public class UserServiceImpl implements UserService {
     private ListComparisonResponse convert(SubGadget subGadget) {
         return new ListComparisonResponse(
                 subGadget.getId(),
-                subGadget.getImages(),
+                Collections.singletonList(subGadget.getImages().getFirst()),
                 subGadget.getNameOfGadget(),
                 subGadget.getMainColour(),
                 subGadget.getGadget().getMemory(),
