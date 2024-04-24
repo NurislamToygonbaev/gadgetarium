@@ -45,9 +45,16 @@ public class UserServiceImpl implements UserService {
         if (existsByEmail)
             throw new AlreadyExistsException("User with email " + signUpRequest.getEmail() + " already exists.");
         checkEmail(signUpRequest.getEmail());
-        User buildedUser = User.builder().firstName(signUpRequest.getFirstName()).lastName(signUpRequest.getLastName()).image(signUpRequest.getImage()).phoneNumber(signUpRequest.getPhoneNumber()).email(signUpRequest.getEmail()).password(passwordEncoder.encode(signUpRequest.getPassword())).address(signUpRequest.getAddress()).role(Role.USER).build();
+        User buildedUser = User.builder().firstName(signUpRequest.getFirstName())
+                .lastName(signUpRequest.getLastName()).image(signUpRequest.getImage())
+                .phoneNumber(signUpRequest.getPhoneNumber()).email(signUpRequest.getEmail())
+                .password(passwordEncoder.encode(signUpRequest.getPassword()))
+                .address(signUpRequest.getAddress()).role(Role.USER).build();
         userRepo.save(buildedUser);
-        return SignResponse.builder().id(buildedUser.getId()).role(buildedUser.getRole()).phoneNumber(buildedUser.getPhoneNumber()).token(jwtService.createToken(buildedUser)).email(buildedUser.getEmail()).response(HttpResponse.builder().status(HttpStatus.OK).message("Sign in was successful!").build()).build();
+        return SignResponse.builder().id(buildedUser.getId())
+                .role(buildedUser.getRole()).phoneNumber(buildedUser.getPhoneNumber())
+                .token(jwtService.createToken(buildedUser)).email(buildedUser.getEmail())
+                .response(HttpResponse.builder().status(HttpStatus.OK).message("Sign in was successful!").build()).build();
     }
 
     @Override
@@ -56,9 +63,11 @@ public class UserServiceImpl implements UserService {
         String password = userByEmail.getPassword();
         String decodedPassword = signInRequest.password();
         if (!passwordEncoder.matches(decodedPassword, password)) {
-            throw new AuthenticationException("Incorrect email and/or password.");
+                throw new AuthenticationException("Incorrect email and/or password.");
         }
-        return SignResponse.builder().id(userByEmail.getId()).role(userByEmail.getRole()).phoneNumber(userByEmail.getPhoneNumber()).token(jwtService.createToken(userByEmail)).email(userByEmail.getEmail()).response(HttpResponse.builder().status(HttpStatus.OK).message("Sign in was successful!").build()).build();
+        return SignResponse.builder().id(userByEmail.getId()).role(userByEmail.getRole())
+                .phoneNumber(userByEmail.getPhoneNumber()).token(jwtService.createToken(userByEmail))
+                .email(userByEmail.getEmail()).response(HttpResponse.builder().status(HttpStatus.OK).message("Sign in was successful!").build()).build();
     }
 
     @Override
@@ -121,9 +130,7 @@ public class UserServiceImpl implements UserService {
         if (differences) {
             return new UniqueFieldResponse(uniqueFields, uniqueCharacteristics);
         } else {
-            return new SubGadgetResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()),
-                    subGadget.getNameOfGadget(), subGadget.getPrice(), subGadget.getMainColour(),
-                    subGadget.getGadget().getBrand().getBrandName(), subGadget.getGadget().getMemory(), subGadget.getCharacteristics());
+            return new SubGadgetResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()), subGadget.getNameOfGadget(), subGadget.getPrice(), subGadget.getMainColour(), subGadget.getGadget().getBrand().getBrandName(), subGadget.getGadget().getMemory(), subGadget.getCharacteristics());
         }
     }
 
@@ -178,6 +185,9 @@ public class UserServiceImpl implements UserService {
     }
 
     private ListComparisonResponse convert(SubGadget subGadget) {
-        return new ListComparisonResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()), subGadget.getNameOfGadget(), subGadget.getMainColour(), subGadget.getGadget().getMemory(), subGadget.getPrice());
+        return new ListComparisonResponse(subGadget.getId(),
+                Collections.singletonList(subGadget.getImages().getFirst()),
+                subGadget.getNameOfGadget(), subGadget.getMainColour(),
+                subGadget.getGadget().getMemory(), subGadget.getPrice());
     }
 }
