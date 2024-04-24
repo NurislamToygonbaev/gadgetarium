@@ -190,5 +190,4 @@ public class UserServiceImpl implements UserService {
                 subGadget.getNameOfGadget(), subGadget.getMainColour(),
                 subGadget.getGadget().getMemory(), subGadget.getPrice());
     }
-
 }
