@@ -55,7 +55,7 @@ public class User implements UserDetails {
     @ManyToMany(cascade = {REFRESH, MERGE})
     private List<SubGadget> basket;
 
-    @ManyToMany(cascade = {REFRESH, MERGE})
+    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> comparison;
 
     @ManyToMany(cascade = {REFRESH, MERGE})
