@@ -36,6 +36,7 @@ public class SubGadget {
     private int quantity;
     private int rating;
     private String mainColour;
+    private int countSim;
     private BigDecimal currentPrice;
 
     @Size(max = 1000)
