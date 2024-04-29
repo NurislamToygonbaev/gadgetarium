@@ -22,7 +22,7 @@ public class OrderApi {
     private final OrderService orderService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "get all orders", description = "авторизация: АДМИН")
+    @Operation(summary = "все гаджеты", description = "авторизация: АДМИН")
     @GetMapping("/get-all")
     public OrderPagination getAllOrders(
                         @RequestParam(required = false) String keyword,
@@ -36,7 +36,7 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "change status of order", description = "авторизация: АДМИН")
+    @Operation(summary = "Изменение статуса гаджета", description = "авторизация: АДМИН")
     @PatchMapping("/change-status/{orderId}")
     public HttpResponse changeStatus(@PathVariable Long orderId,
                                      @RequestParam Status status){
@@ -44,7 +44,7 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "delete order by ID", description = "авторизация: АДМИН")
+    @Operation(summary = "удаление заказа по ID", description = "авторизация: АДМИН")
     @DeleteMapping("/delete-order/{orderId}")
     public HttpResponse deleteOrder(@PathVariable Long orderId){
         return orderService.deleteOrder(orderId);

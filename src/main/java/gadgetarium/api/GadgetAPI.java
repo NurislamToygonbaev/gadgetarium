@@ -21,7 +21,7 @@ public class GadgetAPI {
     private final GadgetService gadgetService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "get all gadgets", description = "авторизация: АДМИН")
+    @Operation(summary = "все Гаджеты ", description = "авторизация: АДМИН")
     @GetMapping("/get-all")
     public ResultPaginationGadget allGadgets(@RequestParam(required = false) Sort sort,
                                              @RequestParam(required = false) Discount discount,
@@ -30,15 +30,16 @@ public class GadgetAPI {
         return gadgetService.getAll(sort, discount, page, size);
     }
 
-    @Secured("ADMIN")
-    @Operation(description = "Получение гаджета по ID")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Получение гаджета по ID", description = "авторизация: АДМИН")
     @GetMapping("/get-gadget/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId) {
         return gadgetService.getGadgetById(gadgetId);
     }
 
-    @Secured("ADMIN")
-    @Operation(description = "Полученный гаджет, выбор по цвету")
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Полученный гаджет, выбор по цвету", description = "авторизация: АДМИН")
     @GetMapping("/select-colour")
     public GadgetResponse getGadgetByColour(@RequestParam String colour,
                                             @RequestParam String nameOfGadget) {
