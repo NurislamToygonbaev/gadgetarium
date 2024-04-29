@@ -36,7 +36,7 @@ public class Feedback {
     private String responseAdmin;
 
     @Size(max = 1000)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;
 
     @ManyToOne(cascade = {DETACH})

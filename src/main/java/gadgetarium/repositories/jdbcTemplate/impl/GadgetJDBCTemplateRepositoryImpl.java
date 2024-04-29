@@ -1,5 +1,7 @@
 package gadgetarium.repositories.jdbcTemplate.impl;
 
+import gadgetarium.dto.request.FeedbackTypeRequest;
+import gadgetarium.dto.response.AllFeedbackResponse;
 import gadgetarium.dto.response.PaginationGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.enums.Discount;
