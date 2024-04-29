@@ -2,6 +2,7 @@ package gadgetarium.services;
 
 import gadgetarium.dto.request.AdminRequest;
 import gadgetarium.dto.response.AllFeedbackResponse;
+import gadgetarium.dto.response.FeedbackResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.enums.FeedbackType;
 
@@ -13,4 +14,6 @@ public interface FeedbackService {
     HttpResponse editComment(AdminRequest adminRequest, Long id);
 
     HttpResponse deleteReview(Long id);
+
+    FeedbackResponse getFeedbackById(Long id);
 }

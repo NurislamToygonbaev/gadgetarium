@@ -9,7 +9,9 @@ import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.FeedbackType;
+import gadgetarium.enums.ReviewType;
 import gadgetarium.exceptions.AlreadyExistsException;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.FeedbackRepository;
 import gadgetarium.services.FeedbackService;
 import jakarta.transaction.Transactional;
@@ -18,10 +20,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -32,26 +36,33 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public AllFeedbackResponse getAllFeedbacks(FeedbackType feedbackType) {
-
-        long totalRatings = 0;
         List<Feedback> feedbacks1 = feedbackRepo.findAll();
-        totalRatings = feedbacks1.stream().mapToLong(Feedback::getRating).sum();
 
         List<Feedback> feedbacks = fetchFeedbacksByType(feedbackType);
 
         if (feedbacks.isEmpty()) {
             return createEmptyResponse();
         }
+        long unanswered = feedbacks1.stream()
+                .filter(feedback -> feedback.getResponseAdmin() == null)
+                .count();
 
-        List<FeedbackResponse> feedbackResponses = new ArrayList<>(feedbacks.size());
+        long totalRatings = feedbacks1.stream()
+                .mapToLong(Feedback::getRating)
+                .sum();
 
-        for (Feedback feedback : feedbacks) {
-
-            FeedbackResponse feedbackResponse = convertFeedbackToResponse(feedback);
-            feedbackResponses.add(feedbackResponse);
+        Map<Integer, Long> defaultRatingCounts = new HashMap<>();
+        for (int rating = 1; rating <= 5; rating++) {
+            defaultRatingCounts.put(rating, 0L);
         }
 
-        return createAllFeedbackResponse(totalRatings, feedbackResponses);
+        defaultRatingCounts.putAll(feedbacks1.stream()
+                .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting())));
+        List<FeedbackResponse> feedbackResponses = feedbacks.stream()
+                .map(this::convertFeedbackToResponse)
+                .collect(Collectors.toList());
+
+        return createAllFeedbackResponse(totalRatings, unanswered, defaultRatingCounts, feedbackResponses);
     }
 
     @Transactional
@@ -59,9 +70,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     public HttpResponse replyToComment(AdminRequest responseAdmin, Long id) {
 
         Feedback feedback = feedbackRepo.getByIdd(id);
+
         if (feedback.getResponseAdmin() != null && !feedback.getResponseAdmin().isEmpty()) {
             throw new AlreadyExistsException("Admin has already responded to this comment");
         }
+
         feedback.setResponseAdmin(responseAdmin.responseAdmin());
         feedbackRepo.save(feedback);
         log.info("Reply to comment sent successfully");
@@ -77,7 +90,11 @@ public class FeedbackServiceImpl implements FeedbackService {
     public HttpResponse editComment(AdminRequest adminRequest, Long id) {
 
         Feedback feedback = feedbackRepo.getByIdd(id);
+        if (feedback.getResponseAdmin() == null || feedback.getResponseAdmin().isEmpty()) {
+            throw new BadRequestException("This review has not yet been answered");
+        }
         feedback.setResponseAdmin(adminRequest.responseAdmin());
+        feedbackRepo.save(feedback);
         log.info("Comment successfully edited!");
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
@@ -96,8 +113,28 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .build();
     }
 
-    private List<Feedback> fetchFeedbacksByType(FeedbackType feedbackType) {
+    @Override
+    @Transactional
+    public FeedbackResponse getFeedbackById(Long id) {
+        Feedback feedback = feedbackRepo.getByIdd(id);
+        feedback.setReviewType(ReviewType.READ);
+        return FeedbackResponse.builder()
+                .id(feedback.getId())
+                .gadgetImage(feedback.getImages().getFirst())
+                .subCategoryName(feedback.getGadget().getSubCategory().getSubCategoryName())
+                .nameOfGadget(feedback.getGadget().getSubGadget().getNameOfGadget())
+                .article(feedback.getGadget().getArticle())
+                .comment(feedback.getDescription())
+                .feedbackImages(feedback.getImages())
+                .dateAndTime(feedback.getDateAndTime())
+                .rating(feedback.getRating())
+                .fullNameUser(feedback.getUser().getFirstName() + " " + feedback.getUser().getLastName())
+                .emailUser(feedback.getUser().getEmail())
+                .responseAdmin(feedback.getResponseAdmin())
+                .build();
+    }
 
+    private List<Feedback> fetchFeedbacksByType(FeedbackType feedbackType) {
         return switch (feedbackType) {
             case UNANSWERED -> feedbackRepo.findUnansweredFeedbacks();
             case ANSWERED -> feedbackRepo.findAnsweredFeedbacks();
@@ -106,20 +143,13 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     private FeedbackResponse convertFeedbackToResponse(Feedback feedback) {
-
         Gadget gadget = feedback.getGadget();
         SubGadget subGadget = getSafely(gadget::getSubGadget);
         User user = feedback.getUser();
 
-        String firstImage = getSafely(() -> {
-            assert subGadget != null;
-            return subGadget.getImages().getFirst();
-        });
+        String firstImage = getSafely(() -> subGadget != null ? subGadget.getImages().getFirst() : null);
         String subCategoryName = getSafely(() -> gadget.getSubCategory().getSubCategoryName());
-        String gadgetName = getSafely(() -> {
-            assert subGadget != null;
-            return subGadget.getNameOfGadget();
-        });
+        String gadgetName = getSafely(() -> subGadget != null ? subGadget.getNameOfGadget() : null);
         String userEmail = getSafely(user::getEmail);
         String adminResponse = feedback.getResponseAdmin();
 
@@ -145,16 +175,16 @@ public class FeedbackServiceImpl implements FeedbackService {
         );
     }
 
-    private AllFeedbackResponse createAllFeedbackResponse(long totalRatings, List<FeedbackResponse> feedbackResponses){
-
+    private AllFeedbackResponse createAllFeedbackResponse(long totalRatings, long unanswered, Map<Integer, Long> ratingCounts, List<FeedbackResponse> feedbackResponses) {
         return AllFeedbackResponse.builder()
                 .totalRatings(totalRatings)
+                .ratingCounts(ratingCounts)
+                .unanswered(unanswered)
                 .feedbackResponseList(feedbackResponses)
                 .build();
     }
 
     private AllFeedbackResponse createEmptyResponse() {
-
         return AllFeedbackResponse.builder()
                 .totalRatings(0)
                 .feedbackResponseList(Collections.emptyList())
@@ -162,23 +192,13 @@ public class FeedbackServiceImpl implements FeedbackService {
     }
 
     private <T> T getSafely(Supplier<T> supplier) {
-
         try {
             return supplier.get();
         } catch (Exception e) {
-            log.error("Error in getSafely", e);
+            log.error("Error in getSafely in class");
             return null;
         }
     }
-
-//      if (isUnanswered) {
-//        unansweredCount++;
-//    }
-//    boolean isUnanswered = isFeedbackUnanswered(feedback);
-//    private boolean isFeedbackUnanswered(Feedback feedback) {
-//        String adminResponse = feedback.getResponseAdmin();
-//        return adminResponse == null || adminResponse.isEmpty();
-//    }
 }
 
 

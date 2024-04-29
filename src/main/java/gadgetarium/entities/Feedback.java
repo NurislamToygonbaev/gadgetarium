@@ -1,5 +1,6 @@
 package gadgetarium.entities;
 
+import gadgetarium.enums.ReviewType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,9 @@ public class Feedback {
     @Column(length = 500)
     private String responseAdmin;
 
+    @Enumerated(EnumType.STRING)
+    private ReviewType reviewType;
+
     @Size(max = 1000)
     @ElementCollection(fetch = FetchType.EAGER)
     private List<String> images;
@@ -48,5 +52,10 @@ public class Feedback {
     private void addImage(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
+    }
+
+    @PrePersist
+    private void initialReview() {
+        this.reviewType = ReviewType.NOT_READ;
     }
 }
