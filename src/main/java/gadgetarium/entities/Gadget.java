@@ -48,7 +48,7 @@ public class Gadget {
     @Enumerated(EnumType.STRING)
     private Ram ram;
 
-    @OneToOne(mappedBy = "gadget", cascade = {PERSIST, REFRESH, REMOVE}, fetch = FetchType.EAGER)
+    @OneToOne(mappedBy = "gadget", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
     private SubGadget subGadget;
 
     @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
