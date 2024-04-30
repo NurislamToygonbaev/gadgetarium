@@ -1,6 +1,9 @@
 package gadgetarium.api;
 
-import gadgetarium.dto.request.*;
+import gadgetarium.dto.request.AddProductRequest;
+import gadgetarium.dto.request.ProductDocRequest;
+import gadgetarium.dto.request.ProductPriceRequest;
+import gadgetarium.dto.request.ProductsIdsRequest;
 import gadgetarium.dto.response.AddProductsResponse;
 import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.HttpResponse;
@@ -12,7 +15,6 @@ import gadgetarium.services.GadgetService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,25 +28,26 @@ public class GadgetAPI {
 
     private final GadgetService gadgetService;
 
-    @Secured("ADMIN")
-    @Operation(description = "Получение всех гаджетов!")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "все Гаджеты ", description = "авторизация: АДМИН")
     @GetMapping("/get-all")
-    public ResultPaginationGadget allGadgets(@RequestParam Sort sort,
-                                             @RequestParam Discount discount,
-                                             @RequestParam int page,
-                                             @RequestParam int size) {
+    public ResultPaginationGadget allGadgets(@RequestParam(required = false) Sort sort,
+                                             @RequestParam(required = false) Discount discount,
+                                             @RequestParam(value = "page", defaultValue = "1") int page,
+                                             @RequestParam(value = "size", defaultValue = "7") int size) {
         return gadgetService.getAll(sort, discount, page, size);
     }
 
-    @Secured("ADMIN")
-    @Operation(description = "Получение гаджета по ID")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Получение гаджета по ID", description = "авторизация: АДМИН")
     @GetMapping("/get-gadget/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId) {
         return gadgetService.getGadgetById(gadgetId);
     }
 
-    @Secured("ADMIN")
-    @Operation(description = "Полученный гаджет, выбор по цвету")
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Полученный гаджет, выбор по цвету", description = "авторизация: АДМИН")
     @GetMapping("/select-colour")
     public GadgetResponse getGadgetByColour(@RequestParam String colour,
                                             @RequestParam String nameOfGadget) {

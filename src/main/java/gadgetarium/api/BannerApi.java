@@ -8,6 +8,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,8 +22,8 @@ public class BannerApi {
 
     private final BannerService bannerService;
 
-    @Secured("ADMIN")
-    @Operation(description = "Загрузить баннер")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Загрузить баннер", description = "авторизация: АДМИН")
     @PostMapping("/create")
     public BannerResponse createBanner(@RequestBody @Valid BannerRequest bannerRequest){
         return bannerService.create(bannerRequest);

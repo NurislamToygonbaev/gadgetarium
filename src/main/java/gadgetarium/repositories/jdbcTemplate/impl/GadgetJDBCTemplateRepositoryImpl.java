@@ -4,6 +4,7 @@ import gadgetarium.dto.response.PaginationGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Sort;
+import gadgetarium.repositories.CategoryRepository;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -22,14 +23,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
     @Override
     public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
-        int defaultPage = 1;
-        int defaultSize = 7;
-
-        int pageNumber = (page > 0) ? page : defaultPage;
-        int pageSize = (size > 0) ? size : defaultSize;
-
-        int offset = (pageNumber - 1) * pageSize;
-        int limit = pageSize;
+        int offset = (page - 1) * size;
+        int limit = size;
         String orderBy = "";
         String where = "";
 
@@ -48,26 +43,26 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         }
 
         List<PaginationGadget> list = jdbcTemplate.query("""
-                        select g.id,
-                               array_agg(gi.images) as images,
-                               ga.article,
-                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                               ga.release_date,
-                               g.quantity,
-                               d.percent,
-                               d.end_date,
-                               g.price
-                        from sub_gadgets g
-                        join sub_gadget_images gi on g.id = gi.sub_gadget_id
-                        join gadgets ga on ga.id = g.gadget_id
-                        join brands b on ga.brand_id = b.id
-                        left outer join discounts d on g.id = d.sub_gadget_id
-                        """ + where + """
-                        group by g.id, ga.article, g.name_of_gadget, ga.release_date,
-                                   b.brand_name,  g.quantity, d.percent, g.price, d.end_date
-                        """ + orderBy + """
-                        limit ? offset ?
-                        """,
+                select g.id,
+                       array_agg(gi.images) as images,
+                       ga.article,
+                       concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
+                       ga.release_date,
+                       g.quantity,
+                       d.percent,
+                       d.end_date,
+                       g.price
+                from sub_gadgets g
+                join sub_gadget_images gi on g.id = gi.sub_gadget_id
+                join gadgets ga on ga.id = g.gadget_id
+                join brands b on ga.brand_id = b.id
+                left outer join discounts d on g.id = d.sub_gadget_id
+                """ + where + """
+                group by g.id, ga.article, g.name_of_gadget, ga.release_date,
+                           b.brand_name,  g.quantity, d.percent, g.price, d.end_date
+                """ + orderBy + """
+                limit ? offset ?
+                """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
                     BigDecimal price = rs.getBigDecimal("price");
@@ -94,10 +89,9 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         return ResultPaginationGadget.builder()
                 .sort(sort)
                 .discount(discount)
-                .page(pageNumber)
-                .size(pageSize)
+                .page(page)
+                .size(size)
                 .paginationGadgets(list)
                 .build();
     }
-
 }
