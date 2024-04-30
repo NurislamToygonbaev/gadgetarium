@@ -25,14 +25,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
     @Override
     public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
-        int defaultPage = 1;
-        int defaultSize = 7;
-
-        int pageNumber = (page > 0) ? page : defaultPage;
-        int pageSize = (size > 0) ? size : defaultSize;
-
-        int offset = (pageNumber - 1) * pageSize;
-        int limit = pageSize;
+        int offset = (page - 1) * size;
+        int limit = size;
         String orderBy = "";
         String where = "";
 
@@ -97,8 +91,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         return ResultPaginationGadget.builder()
                 .sort(sort)
                 .discount(discount)
-                .page(pageNumber)
-                .size(pageSize)
+                .page(page)
+                .size(size)
                 .paginationGadgets(list)
                 .build();
     }
