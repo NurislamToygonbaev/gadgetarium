@@ -1,16 +1,25 @@
+
+# Secret key 'gadgetarium' for JWT in App.
 app:
     jwt:
         secret: gadgetarium
 
+# the server always outputs a stack trace when an error occurs
 server:
     error:
         include-stacktrace: always
 
+#  The DataBase. Connection to Postgresql
 spring:
     datasource:
         driver-class-name: org.postgresql.Driver
 
+    #   Hibernate/JPA settings.
+    jpa:
+        show-sql: true
+        open-in-view: false
 
+#    Java Mail sender
     mail:
         host: smtp.gmail.com
         port: 587
@@ -23,11 +32,13 @@ spring:
                     starttls:
                         enable: true
 
+#    Data-Init
     sql:
       init:
           continue-on-error: true
           mode: always
 
+#    Settings Servlet control size file
     servlet:
         multipart:
             enabled: true
@@ -35,6 +46,7 @@ spring:
             max-file-size: 100MB
             max-request-size: 100MB
 
+#   Configuration of AWS cloud resources.
 cloud:
       aws:
           credentials:
@@ -45,6 +57,7 @@ cloud:
           stack:
               auto: false
 
+#     AWS Bucket Storage
 application:
       bucket:
           name: gadgetarium-java12

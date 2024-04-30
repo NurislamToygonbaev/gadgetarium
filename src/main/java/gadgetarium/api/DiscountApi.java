@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,8 +25,8 @@ public class DiscountApi {
 
     private final DiscountService discountService;
 
-    @Secured("ADMIN")
-    @Operation(description = "СОЗДАТЬ СКИДКУ")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "СОЗДАТЬ СКИДКУ", description = "авторизация: АДМИН")
     @PostMapping("/create")
     public DiscountResponse create(@RequestParam @NotNull List<Long> subGadgetsId, @RequestBody @Valid DiscountRequest discountRequest){
         return discountService.create(subGadgetsId, discountRequest);
