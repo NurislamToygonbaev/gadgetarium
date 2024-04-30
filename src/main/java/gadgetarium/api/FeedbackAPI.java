@@ -20,7 +20,7 @@ public class FeedbackAPI {
 
     private final FeedbackService feedbackService;
 
-    @Secured("ADMIN")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: Админстратор", summary = "Просмотр всех отзывов")
     @GetMapping("/get-all-feedbacks")
     public AllFeedbackResponse getAllFeedbacks(@RequestParam FeedbackType feedbackType) {
@@ -28,7 +28,7 @@ public class FeedbackAPI {
 
     }
 
-    @Secured("ADMIN")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: Админстратор", summary = "Ответ админстротора на комментарий")
     @PostMapping("/reply-to-comment/{id}")
     public HttpResponse replyToComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
@@ -36,7 +36,7 @@ public class FeedbackAPI {
 
     }
 
-    @Secured("ADMIN")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: Админстратор", summary = "Редактировать ответ")
     @PutMapping("/edit-comment/{id}")
     public HttpResponse editComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
@@ -44,7 +44,7 @@ public class FeedbackAPI {
 
     }
 
-    @Secured("ADMIN")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: Админстратор", summary = "Удалить отзыв")
     @DeleteMapping("/delete-review/{id}")
     public HttpResponse deleteReview(@PathVariable Long id) {
@@ -52,7 +52,7 @@ public class FeedbackAPI {
 
     }
 
-    @Secured("ADMIN")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: Админстратор", summary = "Смотреть один отзыв ")
     @GetMapping("/get-feedback-by-id/{id}")
     public FeedbackResponse getFeedbackById(@PathVariable Long id){
