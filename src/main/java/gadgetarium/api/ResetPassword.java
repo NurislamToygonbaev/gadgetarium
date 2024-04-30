@@ -20,13 +20,13 @@ public class ResetPassword {
 
     private final PasswordResetTokenService passwordResetService;
 
-    @Operation(description = "Метод для того чтоб отправить ссылка на email")
+    @Operation(summary = "Метод для того чтоб отправить ссылка на email", description = "авторизация: все")
     @PostMapping("/forgot")
     public HttpResponse forgotPassword(@RequestParam("email") String email) {
         return passwordResetService.sendResetEmail(email);
     }
 
-    @Operation(description = "Метод  для изменение пароля")
+    @Operation(summary = "Метод  для изменение пароля", description = "авторизация: все")
     @PostMapping("/reset")
     public SignResponse resetPassword(@RequestParam("token") String token,
                                       @RequestBody @Valid PasswordRequest request) {
