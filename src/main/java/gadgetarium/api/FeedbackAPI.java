@@ -21,35 +21,35 @@ public class FeedbackAPI {
     private final FeedbackService feedbackService;
 
     @Secured("ADMIN")
-    @Operation(summary = "Просмотр всех отзывов")
+    @Operation(description = "Авторизация: Админстратор", summary = "Просмотр всех отзывов")
     @GetMapping("/get-all-feedbacks")
     public AllFeedbackResponse getAllFeedbacks(@RequestParam FeedbackType feedbackType) {
         return feedbackService.getAllFeedbacks(feedbackType);
     }
 
     @Secured("ADMIN")
-    @Operation(summary = "Ответ админстротора на коммент")
+    @Operation(description = "Авторизация: Админстратор", summary = "Ответ админстротора на комментарий")
     @PostMapping("/reply-to-comment/{id}")
     public HttpResponse replyToComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.replyToComment(responseAdmin, id);
     }
 
     @Secured("ADMIN")
-    @Operation(summary = "Редактировать ответ")
+    @Operation(description = "Авторизация: Админстратор", summary = "Редактировать ответ")
     @PutMapping("/edit-comment/{id}")
     public HttpResponse editComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.editComment(responseAdmin, id);
     }
 
     @Secured("ADMIN")
-    @Operation(summary = "Удалить отзыв")
+    @Operation(description = "Авторизация: Админстратор", summary = "Удалить отзыв")
     @DeleteMapping("/delete-review/{id}")
     public HttpResponse deleteReview(@PathVariable Long id) {
         return feedbackService.deleteReview(id);
     }
 
     @Secured("ADMIN")
-    @Operation(summary = "")
+    @Operation(description = "Авторизация: Админстратор", summary = "Смотреть один отзыв ")
     @GetMapping("/get-feedback-by-id/{id}")
     public FeedbackResponse getFeedbackById(@PathVariable Long id){
         return feedbackService.getFeedbackById(id);
