@@ -38,11 +38,6 @@ public class FeedbackServiceImpl implements FeedbackService {
     public AllFeedbackResponse getAllFeedbacks(FeedbackType feedbackType) {
         List<Feedback> feedbacks1 = feedbackRepo.findAll();
 
-        List<Feedback> feedbacks = fetchFeedbacksByType(feedbackType);
-
-        if (feedbacks.isEmpty()) {
-            return createEmptyResponse();
-        }
         long unanswered = feedbacks1.stream()
                 .filter(feedback -> feedback.getResponseAdmin() == null)
                 .count();
@@ -50,6 +45,12 @@ public class FeedbackServiceImpl implements FeedbackService {
         long totalRatings = feedbacks1.stream()
                 .mapToLong(Feedback::getRating)
                 .sum();
+
+        List<Feedback> feedbacks = fetchFeedbacksByType(feedbackType);
+
+        if (feedbacks.isEmpty()) {
+            return createEmptyResponse();
+        }
 
         Map<Integer, Long> defaultRatingCounts = new HashMap<>();
         for (int rating = 1; rating <= 5; rating++) {
@@ -198,9 +199,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             log.error("Error in getSafely in class");
             return null;
         }
-
     }
-
 }
 
 
