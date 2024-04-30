@@ -4,13 +4,13 @@ import gadgetarium.dto.request.AdminRequest;
 import gadgetarium.dto.response.AllFeedbackResponse;
 import gadgetarium.dto.response.FeedbackResponse;
 import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.entities.Feedback;
 import gadgetarium.enums.FeedbackType;
 import gadgetarium.services.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -25,6 +25,7 @@ public class FeedbackAPI {
     @GetMapping("/get-all-feedbacks")
     public AllFeedbackResponse getAllFeedbacks(@RequestParam FeedbackType feedbackType) {
         return feedbackService.getAllFeedbacks(feedbackType);
+
     }
 
     @Secured("ADMIN")
@@ -32,6 +33,7 @@ public class FeedbackAPI {
     @PostMapping("/reply-to-comment/{id}")
     public HttpResponse replyToComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.replyToComment(responseAdmin, id);
+
     }
 
     @Secured("ADMIN")
@@ -39,6 +41,7 @@ public class FeedbackAPI {
     @PutMapping("/edit-comment/{id}")
     public HttpResponse editComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.editComment(responseAdmin, id);
+
     }
 
     @Secured("ADMIN")
@@ -46,6 +49,7 @@ public class FeedbackAPI {
     @DeleteMapping("/delete-review/{id}")
     public HttpResponse deleteReview(@PathVariable Long id) {
         return feedbackService.deleteReview(id);
+
     }
 
     @Secured("ADMIN")
@@ -53,5 +57,6 @@ public class FeedbackAPI {
     @GetMapping("/get-feedback-by-id/{id}")
     public FeedbackResponse getFeedbackById(@PathVariable Long id){
         return feedbackService.getFeedbackById(id);
+
     }
 }
