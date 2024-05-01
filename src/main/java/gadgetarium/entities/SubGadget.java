@@ -35,7 +35,6 @@ public class SubGadget {
     private String mainColour;
     private int countSim;
     private BigDecimal currentPrice;
-    private int countSim;
 
     @Size(max = 1000)
     @ElementCollection(fetch = FetchType.EAGER)

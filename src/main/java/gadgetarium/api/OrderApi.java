@@ -1,13 +1,15 @@
 package gadgetarium.api;
 
 import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.InfoResponse;
+import gadgetarium.dto.response.InfoResponseFor;
 import gadgetarium.dto.response.OrderPagination;
+import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 import gadgetarium.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +22,20 @@ import java.time.LocalDate;
 public class OrderApi {
 
     private final OrderService orderService;
+
+    @GetMapping("/info")
+    @Operation(description = "Инфографика")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public InfoResponse getInfo(){
+        return orderService.getInfo();
+    }
+
+    @GetMapping("/info-withRequest")
+    @Operation(description = "Инфографика за (день или месяц или год)")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public InfoResponseFor getInfoForPeriod(@RequestParam ForPeriod forPeriod){
+        return orderService.getInfoForPeriod(forPeriod);
+    }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "все гаджеты", description = "авторизация: АДМИН")
