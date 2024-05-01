@@ -17,26 +17,38 @@ repositories {
 }
 
 dependencies {
+
+    // Java main sender
     implementation 'com.sun.mail:jakarta.mail:2.0.0'
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    // fireBase Google
     implementation group: 'com.google.firebase', name: 'firebase-admin', version: '9.2.0'
-    implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.2.RELEASE'
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '3.2.3'
+    // swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0'
+    // JWT
     implementation 'com.auth0:java-jwt:4.4.0'
+    // Spring JDBC
     implementation 'org.springframework.boot:spring-boot-starter-data-jdbc'
+    // Spring data jpa
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    // Spring validation
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation', version: '3.2.3'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
+    // Spring WEB
     implementation 'org.springframework.boot:spring-boot-starter-web'
-    compileOnly 'org.projectlombok:lombok'
+    // Postgresql
     runtimeOnly 'org.postgresql:postgresql'
+    // lombok
+    compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+    // Spring boot test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    // Spring security
+    implementation group: 'org.springframework.security.oauth', name: 'spring-security-oauth2', version: '2.5.2.RELEASE'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     testImplementation 'org.springframework.security:spring-security-test'
-    //aws
+    //  for AWS
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.701'
-//    implementation 'com.amazonaws:aws-java-sdk-s3:1.11.1012'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
 }
 
