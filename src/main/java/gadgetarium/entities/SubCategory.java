@@ -1,13 +1,6 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +32,7 @@ public class SubCategory {
     @ManyToOne
     private Category category;
 
-    @OneToMany(mappedBy = "subCategory", cascade = {MERGE, REFRESH, REMOVE})
+    @OneToMany(mappedBy = "subCategory", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
     private List<Gadget> gadgets;
 
     public void addGadget(Gadget gadget) {

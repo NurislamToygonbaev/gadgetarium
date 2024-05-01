@@ -50,6 +50,8 @@ dependencies {
     //  for AWS
     implementation group: 'com.amazonaws', name: 'aws-java-sdk-s3', version: '1.12.701'
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
+    // for parsing with html
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.2'
 }
 
 tasks.named('test') {
