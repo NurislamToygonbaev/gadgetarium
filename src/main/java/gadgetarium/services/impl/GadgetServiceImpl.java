@@ -1,10 +1,13 @@
 package gadgetarium.services.impl;
 
 import gadgetarium.dto.response.GadgetResponse;
+import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.enums.Discount;
+import gadgetarium.enums.Memory;
+import gadgetarium.enums.Ram;
 import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
@@ -59,6 +62,11 @@ public class GadgetServiceImpl implements GadgetService {
     @Override
     public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
         return gadgetJDBCTemplateRepo.getAll(sort, discount, page, size);
+    }
+
+    @Override
+    public PaginationSHowMoreGadget allGadgetsForEvery(Sort sort, Discount discount, Memory memory, Ram ram, BigDecimal costFrom, BigDecimal costUpTo, String colour, String brand, int page, int size) {
+        return gadgetJDBCTemplateRepo.allGadgetsForEvery(sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
     }
 
     @Override

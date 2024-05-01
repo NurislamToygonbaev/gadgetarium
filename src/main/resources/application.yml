@@ -1,21 +1,21 @@
-app:
-    jwt:
-        secret: gadgetarium
+#app:
+#    jwt:
+#        secret: gadgetarium
 
 server:
     error:
         include-stacktrace: always
 
 spring:
-    datasource:
-        driver-class-name: org.postgresql.Driver
-        password: 1234
-        url: jdbc:postgresql://localhost:5432/gadgetarium
-        username: postgres
+#    datasource:
+#        driver-class-name: org.postgresql.Driver
+#        password: 1234
+#        url: jdbc:postgresql://localhost:5432/gadgetarium
+#        username: postgres
 
     jpa:
-        hibernate:
-            ddl-auto: update
+#        hibernate:
+#            ddl-auto: update
         show-sql: true
         open-in-view: false
 

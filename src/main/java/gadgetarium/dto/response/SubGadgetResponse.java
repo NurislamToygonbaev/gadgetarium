@@ -8,7 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 @Builder
-public record SubGadgetResponse(
+public record
+SubGadgetResponse(
         Long id,
         List<String> images,
         String nameOfGadget,
