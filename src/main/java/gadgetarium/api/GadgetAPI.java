@@ -90,4 +90,6 @@ public class GadgetAPI {
     public HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException {
         return gadgetService.addDocument(productDocRequest);
     }
+
+
 }
