@@ -2,15 +2,17 @@ package gadgetarium.api;
 
 import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.ViewedProductsResponse;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Sort;
 import gadgetarium.services.GadgetService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -30,8 +32,8 @@ public class GadgetAPI {
         return gadgetService.getAll(sort, discount, page, size);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Получение гаджета по ID", description = "авторизация: АДМИН")
+    @PreAuthorize("hasAnyAuthority({'ADMIN', 'USER'})")
+    @Operation(summary = "Получение гаджета по ID.", description = "авторизация: АДМИН,ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/get-gadget/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId) {
         return gadgetService.getGadgetById(gadgetId);
@@ -39,10 +41,21 @@ public class GadgetAPI {
 
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Полученный гаджет, выбор по цвету", description = "авторизация: АДМИН")
+    @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "авторизация: АДМИН")
     @GetMapping("/select-colour")
     public GadgetResponse getGadgetByColour(@RequestParam String colour,
                                             @RequestParam String nameOfGadget) {
         return gadgetService.getGadgetSelectColour(colour, nameOfGadget);
     }
+
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Просмотренные гаджеты.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/viewed-products")
+    public List<ViewedProductsResponse> viewedProduct() {
+        return gadgetService.viewedProduct();
+    }
 }
+
+
+
+
