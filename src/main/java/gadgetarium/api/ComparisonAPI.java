@@ -7,6 +7,7 @@ import gadgetarium.dto.response.ListComparisonResponse;
 import gadgetarium.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,32 +19,37 @@ public class ComparisonAPI {
 
     private final UserService userService;
 
-    @Operation(description = "Метод для добовления гаджетов в сравнении или удалении")
-    @PostMapping("/add-сompare/{subGadgetId}")
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Метод для добовления гаджетов в сравнении или удалении", description = "авторизация: Юзер")
+    @PostMapping("/add-compare/{subGadgetId}")
     public HttpResponse addCompare(@PathVariable Long subGadgetId) {
         return userService.addCompare(subGadgetId);
     }
 
-    @Operation(description = "Метод показывает гаджетов в сравнении")
-    @GetMapping("/list-сompare")
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Метод показывает гаджетов в сравнении", description = "авторизация: Юзер")
+    @GetMapping("/list-compare")
     public List<ListComparisonResponse> listCompare() {
         return userService.seeComparison();
     }
 
-    @Operation(description = "Метод для просмотра различий")
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Метод для просмотра различий", description = "авторизация: Юзер")
     @GetMapping("/compare")
     public ComparedGadgetsResponse compare(CategoryNameRequest categoryName,
                                            @RequestParam boolean isDifferences) {
         return userService.compare(categoryName, isDifferences);
     }
 
-    @Operation(description = "Метод для удаление одного гаджета в сравнении")
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Метод для удаление одного гаджета в сравнении", description = "авторизация: Юзер")
     @DeleteMapping("/delete/{subGadgetId}")
     public HttpResponse deleteSub(@PathVariable Long subGadgetId) {
         return userService.deleteSubGadget(subGadgetId);
     }
 
-    @Operation(description = "Метод для удаление всех гаджетов в сравнении")
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Метод для удаление всех гаджетов в сравнении", description = "авторизация: Юзер")
     @DeleteMapping("/clear")
     public HttpResponse deleteAllGadgets() {
         return userService.deleteAllGadgets();

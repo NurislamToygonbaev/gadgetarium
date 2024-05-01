@@ -9,10 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
@@ -44,7 +41,12 @@ public class SubGadget {
     private List<String> images;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private Map<String, String> characteristics;
+    @Size(max = 3000)
+    private Map<String, String> characteristics = new LinkedHashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Size(max = 3000)
+    private Map<CharValue,String> charName = new LinkedHashMap<>();
 
     @OneToOne(cascade = {REMOVE, MERGE, REFRESH})
     private Gadget gadget;
@@ -58,7 +60,12 @@ public class SubGadget {
     }
 
     public void addCharacteristic(String key, String value) {
-        if (this.characteristics == null) this.characteristics = new HashMap<>();
+        if (this.characteristics == null) this.characteristics = new LinkedHashMap<>();
         this.characteristics.put(key, value);
+    }
+
+    @PrePersist
+    private void addNewInfo(){
+        this.characteristics = new HashMap<>();
     }
 }
