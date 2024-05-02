@@ -39,4 +39,10 @@ public interface GadgetService {
     HttpResponse setPriceOneProduct(ProductPriceRequest productPriceRequest);
 
     HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException;
+
+    GadgetPaginationForMain mainPageDiscounts(int page, int size);
+
+    GadgetPaginationForMain mainPageNews(int page, int size);
+
+    GadgetPaginationForMain mainPageRecommend(int page, int size);
 }

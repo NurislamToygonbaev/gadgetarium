@@ -6,15 +6,12 @@ server:
 
 #  The DataBase. Connection to Postgresql
 spring:
-    datasource:
-        driver-class-name: org.postgresql.Driver
 
 #       Hibernate/JPA settings.
     jpa:
         show-sql: true
         open-in-view: false
-        hibernate:
-            ddl-auto: create
+
 #    Java Mail sender
     mail:
         host: smtp.gmail.com
