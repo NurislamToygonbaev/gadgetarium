@@ -4,10 +4,7 @@ import gadgetarium.dto.request.AddProductRequest;
 import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.request.ProductPriceRequest;
 import gadgetarium.dto.request.ProductsIdsRequest;
-import gadgetarium.dto.response.AddProductsResponse;
-import gadgetarium.dto.response.GadgetResponse;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.IOException;
@@ -90,4 +87,10 @@ public class GadgetAPI {
     public HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException {
         return gadgetService.addDocument(productDocRequest);
     }
+
+//    @GetMapping("get-phone-description")
+//    public PhoneDescriptionResponse getPhoneDescription(){
+//        return gadgetService.getPhoneDescription();
+//    }
+
 }
