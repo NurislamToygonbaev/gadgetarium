@@ -1,4 +1,4 @@
-package gadgetarium.validation.email;
+package gadgetarium.validation.string;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;

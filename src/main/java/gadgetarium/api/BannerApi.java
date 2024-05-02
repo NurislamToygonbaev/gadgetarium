@@ -28,4 +28,5 @@ public class BannerApi {
     public BannerResponse createBanner(@RequestBody @Valid BannerRequest bannerRequest){
         return bannerService.create(bannerRequest);
     }
+
 }
