@@ -5,10 +5,7 @@ import gadgetarium.dto.request.AddProductRequest;
 import gadgetarium.dto.request.ProductsIdsRequest;
 import gadgetarium.dto.request.ProductPriceRequest;
 import gadgetarium.dto.request.ProductDocRequest;
-import gadgetarium.dto.response.AddProductsResponse;
-import gadgetarium.dto.response.GadgetResponse;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.*;
 import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.SubCategory;
@@ -276,6 +273,21 @@ public class GadgetServiceImpl implements GadgetService {
                 .status(HttpStatus.OK)
                 .message("Success set documents, descriptions!")
                 .build();
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageDiscounts(int page, int size) {
+        return gadgetJDBCTemplateRepo.mainPageDiscounts(page, size);
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageNews(int page, int size) {
+        return gadgetJDBCTemplateRepo.mainPageNews(page, size);
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageRecommend(int page, int size) {
+        return gadgetJDBCTemplateRepo.mainPageRecommend(page, size);
     }
 
     private String buildApiUrl(Gadget gadget) {

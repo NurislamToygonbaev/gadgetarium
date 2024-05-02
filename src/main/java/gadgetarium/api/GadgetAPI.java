@@ -4,10 +4,7 @@ import gadgetarium.dto.request.AddProductRequest;
 import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.request.ProductPriceRequest;
 import gadgetarium.dto.request.ProductsIdsRequest;
-import gadgetarium.dto.response.AddProductsResponse;
-import gadgetarium.dto.response.GadgetResponse;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.IOException;
@@ -91,5 +88,24 @@ public class GadgetAPI {
         return gadgetService.addDocument(productDocRequest);
     }
 
+    @Operation(summary = "все Гаджеты по акции", description = "авторизация: все")
+    @GetMapping("/all-gadgets-with-discounts")
+    public GadgetPaginationForMain mainPageDiscounts(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
+        return gadgetService.mainPageDiscounts(page, size);
+    }
 
+    @Operation(summary = "новинки", description = "авторизация: все")
+    @GetMapping("/all-new-gadgets")
+    public GadgetPaginationForMain mainPageNews(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
+        return gadgetService.mainPageNews(page, size);
+    }
+
+    @Operation(summary = "рекомендуемые", description = "авторизация: все")
+    @GetMapping("/all-gadgets-recommend")
+    public GadgetPaginationForMain mainPageRecommend(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                @RequestParam(value = "size", defaultValue = "5") int size) {
+        return gadgetService.mainPageRecommend(page, size);
+    }
 }

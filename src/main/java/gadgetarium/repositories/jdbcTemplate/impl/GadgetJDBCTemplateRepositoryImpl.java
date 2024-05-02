@@ -1,12 +1,11 @@
 package gadgetarium.repositories.jdbcTemplate.impl;
 
-import gadgetarium.dto.request.FeedbackTypeRequest;
-import gadgetarium.dto.response.AllFeedbackResponse;
+import gadgetarium.dto.response.GadgetPaginationForMain;
+import gadgetarium.dto.response.GadgetResponseMainPage;
 import gadgetarium.dto.response.PaginationGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Sort;
-import gadgetarium.repositories.CategoryRepository;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -45,26 +44,26 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         }
 
         List<PaginationGadget> list = jdbcTemplate.query("""
-                select g.id,
-                       array_agg(gi.images) as images,
-                       ga.article,
-                       concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                       ga.release_date,
-                       g.quantity,
-                       d.percent,
-                       d.end_date,
-                       g.price
-                from sub_gadgets g
-                join sub_gadget_images gi on g.id = gi.sub_gadget_id
-                join gadgets ga on ga.id = g.gadget_id
-                join brands b on ga.brand_id = b.id
-                left outer join discounts d on g.id = d.sub_gadget_id
-                """ + where + """
-                group by g.id, ga.article, g.name_of_gadget, ga.release_date,
-                           b.brand_name,  g.quantity, d.percent, g.price, d.end_date
-                """ + orderBy + """
-                limit ? offset ?
-                """,
+                        select g.id,
+                               array_agg(gi.images) as images,
+                               ga.article,
+                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
+                               ga.release_date,
+                               g.quantity,
+                               d.percent,
+                               d.end_date,
+                               g.price
+                        from sub_gadgets g
+                        join sub_gadget_images gi on g.id = gi.sub_gadget_id
+                        join gadgets ga on ga.id = g.gadget_id
+                        join brands b on ga.brand_id = b.id
+                        left outer join discounts d on g.id = d.sub_gadget_id
+                        """ + where + """
+                        group by g.id, ga.article, g.name_of_gadget, ga.release_date,
+                                   b.brand_name,  g.quantity, d.percent, g.price, d.end_date
+                        """ + orderBy + """
+                        limit ? offset ?
+                        """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
                     BigDecimal price = rs.getBigDecimal("price");
@@ -94,6 +93,169 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 .page(page)
                 .size(size)
                 .paginationGadgets(list)
+                .build();
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageDiscounts(int page, int size) {
+        int offset = (page - 1) * size;
+        int limit = size;
+
+        List<GadgetResponseMainPage> responseMainPages = jdbcTemplate.query("""
+                        select g.id,
+                               array_agg(gi.images) as images,
+                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
+                               g.quantity,
+                               d.percent,
+                               count(f.id) as countOfFeedback,
+                               g.main_colour as colour,
+                               g.rating,
+                               ga.memory,
+                               g.price,
+                               g.current_price as currentPrice
+                        from sub_gadgets g
+                        join sub_gadget_images gi on g.id = gi.sub_gadget_id
+                        join gadgets ga on ga.id = g.gadget_id
+                        join brands b on ga.brand_id = b.id
+                        left outer join discounts d on g.id = d.sub_gadget_id
+                        left outer join feedbacks f on f.gadget_id = ga.id
+                        where d.percent is not null
+                        group by g.id, g.name_of_gadget, b.brand_name, g.quantity, d.percent,
+                                g.price, currentPrice, ga.memory, g.rating, colour
+                        limit ? offset ?
+                        """,
+                new Object[]{limit, offset},
+                (rs, rowNum) -> {
+                    String image = Arrays.asList((String[]) rs.getArray("images").getArray()).getFirst();
+
+                    return new GadgetResponseMainPage(
+                            rs.getLong("id"),
+                            rs.getInt("percent"),
+                            image,
+                            rs.getInt("quantity"),
+                            rs.getString("nameOfGadget"),
+                            rs.getString("memory"),
+                            rs.getString("colour"),
+                            rs.getDouble("rating"),
+                            rs.getInt("countOfFeedback"),
+                            rs.getBigDecimal("price"),
+                            rs.getBigDecimal("currentPrice")
+                    );
+                });
+
+        return GadgetPaginationForMain.builder()
+                .page(page)
+                .size(size)
+                .mainPages(responseMainPages)
+                .build();
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageNews(int page, int size) {
+        int offset = (page - 1) * size;
+        int limit = size;
+
+        List<GadgetResponseMainPage> newGadgets = jdbcTemplate.query("""
+                        select g.id,
+                               array_agg(gi.images) as images,
+                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
+                               g.quantity,
+                               d.percent,
+                               count(f.id) as countOfFeedback,
+                               g.main_colour as colour,
+                               g.rating,
+                               ga.memory,
+                               g.price,
+                               g.current_price as currentPrice,
+                               ga.release_date
+                        from sub_gadgets g
+                        join sub_gadget_images gi on g.id = gi.sub_gadget_id
+                        join gadgets ga on ga.id = g.gadget_id
+                        join brands b on ga.brand_id = b.id
+                        left outer join discounts d on g.id = d.sub_gadget_id
+                        left outer join feedbacks f on f.gadget_id = ga.id
+                        group by g.id, g.name_of_gadget, b.brand_name, g.quantity, d.percent,
+                                g.price, currentPrice, ga.memory, g.rating, colour, ga.release_date
+                        order by ga.release_date desc
+                        limit ? offset ?
+                        """,
+                new Object[]{limit, offset},
+                (rs, rowNum) -> {
+                    String image = Arrays.asList((String[]) rs.getArray("images").getArray()).getFirst();
+
+                    return new GadgetResponseMainPage(
+                            rs.getLong("id"),
+                            rs.getInt("percent"),
+                            image,
+                            rs.getInt("quantity"),
+                            rs.getString("nameOfGadget"),
+                            rs.getString("memory"),
+                            rs.getString("colour"),
+                            rs.getDouble("rating"),
+                            rs.getInt("countOfFeedback"),
+                            rs.getBigDecimal("price"),
+                            rs.getBigDecimal("currentPrice")
+                    );
+                });
+
+        return GadgetPaginationForMain.builder()
+                .page(page)
+                .size(size)
+                .mainPages(newGadgets)
+                .build();
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageRecommend(int page, int size) {
+        int offset = (page - 1) * size;
+        int limit = size;
+
+        List<GadgetResponseMainPage> newGadgets = jdbcTemplate.query("""
+                        select g.id,
+                               array_agg(gi.images) as images,
+                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
+                               g.quantity,
+                               d.percent,
+                               count(f.id) as countOfFeedback,
+                               g.main_colour as colour,
+                               g.rating,
+                               ga.memory,
+                               g.price,
+                               g.current_price as currentPrice
+                        from sub_gadgets g
+                        join sub_gadget_images gi on g.id = gi.sub_gadget_id
+                        join gadgets ga on ga.id = g.gadget_id
+                        join brands b on ga.brand_id = b.id
+                        left outer join discounts d on g.id = d.sub_gadget_id
+                        left outer join feedbacks f on f.gadget_id = ga.id
+                        group by g.id, g.name_of_gadget, b.brand_name, g.quantity, d.percent,
+                                g.price, currentPrice, ga.memory, g.rating, colour
+                        having g.rating > 3.9 or count(f.id) > 10
+                        limit ? offset ?
+                        """,
+                new Object[]{limit, offset},
+                (rs, rowNum) -> {
+                    String image = Arrays.asList((String[]) rs.getArray("images").getArray()).getFirst();
+
+                    return new GadgetResponseMainPage(
+                            rs.getLong("id"),
+                            rs.getInt("percent"),
+                            image,
+                            rs.getInt("quantity"),
+                            rs.getString("nameOfGadget"),
+                            rs.getString("memory"),
+                            rs.getString("colour"),
+                            rs.getDouble("rating"),
+                            rs.getInt("countOfFeedback"),
+                            rs.getBigDecimal("price"),
+                            rs.getBigDecimal("currentPrice")
+                    );
+                });
+
+        return GadgetPaginationForMain.builder()
+                .page(page)
+                .size(size)
+                .mainPages(newGadgets)
                 .build();
     }
 }
