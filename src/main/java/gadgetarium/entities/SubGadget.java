@@ -31,11 +31,10 @@ public class SubGadget {
     private String nameOfGadget;
     private BigDecimal price;
     private int quantity;
-    private int rating;
+    private double rating;
     private String mainColour;
     private int countSim;
     private BigDecimal currentPrice;
-    private int countSim;
 
     @Size(max = 1000)
     @ElementCollection(fetch = FetchType.EAGER)

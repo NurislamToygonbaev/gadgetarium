@@ -10,7 +10,7 @@ public record ViewedProductsResponse(
         int discount,
         String image,
         String nameOfGadget,
-        int rating,
+        double rating,
         int countOfFeedback,
         BigDecimal price,
         BigDecimal currentPrice
