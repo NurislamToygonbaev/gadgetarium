@@ -18,6 +18,7 @@ public interface GadgetService {
 
     ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size);
 
+    List<ViewedProductsResponse> viewedProduct();
     HttpResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);
 
     List<AddProductsResponse> getNewProducts();

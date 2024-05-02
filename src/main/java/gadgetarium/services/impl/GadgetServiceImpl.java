@@ -6,8 +6,14 @@ import gadgetarium.dto.request.ProductsIdsRequest;
 import gadgetarium.dto.request.ProductPriceRequest;
 import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.response.*;
+import gadgetarium.dto.response.AddProductsResponse;
+import gadgetarium.dto.response.GadgetResponse;
+import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.ViewedProductsResponse;
 import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
+import gadgetarium.entities.User;
 import gadgetarium.entities.SubCategory;
 import gadgetarium.entities.Brand;
 import gadgetarium.entities.CharValue;
@@ -33,6 +39,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.*;
 
 @Slf4j
@@ -42,6 +50,7 @@ public class GadgetServiceImpl implements GadgetService {
 
     private final GadgetRepository gadgetRepo;
     private final SubGadgetRepository subGadgetRepo;
+    private final CurrentUser currentUser;
     private final GadgetJDBCTemplateRepository gadgetJDBCTemplateRepo;
     private final BrandRepository brandRepo;
     private final SubCategoryRepository subCategoryRepo;
@@ -54,6 +63,9 @@ public class GadgetServiceImpl implements GadgetService {
     @Transactional
     public GadgetResponse getGadgetById(Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
+
+        User user = currentUser.get();
+        user.addViewed(gadget.getSubGadget());
 
         int percent = gadget.getSubGadget().getDiscount().getPercent();
         BigDecimal price = gadget.getSubGadget().getPrice();
@@ -131,6 +143,27 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
+    public List<ViewedProductsResponse> viewedProduct() {
+        User user = currentUser.get();
+        List<SubGadget> viewed = user.getViewed();
+        List<ViewedProductsResponse> responses = new ArrayList<>();
+
+        for (SubGadget subGadget : viewed) {
+                responses.add(new ViewedProductsResponse(
+                        subGadget.getId(),
+                        subGadget.getDiscount().getPercent(),
+                        subGadget.getImages().getFirst(),
+                        subGadget.getNameOfGadget(),
+                        subGadget.getRating(),
+                        subGadget.getGadget().getFeedbacks().size(),
+                        subGadget.getPrice(),
+                        subGadget.getCurrentPrice()
+                ));
+        }
+
+        return responses;
+    }
+
     @Transactional
     public HttpResponse addGadget(Long subCategoryId, Long brandId, AddProductRequest addProductRequest) {
         SubCategory subCategory = subCategoryRepo.getSubCategoryById(subCategoryId);
