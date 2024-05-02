@@ -1,9 +1,4 @@
 
-# Secret key 'gadgetarium' for JWT in App.
-app:
-    jwt:
-        secret: gadgetarium
-
 # the server always outputs a stack trace when an error occurs
 server:
     error:
