@@ -40,7 +40,7 @@ public class SecurityConfig {
                     )
                     .permitAll()
                     .anyRequest()
-                    .authenticated();
+                    .permitAll();
         });
         http.csrf(AbstractHttpConfigurer::disable);
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
