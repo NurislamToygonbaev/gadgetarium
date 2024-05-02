@@ -4,10 +4,7 @@ import gadgetarium.dto.request.AddProductRequest;
 import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.request.ProductPriceRequest;
 import gadgetarium.dto.request.ProductsIdsRequest;
-import gadgetarium.dto.response.AddProductsResponse;
-import gadgetarium.dto.response.GadgetResponse;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.IOException;
@@ -38,8 +35,8 @@ public class GadgetAPI {
         return gadgetService.getAll(sort, discount, page, size);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Получение гаджета по ID", description = "авторизация: АДМИН")
+    @PreAuthorize("hasAnyAuthority({'ADMIN', 'USER'})")
+    @Operation(summary = "Получение гаджета по ID.", description = "авторизация: АДМИН,ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/get-gadget/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId) {
         return gadgetService.getGadgetById(gadgetId);
@@ -47,11 +44,18 @@ public class GadgetAPI {
 
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Полученный гаджет, выбор по цвету", description = "авторизация: АДМИН")
+    @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "авторизация: АДМИН")
     @GetMapping("/select-colour")
     public GadgetResponse getGadgetByColour(@RequestParam String colour,
                                             @RequestParam String nameOfGadget) {
         return gadgetService.getGadgetSelectColour(colour, nameOfGadget);
+    }
+
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Просмотренные гаджеты.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/viewed-products")
+    public List<ViewedProductsResponse> viewedProduct() {
+        return gadgetService.viewedProduct();
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
@@ -93,3 +97,7 @@ public class GadgetAPI {
 
 
 }
+
+
+
+
