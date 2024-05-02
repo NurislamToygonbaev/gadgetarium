@@ -9,6 +9,7 @@ import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
@@ -28,8 +29,8 @@ public interface GadgetService {
 
     GadgetResponse getGadgetById(Long gadgetId);
 
+    List<ViewedProductsResponse> viewedProduct();
     HttpResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);
-
 
     List<AddProductsResponse> getNewProducts();
 
