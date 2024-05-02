@@ -27,4 +27,5 @@ public class BrandApi {
                                   @RequestParam String brandName){
         return brandService.saveBrand(file, brandName);
     }
+
 }

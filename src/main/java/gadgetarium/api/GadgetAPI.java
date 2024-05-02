@@ -4,8 +4,15 @@ import gadgetarium.dto.request.AddProductRequest;
 import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.request.ProductPriceRequest;
 import gadgetarium.dto.request.ProductsIdsRequest;
+import gadgetarium.dto.response.AddProductsResponse;
+import gadgetarium.dto.response.GadgetResponse;
+import gadgetarium.dto.response.PaginationSHowMoreGadget;
+import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.dto.response.*;
 import gadgetarium.enums.Discount;
+import gadgetarium.enums.Memory;
+import gadgetarium.enums.Ram;
 import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.IOException;
 import gadgetarium.services.GadgetService;
@@ -15,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -35,8 +43,23 @@ public class GadgetAPI {
         return gadgetService.getAll(sort, discount, page, size);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Получение гаджета по ID", description = "авторизация: АДМИН")
+    @Operation(summary = "все гаджеты с фильтрацией", description = "авторизация: ВСЕ")
+    @GetMapping("/all-gadgets")
+    public PaginationSHowMoreGadget allGadgetsForEvery(@RequestParam(required = false) Sort sort,
+                                                       @RequestParam(required = false) Discount discount,
+                                                       @RequestParam(required = false) Memory memory,
+                                                       @RequestParam(required = false) Ram ram,
+                                                       @RequestParam(required = false) BigDecimal costFrom,
+                                                       @RequestParam(required = false) BigDecimal costUpTo,
+                                                       @RequestParam(required = false) String colour,
+                                                       @RequestParam(required = false) String brand,
+                                                       @RequestParam(value = "page", defaultValue = "1") int page,
+                                                       @RequestParam(value = "size", defaultValue = "12") int size) {
+        return gadgetService.allGadgetsForEvery(sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
+    }
+
+    @PreAuthorize("hasAnyAuthority({'ADMIN', 'USER'})")
+    @Operation(summary = "Получение гаджета по ID.", description = "авторизация: АДМИН,ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/get-gadget/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId) {
         return gadgetService.getGadgetById(gadgetId);
@@ -44,11 +67,18 @@ public class GadgetAPI {
 
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Полученный гаджет, выбор по цвету", description = "авторизация: АДМИН")
+    @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "авторизация: АДМИН")
     @GetMapping("/select-colour")
     public GadgetResponse getGadgetByColour(@RequestParam String colour,
                                             @RequestParam String nameOfGadget) {
         return gadgetService.getGadgetSelectColour(colour, nameOfGadget);
+    }
+
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "Просмотренные гаджеты.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/viewed-products")
+    public List<ViewedProductsResponse> viewedProduct() {
+        return gadgetService.viewedProduct();
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
@@ -88,9 +118,28 @@ public class GadgetAPI {
         return gadgetService.addDocument(productDocRequest);
     }
 
-//    @GetMapping("get-phone-description")
-//    public PhoneDescriptionResponse getPhoneDescription(){
-//        return gadgetService.getPhoneDescription();
-//    }
+    @Operation(summary = "все Гаджеты по акции", description = "авторизация: все")
+    @GetMapping("/all-gadgets-with-discounts")
+    public GadgetPaginationForMain mainPageDiscounts(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
+        return gadgetService.mainPageDiscounts(page, size);
+    }
 
+    @Operation(summary = "новинки", description = "авторизация: все")
+    @GetMapping("/all-new-gadgets")
+    public GadgetPaginationForMain mainPageNews(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
+        return gadgetService.mainPageNews(page, size);
+    }
+
+    @Operation(summary = "рекомендуемые", description = "авторизация: все")
+    @GetMapping("/all-gadgets-recommend")
+    public GadgetPaginationForMain mainPageRecommend(@RequestParam(value = "page", defaultValue = "1") int page,
+                                                @RequestParam(value = "size", defaultValue = "5") int size) {
+        return gadgetService.mainPageRecommend(page, size);
+    }
 }
+
+
+
+

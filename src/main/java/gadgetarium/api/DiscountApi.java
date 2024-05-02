@@ -31,4 +31,5 @@ public class DiscountApi {
     public DiscountResponse create(@RequestParam @NotNull List<Long> subGadgetsId, @RequestBody @Valid DiscountRequest discountRequest){
         return discountService.create(subGadgetsId, discountRequest);
     }
+
 }

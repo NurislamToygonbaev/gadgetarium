@@ -1,9 +1,4 @@
 
-# Secret key 'gadgetarium' for JWT in App.
-app:
-    jwt:
-        secret: gadgetarium
-
 # the server always outputs a stack trace when an error occurs
 server:
     error:
@@ -12,7 +7,7 @@ server:
 #  The DataBase. Connection to Postgresql
 spring:
 
-    #   Hibernate/JPA settings.
+#       Hibernate/JPA settings.
     jpa:
         show-sql: true
         open-in-view: false
