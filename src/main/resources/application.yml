@@ -6,6 +6,8 @@ server:
 
 #  The DataBase. Connection to Postgresql
 spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
 
     #   Hibernate/JPA settings.
     jpa:
