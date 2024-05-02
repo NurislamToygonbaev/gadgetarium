@@ -28,7 +28,7 @@ out/
 !**/src/test/**/out/
 /application.yml
 /application.properties
-
+/application.nurgazy.yml
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
