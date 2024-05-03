@@ -87,6 +87,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseFindById findOrderById(Long orderId) {
+        orderRepo.getOrderById(orderId);
         return orderJDBCTemplate.findOrderById(orderId);
     }
 

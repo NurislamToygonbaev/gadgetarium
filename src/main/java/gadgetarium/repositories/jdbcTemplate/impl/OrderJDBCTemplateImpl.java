@@ -131,25 +131,28 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
 
     @Override
     public OrderResponseFindById findOrderById(Long orderId) {
-       return jdbcTemplate.queryForObject("""
-                        select o.id,
-                               concat(u.first_name, ' ', u.last_name) as fullName,
-                               o.number,
-                               concat(b.brand_name, ' ', s.name_of_gadget) as gadgetName,
-                               s.memory,
-                               s.main_colour,
-                               count(g.id) as countOfGadget,
-                               sum(s.price) as price,
-                               d.percent
-                        from orders o
-                        join users u on u.id = o.user_id
-                        join ordders_gadgets og on o.id = og.orders_id
-                        join gadgets g on og.gadgets_id = o.id
-                        join brands b on b.id = g.brand_id
-                        join sub_gadgets s on g.id = s.gadget_id
-                        join discounts d on s.id = d.sub_gadget_id
-                        where o.id = ?
-                        """,
+        return jdbcTemplate.queryForObject("""
+                    select o.id,
+                           concat(u.first_name, ' ', u.last_name) as fullName,
+                           o.number,
+                           concat(b.brand_name, ' ', s.name_of_gadget) as gadgetName,
+                           g.memory,
+                           s.main_colour,
+                           count(g.id) as countOfGadget,
+                           sum(s.price) as price,
+                           d.percent
+                    from orders o
+                    join users u on u.id = o.user_id
+                    join orders_gadgets og on o.id = og.orders_id
+                    join gadgets g on g.id = og.gadgets_id
+                    join brands b on b.id = g.brand_id
+                    join sub_gadgets s on g.id = s.gadget_id
+                    left outer join discounts d on s.id = d.sub_gadget_id
+                    where o.id = ?
+                    group by o.id, concat(u.first_name, ' ', u.last_name),
+                    o.number, concat(b.brand_name, ' ', s.name_of_gadget),
+                    g.memory, s.main_colour, d.percent
+                    """,
                 new Object[]{orderId},
                 (rs, rowNum) -> {
                     BigDecimal price = rs.getBigDecimal("price");
@@ -158,14 +161,13 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                     BigDecimal discount = price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100)));
                     BigDecimal discountedPrice = price.subtract(discount);
 
-
                     return new OrderResponseFindById(
                             rs.getLong("id"),
                             rs.getString("fullName"),
                             rs.getLong("number"),
                             rs.getString("gadgetName"),
                             rs.getString("memory"),
-                            rs.getNString("main_colour"),
+                            rs.getString("main_colour"),
                             rs.getInt("countOfGadget"),
                             price,
                             percent,
@@ -175,4 +177,5 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                 }
         );
     }
+
 }

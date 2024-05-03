@@ -63,14 +63,14 @@ public class OrderApi {
         return orderService.deleteOrder(orderId);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "найти заказа по ID", description = "авторизация: АДМИН")
     @GetMapping("/find-by-id/{orderId}")
     public OrderResponseFindById findOrderById(@PathVariable Long orderId){
         return orderService.findOrderById(orderId);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "инфо заказа по ID", description = "авторизация: АДМИН")
     @GetMapping("/order_info/{orderId}")
     public OrderInfoResponse findOrderInfo(@PathVariable Long orderId){
