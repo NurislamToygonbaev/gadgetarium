@@ -1,9 +1,6 @@
 package gadgetarium.services;
 
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.InfoResponse;
-import gadgetarium.dto.response.InfoResponseFor;
-import gadgetarium.dto.response.OrderPagination;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 
@@ -19,4 +16,8 @@ public interface OrderService {
     InfoResponse getInfo();
 
     InfoResponseFor getInfoForPeriod(ForPeriod forPeriod);
+
+    OrderResponseFindById findOrderById(Long orderId);
+
+    OrderInfoResponse findOrderInfo(Long orderId);
 }

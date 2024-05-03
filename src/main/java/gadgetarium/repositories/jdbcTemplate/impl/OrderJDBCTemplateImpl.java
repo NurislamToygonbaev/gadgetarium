@@ -2,6 +2,7 @@ package gadgetarium.repositories.jdbcTemplate.impl;
 
 import gadgetarium.dto.response.OrderPagination;
 import gadgetarium.dto.response.OrderResponse;
+import gadgetarium.dto.response.OrderResponseFindById;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -125,5 +127,52 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                 .size(size)
                 .orderResponses(orderResponses)
                 .build();
+    }
+
+    @Override
+    public OrderResponseFindById findOrderById(Long orderId) {
+       return jdbcTemplate.queryForObject("""
+                        select o.id,
+                               concat(u.first_name, ' ', u.last_name) as fullName,
+                               o.number,
+                               concat(b.brand_name, ' ', s.name_of_gadget) as gadgetName,
+                               s.memory,
+                               s.main_colour,
+                               count(g.id) as countOfGadget,
+                               sum(s.price) as price,
+                               d.percent
+                        from orders o
+                        join users u on u.id = o.user_id
+                        join ordders_gadgets og on o.id = og.orders_id
+                        join gadgets g on og.gadgets_id = o.id
+                        join brands b on b.id = g.brand_id
+                        join sub_gadgets s on g.id = s.gadget_id
+                        join discounts d on s.id = d.sub_gadget_id
+                        where o.id = ?
+                        """,
+                new Object[]{orderId},
+                (rs, rowNum) -> {
+                    BigDecimal price = rs.getBigDecimal("price");
+                    int percent = rs.getInt("percent");
+
+                    BigDecimal discount = price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100)));
+                    BigDecimal discountedPrice = price.subtract(discount);
+
+
+                    return new OrderResponseFindById(
+                            rs.getLong("id"),
+                            rs.getString("fullName"),
+                            rs.getLong("number"),
+                            rs.getString("gadgetName"),
+                            rs.getString("memory"),
+                            rs.getNString("main_colour"),
+                            rs.getInt("countOfGadget"),
+                            price,
+                            percent,
+                            discount,
+                            discountedPrice
+                    );
+                }
+        );
     }
 }
