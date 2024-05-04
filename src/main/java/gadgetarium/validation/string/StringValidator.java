@@ -11,6 +11,6 @@ public class StringValidator implements ConstraintValidator<StringValidation, St
             return false;
         }
 
-        return !value.trim().isEmpty() && value.length() < 10;
+        return !value.trim().isEmpty() && value.length() < 500;
     }
 }

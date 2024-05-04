@@ -248,7 +248,7 @@ public class FeedbackServiceImpl implements FeedbackService {
 
         return HttpResponse
                 .builder()
-                .status(HttpStatus.CONFLICT)
+                .status(HttpStatus.BAD_REQUEST)
                 .message("You haven't bought this gadget!")
                 .build();
     }
