@@ -56,7 +56,7 @@ public class FavoritesAPI {
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: User", summary = "Метод показывает гаджетов в избранный")
+    @Operation(description = "Авторизация: User", summary = "Метод удаляет всех гаджетов в избранный")
     @DeleteMapping("/clear-favorites")
     public HttpResponse clearFavorites(){
         return userService.clearFavorites();
