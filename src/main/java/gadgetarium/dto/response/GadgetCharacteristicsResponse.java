@@ -7,6 +7,6 @@ import java.util.Map;
 
 @Builder
 public record GadgetCharacteristicsResponse(
+        Long id,
         Map<String, Map<String, String>> mainCharacteristics
-//        Map<String, String> memoryAndProcessor
 ){}

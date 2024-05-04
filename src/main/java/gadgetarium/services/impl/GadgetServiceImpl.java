@@ -17,6 +17,7 @@ import gadgetarium.enums.Discount;
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
 import gadgetarium.enums.Sort;
+import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubCategoryRepository;
@@ -330,6 +331,7 @@ public class GadgetServiceImpl implements GadgetService {
     public GadgetDescriptionResponse getDescriptionGadget(Long id) {
         Gadget gadget = gadgetRepo.getGadgetById(id);
         return GadgetDescriptionResponse.builder()
+                .id(gadget.getId())
                 .videoUrl(gadget.getVideoUrl())
                 .description(gadget.getDescription())
                 .build();
@@ -363,6 +365,7 @@ public class GadgetServiceImpl implements GadgetService {
             }
 
             return GadgetCharacteristicsResponse.builder()
+                    .id(gadget.getId())
                     .mainCharacteristics(mainCharacteristics)
                     .build();
         } catch (Exception e) {
@@ -407,7 +410,7 @@ public class GadgetServiceImpl implements GadgetService {
         Gadget gadget = gadgetRepo.getGadgetById(id);
 
         if (gadget == null || gadget.getOrders() == null || gadget.getOrders().isEmpty()) {
-            throw new IllegalStateException("No gadget found or gadget has no orders.");
+            throw new IllegalArgumentException("No gadget found or gadget has no orders.");
         }
 
         return GadgetDeliveryPriceResponse.builder()
