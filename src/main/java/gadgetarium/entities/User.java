@@ -47,7 +47,7 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = {DETACH, MERGE, REFRESH})
     private List<Order> orders;
 
-    @OneToMany(mappedBy = "user", cascade = {REMOVE, MERGE, REFRESH})
+    @OneToMany(mappedBy = "user", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Feedback> feedbacks;
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -119,6 +119,16 @@ public class User implements UserDetails {
     public void addPasswordResetToken(PasswordResetToken token) {
         if (this.passwordResetTokens == null) this.passwordResetTokens = new ArrayList<>();
         this.passwordResetTokens.add(token);
+    }
+
+    @PrePersist
+    private void initialReview() {
+        this.orders = new ArrayList<>();
+        this.feedbacks = new ArrayList<>();
+        this.comparison = new ArrayList<>();
+        this.viewed = new ArrayList<>();
+        this.likes = new ArrayList<>();
+        this.passwordResetTokens = new ArrayList<>();
     }
 
     @Override

@@ -35,4 +35,9 @@ public class Brand {
 
     @OneToMany(mappedBy = "brand")
     private List<Gadget> gadgets;
+
+    @PrePersist
+    private void initialReview() {
+        this.gadgets = new ArrayList<>();
+    }
 }

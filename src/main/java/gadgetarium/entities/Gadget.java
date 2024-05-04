@@ -54,7 +54,7 @@ public class Gadget {
     @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Feedback> feedbacks;
 
-    @ManyToMany(mappedBy = "gadgets", cascade = {DETACH, MERGE, REFRESH})
+    @ManyToMany(mappedBy = "gadgets", cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Order> orders;
 
     @ManyToOne(cascade = {DETACH})
@@ -71,5 +71,11 @@ public class Gadget {
     private void addOrder(Order order) {
         if (this.orders == null) this.orders = new ArrayList<>();
         this.orders.add(order);
+    }
+
+    @PrePersist
+    private void initialReview() {
+        this.feedbacks = new ArrayList<>();
+        this.orders = new ArrayList<>();
     }
 }
