@@ -186,6 +186,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public HttpResponse addToFavorites(Long subGadgetId) {
         User user = currentUser.get();
         if (user == null) {
@@ -199,15 +200,16 @@ public class UserServiceImpl implements UserService {
                 user.getLikes().remove(subGadget);
                 log.info("SubGadget '{}' successfully removed from favorites for User '{}'.", subGadget.getNameOfGadget(), user.getUsername());
                 return HttpResponse.builder().status(HttpStatus.OK).message("SubGadget removed from favorites!").build();
-            } else {
-                user.addLikes(subGadget);
-                log.info("SubGadget '{}' successfully added to favorites for User '{}'.", subGadget.getNameOfGadget(), user.getUsername());
-                return HttpResponse.builder().status(HttpStatus.OK).message("SubGadget added to favorites successfully!").build();
             }
+            user.addLikes(subGadget);
+            log.info("SubGadget '{}' successfully added to favorites for User '{}'.", subGadget.getNameOfGadget(), user.getUsername());
+            return HttpResponse.builder().status(HttpStatus.OK).message("SubGadget added to favorites successfully!").build();
+
         }
     }
 
     @Override
+    @Transactional
     public HttpResponse addAllGadgetsToFavorites(List<Long> subGadgetId) {
         User user = currentUser.get();
         if (user == null) {
@@ -217,10 +219,9 @@ public class UserServiceImpl implements UserService {
 
         for (Long subGadgets : subGadgetId) {
             SubGadget subGadget = subGadgetRepository.getByID(subGadgets);
-            if (subGadget == null) {
-                return HttpResponse.builder().status(HttpStatus.NOT_FOUND).message("SubGadget with ID " + subGadgetId + " not found!").build();
+            if (!user.getLikes().contains(subGadget) && !subGadgetsToAdd.contains(subGadget)) {
+                subGadgetsToAdd.add(subGadget);
             }
-            subGadgetsToAdd.add(subGadget);
         }
 
         synchronized (user) {
@@ -253,6 +254,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public HttpResponse deleteById(Long subGadgetId) {
         User user = currentUser.get();
         SubGadget subGadget = subGadgetRepository.getByID(subGadgetId);
@@ -266,9 +268,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public HttpResponse clearFavorites() {
-      currentUser.get().getLikes().clear();
-      return HttpResponse.builder().status(HttpStatus.OK).message("Favorites successfully cleared!").build();
+        currentUser.get().getLikes().clear();
+        return HttpResponse.builder().status(HttpStatus.OK).message("Favorites successfully cleared!").build();
 
     }
 
