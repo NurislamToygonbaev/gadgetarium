@@ -53,4 +53,6 @@ public interface GadgetService {
     List<GadgetReviewsResponse> getReviewsGadget(Long id);
 
     GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id);
+
+    byte[] downloadFile(String key);
 }

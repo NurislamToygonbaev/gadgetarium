@@ -19,6 +19,8 @@ import gadgetarium.services.GadgetService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -128,45 +130,53 @@ public class GadgetAPI {
     @Operation(summary = "новинки", description = "авторизация: все")
     @GetMapping("/all-new-gadgets")
     public GadgetPaginationForMain mainPageNews(@RequestParam(value = "page", defaultValue = "1") int page,
-                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
+                                                @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageNews(page, size);
     }
 
     @Operation(summary = "рекомендуемые", description = "авторизация: все")
     @GetMapping("/all-gadgets-recommend")
     public GadgetPaginationForMain mainPageRecommend(@RequestParam(value = "page", defaultValue = "1") int page,
-                                                @RequestParam(value = "size", defaultValue = "5") int size) {
+                                                     @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageRecommend(page, size);
     }
 
     @Operation(summary = "Посмотреть описание гаджета", description = "авторизация: все")
     @GetMapping("/see-gadget-description/{id}")
-    public GadgetDescriptionResponse getDescriptionGadget(@PathVariable Long id){
+    public GadgetDescriptionResponse getDescriptionGadget(@PathVariable Long id) {
         return gadgetService.getDescriptionGadget(id);
     }
 
     @Operation(summary = "Посмотреть характеристики гаджета", description = "авторизация: все")
     @GetMapping("/see-gadget-characteristics/{id}")
-    public GadgetCharacteristicsResponse getCharacteristicsGadget(@PathVariable Long id){
+    public GadgetCharacteristicsResponse getCharacteristicsGadget(@PathVariable Long id) {
         return gadgetService.getCharacteristicsGadget(id);
     }
 
     @Operation(summary = "Посмотреть отзывы гаджета", description = "авторизация: все")
     @GetMapping("/see-gadget-reviews/{id}")
-    public List<GadgetReviewsResponse> getReviewsGadget(@PathVariable Long id){
+    public List<GadgetReviewsResponse> getReviewsGadget(@PathVariable Long id) {
         return gadgetService.getReviewsGadget(id);
     }
 
-    @Operation(summary = "Доставка и оплата", description = "авторизация: все")
+    @Operation(summary = "Информация про доставка и оплата", description = "авторизация: все")
     @GetMapping("/see-gadget-delivery/{id}")
-    public GadgetDeliveryPriceResponse getDeliveryPriceGadget(@PathVariable Long id){
+    public GadgetDeliveryPriceResponse getDeliveryPriceGadget(@PathVariable Long id) {
         return gadgetService.getDeliveryPriceGadget(id);
     }
 
-
-
-
-
+    @Operation(summary = "Метод для скачивание PDF", description = "авторизация: все")
+    @GetMapping("/download-doc/{key}")
+    public ResponseEntity<ByteArrayResource> downloadPDF(@PathVariable String key) {
+        byte[] data = gadgetService.downloadFile(key);
+        ByteArrayResource resource = new ByteArrayResource(data);
+        return ResponseEntity
+                .ok()
+                .contentLength(data.length)
+                .header("Content-type", "application/octet-stream")
+                .header("Content-disposition", "attachment; filename=\"" + key + "\"")
+                .body(resource);
+    }
 
 }
 

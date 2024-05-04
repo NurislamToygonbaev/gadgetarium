@@ -1,5 +1,9 @@
 package gadgetarium.services.impl;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.util.IOUtils;
 import gadgetarium.dto.request.ProductsRequest;
 import gadgetarium.dto.request.AddProductRequest;
 import gadgetarium.dto.request.ProductsIdsRequest;
@@ -33,6 +37,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -47,6 +52,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GadgetServiceImpl implements GadgetService {
 
+    @Value("${application.bucket.name}")
+    private String bucketName;
     private final GadgetRepository gadgetRepo;
     private final SubGadgetRepository subGadgetRepo;
     private final CurrentUser currentUser;
@@ -54,6 +61,7 @@ public class GadgetServiceImpl implements GadgetService {
     private final BrandRepository brandRepo;
     private final SubCategoryRepository subCategoryRepo;
     private final CharValueRepository charValueRepo;
+    private final AmazonS3 s3Client;
     private static final String PHONE_URL_PREFIX = "https://nanoreview.net/ru/phone/";
     private static final String LAPTOP_URL_PREFIX = "https://nanoreview.net/ru/laptop/";
 
@@ -466,5 +474,17 @@ public class GadgetServiceImpl implements GadgetService {
             }
         }
         return data;
+    }
+
+    @Override
+    public byte[] downloadFile(String key) {
+        S3Object s3Object = s3Client.getObject(bucketName, key);
+        S3ObjectInputStream inputStream = s3Object.getObjectContent();
+        try {
+            return IOUtils.toByteArray(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new byte[0];
     }
 }
