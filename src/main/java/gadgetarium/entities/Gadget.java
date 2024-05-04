@@ -72,4 +72,10 @@ public class Gadget {
         if (this.orders == null) this.orders = new ArrayList<>();
         this.orders.add(order);
     }
+
+    @PrePersist
+    private void initialReview() {
+        this.feedbacks = new ArrayList<>();
+        this.orders = new ArrayList<>();
+    }
 }

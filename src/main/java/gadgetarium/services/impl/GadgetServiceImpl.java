@@ -62,13 +62,20 @@ public class GadgetServiceImpl implements GadgetService {
     @Transactional
     public GadgetResponse getGadgetById(Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-
         User user = currentUser.get();
         user.addViewed(gadget.getSubGadget());
 
-        int percent = gadget.getSubGadget().getDiscount().getPercent();
-        BigDecimal price = gadget.getSubGadget().getPrice();
-        BigDecimal currentPrice = checkCurrentPrice(price, percent);
+        SubGadget subGadget = gadget.getSubGadget();
+        gadgetarium.entities.Discount discount = null;
+        int percent = 0;
+
+        if (subGadget != null) {
+            discount = subGadget.getDiscount();
+        }
+
+        if (discount != null) {
+            percent = discount.getPercent();
+        }
 
         return new GadgetResponse(
                 gadget.getId(),
@@ -80,7 +87,7 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getSubGadget().getRating(),
                 percent,
                 gadget.getSubGadget().getPrice(),
-                currentPrice,
+                gadget.getSubGadget().getCurrentPrice(),
                 gadget.getSubGadget().getMainColour(),
                 gadget.getReleaseDate(),
                 gadget.getWarranty(),
