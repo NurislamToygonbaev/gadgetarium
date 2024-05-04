@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -23,10 +24,15 @@ public class CharValue {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Size(max = 3000)
-    private Map<String, String> values = new LinkedHashMap<>();
+    private Map<String, String> values;
 
     public void addCharacteristic(String key, String value) {
         if (this.values == null) this.values = new LinkedHashMap<>();
         this.values.put(key, value);
+    }
+
+    @PrePersist
+    private void initialReview() {
+        this.values = new LinkedHashMap<>();
     }
 }
