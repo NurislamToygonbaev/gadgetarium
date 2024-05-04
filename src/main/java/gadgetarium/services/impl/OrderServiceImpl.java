@@ -1,9 +1,11 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.InfoResponse;
-import gadgetarium.dto.response.InfoResponseFor;
 import gadgetarium.dto.response.OrderPagination;
+import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.InfoResponseFor;
+import gadgetarium.dto.response.OrderResponseFindById;
+import gadgetarium.dto.response.OrderInfoResponse;
 import gadgetarium.entities.Order;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
@@ -73,7 +75,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public InfoResponseFor getInfoForPeriod(ForPeriod forPeriod) {
         InfoResponseFor infoResponseFor = new InfoResponseFor();
-        if (forPeriod.equals(ForPeriod.FOR_DAY)){
+        if (forPeriod.equals(ForPeriod.FOR_DAY)) {
             infoResponseFor.setCurrentPeriod(orderRepo.forCurrentDay());
             infoResponseFor.setPreviousPeriod(orderRepo.forPreviousDay());
         } else if (forPeriod.equals(ForPeriod.FOR_MONTH)) {
@@ -84,5 +86,23 @@ public class OrderServiceImpl implements OrderService {
             infoResponseFor.setPreviousPeriod(orderRepo.forPreviousYear());
         }
         return infoResponseFor;
+    }
+
+    @Override
+    public OrderResponseFindById findOrderById(Long orderId) {
+        orderRepo.getOrderById(orderId);
+        return orderJDBCTemplate.findOrderById(orderId);
+    }
+
+    @Override
+    public OrderInfoResponse findOrderInfo(Long orderId) {
+        Order order = orderRepo.getOrderById(orderId);
+        return OrderInfoResponse.builder()
+                .id(order.getId())
+                .number(order.getNumber())
+                .status(order.getStatus().name())
+                .phoneNumber(order.getUser().getPhoneNumber())
+                .address(order.getUser().getAddress())
+                .build();
     }
 }
