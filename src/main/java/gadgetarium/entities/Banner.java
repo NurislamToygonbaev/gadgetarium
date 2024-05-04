@@ -1,5 +1,6 @@
 package gadgetarium.entities;
 
+import gadgetarium.enums.ReviewType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -8,6 +9,7 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,5 +34,10 @@ public class Banner {
     public void addImages(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
+    }
+
+    @PrePersist
+    private void initialReview() {
+        this.images = new ArrayList<>();
     }
 }

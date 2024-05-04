@@ -52,4 +52,9 @@ public class Order {
         if (this.gadgets == null) this.gadgets = new ArrayList<>();
         this.gadgets.add(gadget);
     }
+
+    @PrePersist
+    private void initialReview() {
+        this.gadgets = new ArrayList<>();
+    }
 }

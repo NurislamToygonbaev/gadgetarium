@@ -9,6 +9,7 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -57,5 +58,7 @@ public class Feedback {
     @PrePersist
     private void initialReview() {
         this.reviewType = ReviewType.NOT_READ;
+        this.dateAndTime = LocalDateTime.now();
+        this.images = new ArrayList<>();
     }
 }
