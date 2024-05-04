@@ -1,12 +1,6 @@
 package gadgetarium.entities;
 
-import jakarta.persistence.Table;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.SequenceGenerator;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -41,5 +35,10 @@ public class Category {
     public void addSubcategory(SubCategory subCategory) {
         if (this.subCategories == null) this.subCategories = new ArrayList<>();
         this.subCategories.add(subCategory);
+    }
+
+    @PrePersist
+    private void initialReview() {
+        this.subCategories = new ArrayList<>();
     }
 }

@@ -8,9 +8,9 @@ public class StringValidator implements ConstraintValidator<StringValidation, St
     @Override
     public boolean isValid(String value, ConstraintValidatorContext constraintValidatorContext) {
         if (value == null) {
-            return false; // Возвращаем false, если значение равно null
+            return false;
         }
-        // Убираем начальные и конечные пробелы, и проверяем, пустая ли строка
-        return !value.trim().isEmpty();
+
+        return !value.trim().isEmpty() && value.length() < 10;
     }
 }

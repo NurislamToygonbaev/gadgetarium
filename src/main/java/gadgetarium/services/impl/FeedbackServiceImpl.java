@@ -1,18 +1,20 @@
 package gadgetarium.services.impl;
 
 import gadgetarium.dto.request.AdminRequest;
+import gadgetarium.dto.request.FeedbackRequest;
 import gadgetarium.dto.response.AllFeedbackResponse;
 import gadgetarium.dto.response.FeedbackResponse;
+import gadgetarium.dto.response.FeedbackStatisticsResponse;
 import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.entities.Feedback;
-import gadgetarium.entities.Gadget;
-import gadgetarium.entities.SubGadget;
-import gadgetarium.entities.User;
+import gadgetarium.entities.*;
 import gadgetarium.enums.FeedbackType;
 import gadgetarium.enums.ReviewType;
+import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.FeedbackRepository;
+import gadgetarium.repositories.GadgetRepository;
+import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.FeedbackService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -20,12 +22,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @Slf4j
 @Service
@@ -33,6 +33,8 @@ import java.util.stream.Collectors;
 public class FeedbackServiceImpl implements FeedbackService {
 
     private final FeedbackRepository feedbackRepo;
+    private final GadgetRepository gadgetRepo;
+    private final CurrentUser currentUserr;
 
     @Override
     public AllFeedbackResponse getAllFeedbacks(FeedbackType feedbackType) {
@@ -52,13 +54,8 @@ public class FeedbackServiceImpl implements FeedbackService {
             return createEmptyResponse();
         }
 
-        Map<Integer, Long> defaultRatingCounts = new HashMap<>();
-        for (int rating = 1; rating <= 5; rating++) {
-            defaultRatingCounts.put(rating, 0L);
-        }
+        Map<Integer, Long> defaultRatingCounts = getRatingCounts(feedbacks1);
 
-        defaultRatingCounts.putAll(feedbacks1.stream()
-                .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting())));
         List<FeedbackResponse> feedbackResponses = feedbacks.stream()
                 .map(this::convertFeedbackToResponse)
                 .collect(Collectors.toList());
@@ -199,6 +196,90 @@ public class FeedbackServiceImpl implements FeedbackService {
             log.error("Error in getSafely in class");
             return null;
         }
+    }
+
+    @Override
+    public FeedbackStatisticsResponse reviewsStatistics(Long gadgetId) {
+        Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
+        int quantityFeedbacks = gadgetById.getFeedbacks().size();
+
+        List<Feedback> feedbacks = gadgetById.getFeedbacks();
+        Map<Integer, Long> ratingCounts = getRatingCounts(feedbacks);
+
+        return FeedbackStatisticsResponse
+                .builder()
+                .overallRating(feedbackRating(gadgetId))
+                .quantityFeedbacks(quantityFeedbacks)
+                .ratingCounts(ratingCounts)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse leaveFeedback(Long gadgetId, FeedbackRequest feedbackRequest) {
+        User currentUser = currentUserr.get();
+        Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
+        Feedback feedback = new Feedback();
+
+        feedback.setRating(feedbackRequest.grade());
+        feedback.setDescription(feedbackRequest.comment());
+        List<String> images = feedback.getImages();
+        images = new ArrayList<>(feedbackRequest.images());
+        feedback.setImages(images);
+
+        for (Order order : gadgetById.getOrders()) {
+            if (order.getUser().getId().equals(currentUser.getId()) && (order.getStatus().equals(Status.DELIVERED) || order.getStatus().equals(Status.RECEIVED))) {
+                currentUser.getFeedbacks().add(feedback);
+                feedback.setUser(currentUser);
+                gadgetById.getFeedbacks().add(feedback);
+                feedback.setGadget(gadgetById);
+                double rating = feedbackRating(gadgetId);
+                gadgetById.getSubGadget().setRating(rating);
+                gadgetById.getSubGadget().setRating(rating);
+                feedbackRepo.save(feedback);
+
+                return HttpResponse
+                        .builder()
+                        .status(HttpStatus.OK)
+                        .message("Review sent successfully!")
+                        .build();
+            }
+        }
+
+        return HttpResponse
+                .builder()
+                .status(HttpStatus.CONFLICT)
+                .message("You haven't bought this gadget!")
+                .build();
+    }
+
+    private Map<Integer, Long> getRatingCounts(List<Feedback> feedbacks) {
+        Map<Integer, Long> ratingCounts = initializeDefaultRatingCounts();
+        ratingCounts.putAll(feedbacks.stream()
+                .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting())));
+
+        return ratingCounts;
+    }
+
+    private Map<Integer, Long> initializeDefaultRatingCounts() {
+        Map<Integer, Long> defaultRatingCounts = new HashMap<>();
+        for (int rating = 1; rating <= 5; rating++) {
+            defaultRatingCounts.put(rating, 0L);
+        }
+        return defaultRatingCounts;
+    }
+
+    private double feedbackRating(Long gadgetId) {
+        Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
+        Map<Integer, Long> ratingCounts = gadgetById.getFeedbacks().stream()
+                .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting()));
+
+        int totalFeedbacks = gadgetById.getFeedbacks().size();
+        double averageRating = IntStream.rangeClosed(1, 5)
+                                       .mapToDouble(rating -> ratingCounts.getOrDefault(rating, 0L) * rating)
+                                       .sum() / totalFeedbacks;
+
+        return Math.floor(averageRating * 10) / 10.0;
     }
 }
 

@@ -1,14 +1,18 @@
 package gadgetarium.api;
 
 import gadgetarium.dto.request.AdminRequest;
+import gadgetarium.dto.request.FeedbackRequest;
 import gadgetarium.dto.response.AllFeedbackResponse;
 import gadgetarium.dto.response.FeedbackResponse;
+import gadgetarium.dto.response.FeedbackStatisticsResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.enums.FeedbackType;
 import gadgetarium.services.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.persistence.PersistenceContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -58,5 +62,20 @@ public class FeedbackAPI {
     public FeedbackResponse getFeedbackById(@PathVariable Long id){
         return feedbackService.getFeedbackById(id);
 
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(description = "Авторизация: Пользователь", summary = "Статистика отзывов по гаджету.")
+    @GetMapping("/reviews-statistics/{gadgetId}")
+    public FeedbackStatisticsResponse reviewsStatistics(@PathVariable Long gadgetId){
+        return feedbackService.reviewsStatistics(gadgetId);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(description = "Авторизация: Пользователь", summary = "Оставить отзыв по ID гаджету.")
+    @PostMapping("/leave-feedback/{gadgetId}")
+    public HttpResponse leaveFeedback(@PathVariable Long gadgetId,
+                                      @RequestBody @Valid FeedbackRequest feedbackRequest){
+        return feedbackService.leaveFeedback(gadgetId, feedbackRequest);
     }
 }

@@ -42,11 +42,11 @@ public class SubGadget {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Size(max = 3000)
-    private Map<String, String> characteristics = new LinkedHashMap<>();
+    private Map<String, String> characteristics;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @Size(max = 3000)
-    private Map<CharValue,String> charName = new LinkedHashMap<>();
+    private Map<CharValue,String> charName;
 
     @OneToOne(cascade = {REMOVE, MERGE, REFRESH})
     private Gadget gadget;
@@ -66,6 +66,9 @@ public class SubGadget {
 
     @PrePersist
     private void addNewInfo(){
-        this.characteristics = new HashMap<>();
+        this.characteristics = new LinkedHashMap<>();
+        this.images = new ArrayList<>();
+        this.charName = new LinkedHashMap<>();
     }
+
 }
