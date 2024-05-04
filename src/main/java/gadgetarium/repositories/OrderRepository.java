@@ -1,4 +1,5 @@
 package gadgetarium.repositories;
+import gadgetarium.dto.response.OrderResponseFindById;
 import gadgetarium.entities.Order;
 import gadgetarium.exceptions.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
