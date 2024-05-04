@@ -77,10 +77,8 @@ public class User implements UserDetails {
 
     public void addToBasket(SubGadget subGadget, int quantity) {
         if (this.basket.containsKey(subGadget)) {
-            int currentQuantity = this.basket.get(subGadget);
-            int totalQuantity = currentQuantity + quantity;
-            if (totalQuantity <= subGadget.getQuantity()) {
-                this.basket.put(subGadget, totalQuantity);
+            if (quantity <= subGadget.getQuantity()) {
+                this.basket.put(subGadget, quantity);
             } else {
                 throw new BadRequestException("you can't add more gadgets than there are in the database");
             }
@@ -89,13 +87,11 @@ public class User implements UserDetails {
         }
     }
 
-    public void removeFromBasket(SubGadget subGadget, int quantity) {
+    public void removeFromBasket(SubGadget subGadget) {
         if (this.basket.containsKey(subGadget)) {
             int currentQuantity = this.basket.get(subGadget);
-            int newQuantity = currentQuantity - quantity;
-            if (newQuantity <= 0) {
-                this.basket.remove(subGadget);
-            } else {
+            int newQuantity = currentQuantity - 1;
+            if (newQuantity >= 1) {
                 this.basket.put(subGadget, newQuantity);
             }
         }

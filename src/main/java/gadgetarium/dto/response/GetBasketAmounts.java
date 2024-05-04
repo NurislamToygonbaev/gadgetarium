@@ -5,7 +5,7 @@ import lombok.Builder;
 import java.math.BigDecimal;
 
 @Builder
-public record OrderAmountResponse(
+public record GetBasketAmounts(
         int quantity,
         BigDecimal discountPrice,
         BigDecimal price,
