@@ -138,6 +138,34 @@ public class GadgetAPI {
                                                 @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageRecommend(page, size);
     }
+
+    @Operation(summary = "Посмотреть описание гаджета", description = "авторизация: все")
+    @GetMapping("/see-gadget-description/{id}")
+    public GadgetDescriptionResponse getDescriptionGadget(@PathVariable Long id){
+        return gadgetService.getDescriptionGadget(id);
+    }
+
+    @Operation(summary = "Посмотреть характеристики гаджета", description = "авторизация: все")
+    @GetMapping("/see-gadget-characteristics/{id}")
+    public GadgetCharacteristicsResponse getCharacteristicsGadget(@PathVariable Long id){
+        return gadgetService.getCharacteristicsGadget(id);
+    }
+
+    @Operation(summary = "Посмотреть отзывы гаджета", description = "авторизация: все")
+    @GetMapping("/see-gadget-reviews/{id}")
+    public List<GadgetReviewsResponse> getReviewsGadget(@PathVariable Long id){
+        return gadgetService.getReviewsGadget(id);
+    }
+
+    @Operation(summary = "Доставка и оплата", description = "авторизация: все")
+    @GetMapping("/see-gadget-delivery/{id}")
+    public GadgetDeliveryPriceResponse getDeliveryPriceGadget(@PathVariable Long id){
+        return gadgetService.getDeliveryPriceGadget(id);
+    }
+
+
+
+
 }
 
 

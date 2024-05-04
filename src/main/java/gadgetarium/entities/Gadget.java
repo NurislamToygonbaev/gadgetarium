@@ -39,7 +39,7 @@ public class Gadget {
     private String videoUrl;
     @Column(length = 500)
     private String PDFUrl;
-    @Column(length = 500)
+    @Column(length = 1000)
     private String description;
 
     @Enumerated(EnumType.STRING)
@@ -54,7 +54,7 @@ public class Gadget {
     @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Feedback> feedbacks;
 
-    @ManyToMany(mappedBy = "gadgets", cascade = {DETACH, MERGE, REFRESH})
+    @ManyToMany(mappedBy = "gadgets", cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Order> orders;
 
     @ManyToOne(cascade = {DETACH})

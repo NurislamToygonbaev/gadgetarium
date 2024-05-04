@@ -167,8 +167,8 @@ values (1, 'Nurislam', 'Toygonbaev', 'nurislam@gmail.com', '+996701111111', 'hel
        (50, 'Azamat', 'Abylkanov', 'nurlan@gmail.com', '+996703939393', 'I liked it very much');
 
 insert into categories(id, category_name)
-values (1, 'Smartphones'),
-       (2, 'Laptops and tablets'),
+values (1, 'phone'),
+       (2, 'laptop'),
        (3, 'Smart watches and bracelets'),
        (4, 'Accessories');
 
@@ -510,7 +510,7 @@ VALUES ('2023-01-20', 1, 123456789, 50, 1, 1,
         'https://example.com/iphone_manual.pdf', 'https://youtube.com/iphone_review', 'GB_512', 'RAM_16'),
        ('2023-01-20', 3, 864209518, 29, 22, 22,
         'Logitech G203 Lightsync - a budget-friendly gaming mouse that offers high performance and customizable RGB lighting. With its lightweight design, responsive sensor, and customizable buttons, it provides precise control and comfort during gaming sessions. Whether youre playing first-person shooters, MOBAs, or strategy games, the Logitech G203 Lightsync enhances your gaming experience without breaking the bank.',
-        'https://example.com/iphone_manual.pdf', 'https://youtube.com/iphone_review', 'GB_512', 'RAM_16'),
+        'https://example.com/iphone_manual.pdf', 'http s://youtube.com/iphone_review', 'GB_512', 'RAM_16'),
        ('2023-01-20', 6, 142503703, 28, 23, 23,
         'Sonos Arc - a premium soundbar that delivers immersive sound for your movies, music, and more. With its sleek design, Dolby Atmos support, and built-in voice control, its perfect for any home entertainment setup. Whether youre watching blockbuster movies, listening to your favorite albums, or playing immersive games, the Sonos Arc enhances your audio experience with rich, detailed sound.',
         'https://example.com/iphone_manual.pdf', 'https://youtube.com/iphone_review', 'GB_512', 'RAM_16'),

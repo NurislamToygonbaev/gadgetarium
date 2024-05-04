@@ -45,4 +45,12 @@ public interface GadgetService {
     GadgetPaginationForMain mainPageNews(int page, int size);
 
     GadgetPaginationForMain mainPageRecommend(int page, int size);
+
+    GadgetDescriptionResponse getDescriptionGadget(Long id);
+
+    GadgetCharacteristicsResponse getCharacteristicsGadget(Long id);
+
+    List<GadgetReviewsResponse> getReviewsGadget(Long id);
+
+    GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id);
 }

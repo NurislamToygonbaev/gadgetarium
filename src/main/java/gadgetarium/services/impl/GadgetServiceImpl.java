@@ -12,12 +12,7 @@ import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.dto.response.ViewedProductsResponse;
-import gadgetarium.entities.Gadget;
-import gadgetarium.entities.SubGadget;
-import gadgetarium.entities.User;
-import gadgetarium.entities.SubCategory;
-import gadgetarium.entities.Brand;
-import gadgetarium.entities.CharValue;
+import gadgetarium.entities.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
@@ -157,16 +152,16 @@ public class GadgetServiceImpl implements GadgetService {
         List<ViewedProductsResponse> responses = new ArrayList<>();
 
         for (SubGadget subGadget : viewed) {
-                responses.add(new ViewedProductsResponse(
-                        subGadget.getId(),
-                        subGadget.getDiscount().getPercent(),
-                        subGadget.getImages().getFirst(),
-                        subGadget.getNameOfGadget(),
-                        subGadget.getRating(),
-                        subGadget.getGadget().getFeedbacks().size(),
-                        subGadget.getPrice(),
-                        subGadget.getCurrentPrice()
-                ));
+            responses.add(new ViewedProductsResponse(
+                    subGadget.getId(),
+                    subGadget.getDiscount().getPercent(),
+                    subGadget.getImages().getFirst(),
+                    subGadget.getNameOfGadget(),
+                    subGadget.getRating(),
+                    subGadget.getGadget().getFeedbacks().size(),
+                    subGadget.getPrice(),
+                    subGadget.getCurrentPrice()
+            ));
         }
 
         return responses;
@@ -330,6 +325,96 @@ public class GadgetServiceImpl implements GadgetService {
     public GadgetPaginationForMain mainPageRecommend(int page, int size) {
         return gadgetJDBCTemplateRepo.mainPageRecommend(page, size);
     }
+
+    @Override
+    public GadgetDescriptionResponse getDescriptionGadget(Long id) {
+        Gadget gadget = gadgetRepo.getGadgetById(id);
+        return GadgetDescriptionResponse.builder()
+                .videoUrl(gadget.getVideoUrl())
+                .description(gadget.getDescription())
+                .build();
+    }
+
+    @Override
+    public GadgetCharacteristicsResponse getCharacteristicsGadget(Long id) {
+        try {
+            Gadget gadget = gadgetRepo.getGadgetById(id);
+
+            SubGadget subGadget = gadget.getSubGadget();
+            if (subGadget == null) {
+                log.warn("SubGadget for Gadget with ID {} is null.", id);
+                return GadgetCharacteristicsResponse.builder().build();
+            }
+
+            Map<String, Map<String, String>> mainCharacteristics = new HashMap<>();
+            Map<CharValue, String> charName = subGadget.getCharName();
+
+            for (Map.Entry<CharValue, String> entry : charName.entrySet()) {
+                CharValue charValue = entry.getKey();
+                if (charValue == null || charValue.getValues() == null) {
+                    log.warn("Null CharValue or its values encountered.");
+                    continue;
+                }
+                Map<String, String> values = new HashMap<>();
+                for (Map.Entry<String, String> entry1 : charValue.getValues().entrySet()) {
+                    values.put(entry1.getKey(), entry1.getValue());
+                }
+                mainCharacteristics.put(entry.getValue(), values);
+            }
+
+            return GadgetCharacteristicsResponse.builder()
+                    .mainCharacteristics(mainCharacteristics)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error while retrieving gadget characteristics", e);
+            return GadgetCharacteristicsResponse.builder().build();
+        }
+    }
+
+    @Override
+    public List<GadgetReviewsResponse> getReviewsGadget(Long id) {
+        List<GadgetReviewsResponse> reviewsResponses = new ArrayList<>();
+        try {
+            Gadget gadget = gadgetRepo.getGadgetById(id);
+            if (gadget != null && gadget.getFeedbacks() != null) {
+                for (Feedback feedback : gadget.getFeedbacks()) {
+                    if (feedback != null && feedback.getUser() != null) {
+                        GadgetReviewsResponse reviewsResponse = GadgetReviewsResponse.builder()
+                                .id(feedback.getId())
+                                .image(feedback.getUser().getImage())
+                                .fullName(feedback.getUser().getFirstName() + " " + feedback.getUser().getLastName())
+                                .dateTime(feedback.getDateAndTime())
+                                .rating(feedback.getRating())
+                                .description(feedback.getDescription())
+                                .responseAdmin(feedback.getResponseAdmin())
+                                .build();
+                        reviewsResponses.add(reviewsResponse);
+                    } else {
+                        log.warn("Null feedback or user for Gadget with ID: {}", id);
+                    }
+                }
+            } else {
+                log.warn("Gadget or its feedbacks are null for ID: {}", id);
+            }
+        } catch (Exception e) {
+            log.error("Error while retrieving gadget reviews for ID: {}", id, e);
+        }
+        return reviewsResponses;
+    }
+
+    @Override
+    public GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id) {
+        Gadget gadget = gadgetRepo.getGadgetById(id);
+
+        if (gadget == null || gadget.getOrders() == null || gadget.getOrders().isEmpty()) {
+            throw new IllegalStateException("No gadget found or gadget has no orders.");
+        }
+
+        return GadgetDeliveryPriceResponse.builder()
+                .deliveryPrice(gadget.getOrders().getFirst().getDeliveryPrice())
+                .build();
+    }
+
 
     private String buildApiUrl(Gadget gadget) {
         String modelName = gadget.getSubGadget().getNameOfGadget();
