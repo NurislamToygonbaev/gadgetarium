@@ -5,8 +5,7 @@ import gadgetarium.dto.request.CategoryNameRequest;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
 import gadgetarium.dto.response.*;
-import gadgetarium.entities.SubGadget;
-import gadgetarium.entities.User;
+import gadgetarium.entities.*;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
@@ -20,13 +19,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class  UserServiceImpl implements UserService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
@@ -63,7 +63,7 @@ public class  UserServiceImpl implements UserService {
         String password = userByEmail.getPassword();
         String decodedPassword = signInRequest.password();
         if (!passwordEncoder.matches(decodedPassword, password)) {
-                throw new AuthenticationException("Incorrect email and/or password.");
+            throw new AuthenticationException("Incorrect email and/or password.");
         }
         return SignResponse.builder().id(userByEmail.getId()).role(userByEmail.getRole())
                 .phoneNumber(userByEmail.getPhoneNumber()).token(jwtService.createToken(userByEmail))
@@ -183,6 +183,118 @@ public class  UserServiceImpl implements UserService {
         user.getComparison().clear();
         log.info("Comparison cleared");
         return HttpResponse.builder().status(HttpStatus.OK).message("Comparison cleared").build();
+    }
+
+    @Override
+    public HttpResponse addToFavorites(Long subGadgetId) {
+        User user = currentUser.get();
+        if (user == null) {
+            return HttpResponse.builder().status(HttpStatus.UNAUTHORIZED).message("User not authenticated!").build();
+        }
+
+        SubGadget subGadget = subGadgetRepository.getByID(subGadgetId);
+
+        synchronized (user) {
+            if (user.getLikes().contains(subGadget)) {
+                user.getLikes().remove(subGadget);
+                log.info("SubGadget '{}' successfully removed from favorites for User '{}'.", subGadget.getNameOfGadget(), user.getUsername());
+                return HttpResponse.builder().status(HttpStatus.OK).message("SubGadget removed from favorites!").build();
+            } else {
+                user.addLikes(subGadget);
+                log.info("SubGadget '{}' successfully added to favorites for User '{}'.", subGadget.getNameOfGadget(), user.getUsername());
+                return HttpResponse.builder().status(HttpStatus.OK).message("SubGadget added to favorites successfully!").build();
+            }
+        }
+    }
+
+    @Override
+    public HttpResponse addAllGadgetsToFavorites(List<Long> subGadgetId) {
+        User user = currentUser.get();
+        if (user == null) {
+            return HttpResponse.builder().status(HttpStatus.UNAUTHORIZED).message("User not authenticated!").build();
+        }
+        List<SubGadget> subGadgetsToAdd = new ArrayList<>();
+
+        for (Long subGadgets : subGadgetId) {
+            SubGadget subGadget = subGadgetRepository.getByID(subGadgets);
+            if (subGadget == null) {
+                return HttpResponse.builder().status(HttpStatus.NOT_FOUND).message("SubGadget with ID " + subGadgetId + " not found!").build();
+            }
+            subGadgetsToAdd.add(subGadget);
+        }
+
+        synchronized (user) {
+            user.getLikes().addAll(subGadgetsToAdd);
+        }
+
+        return HttpResponse.builder().status(HttpStatus.OK).message("Gadgets successfully added to favorites!").build();
+
+    }
+
+    @Override
+    public List<ListComparisonResponse> seeFavorites() {
+        List<ListComparisonResponse> listComparisonResponses = new ArrayList<>();
+        for (SubGadget like : currentUser.get().getLikes()) {
+            listComparisonResponses.add(convert(like));
+        }
+        return listComparisonResponses;
+    }
+
+    @Override
+    public List<AllFavoritesResponse> getAllFavorites() {
+        List<AllFavoritesResponse> allFavoritesResponses = new ArrayList<>();
+        for (SubGadget like : currentUser.get().getLikes()) {
+            AllFavoritesResponse response = convertToResponse(like);
+            if (response != null) {
+                allFavoritesResponses.add(response);
+            }
+        }
+        return allFavoritesResponses;
+    }
+
+    @Override
+    public HttpResponse deleteById(Long subGadgetId) {
+        User user = currentUser.get();
+        SubGadget subGadget = subGadgetRepository.getByID(subGadgetId);
+        if (user.getLikes().contains(subGadget)) {
+            user.getLikes().remove(subGadget);
+            log.info("Gadget successfully removed from favorites!");
+            return HttpResponse.builder().status(HttpStatus.OK).message("Gadget successfully removed from favorites!").build();
+        }
+
+        return HttpResponse.builder().status(HttpStatus.NOT_FOUND).message("There is no such gadget in favorites").build();
+    }
+
+    @Override
+    public HttpResponse clearFavorites() {
+      currentUser.get().getLikes().clear();
+      return HttpResponse.builder().status(HttpStatus.OK).message("Favorites successfully cleared!").build();
+
+    }
+
+    private AllFavoritesResponse convertToResponse(SubGadget gadget) {
+        if (gadget == null || gadget.getGadget() == null || gadget.getImages() == null ||
+            gadget.getGadget().getSubCategory() == null || gadget.getGadget().getBrand() == null) {
+            return null;
+        }
+
+        Gadget parentGadget = gadget.getGadget();
+        List<String> images = gadget.getImages();
+        Category category = parentGadget.getSubCategory().getCategory();
+        Brand brand = parentGadget.getBrand();
+
+        return new AllFavoritesResponse(
+                gadget.getId(),
+                images.getFirst(),
+                category.getCategoryName(),
+                brand.getBrandName(),
+                gadget.getNameOfGadget(),
+                parentGadget.getMemory(),
+                gadget.getMainColour(),
+                gadget.getRating(),
+                gadget.getPrice(),
+                gadget.getCurrentPrice()
+        );
     }
 
     private ListComparisonResponse convert(SubGadget subGadget) {
