@@ -51,7 +51,7 @@ public class User implements UserDetails {
     private List<Feedback> feedbacks;
 
     @ElementCollection(fetch = FetchType.EAGER)
-    private Map<SubGadget, Integer> basket = new LinkedHashMap<>();
+    private Map<SubGadget, Integer> basket;
 
     @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> comparison;
@@ -129,6 +129,7 @@ public class User implements UserDetails {
         this.viewed = new ArrayList<>();
         this.likes = new ArrayList<>();
         this.passwordResetTokens = new ArrayList<>();
+        this.basket = new LinkedHashMap<>();
     }
 
     @Override
