@@ -372,10 +372,7 @@ public class GadgetServiceImpl implements GadgetService {
                     log.warn("Null CharValue or its values encountered.");
                     continue;
                 }
-                Map<String, String> values = new HashMap<>();
-                for (Map.Entry<String, String> entry1 : charValue.getValues().entrySet()) {
-                    values.put(entry1.getKey(), entry1.getValue());
-                }
+                Map<String, String> values = new HashMap<>(charValue.getValues());
                 mainCharacteristics.put(entry.getValue(), values);
             }
 
@@ -477,7 +474,11 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public byte[] downloadFile(String key) {
+    public byte[] downloadFile(String key, Long gadgetId) {
+        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
+        if (!gadget.getPDFUrl().contains(bucketName+key)){
+            throw new NotFoundException("not found");
+        }
         S3Object s3Object = s3Client.getObject(bucketName, key);
         S3ObjectInputStream inputStream = s3Object.getObjectContent();
         try {

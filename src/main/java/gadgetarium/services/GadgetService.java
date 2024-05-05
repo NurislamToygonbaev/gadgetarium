@@ -54,5 +54,5 @@ public interface GadgetService {
 
     GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id);
 
-    byte[] downloadFile(String key);
+    byte[] downloadFile(String key, Long gadgetId);
 }

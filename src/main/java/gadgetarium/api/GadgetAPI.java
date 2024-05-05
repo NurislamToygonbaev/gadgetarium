@@ -166,9 +166,10 @@ public class GadgetAPI {
     }
 
     @Operation(summary = "Метод для скачивание PDF", description = "авторизация: все")
-    @GetMapping("/download-doc/{key}")
-    public ResponseEntity<ByteArrayResource> downloadPDF(@PathVariable String key) {
-        byte[] data = gadgetService.downloadFile(key);
+    @GetMapping("/download-doc/{key}/{id}")
+    public ResponseEntity<ByteArrayResource> downloadPDF(@PathVariable String key,
+                                                         @PathVariable Long id) {
+        byte[] data = gadgetService.downloadFile(key, id);
         ByteArrayResource resource = new ByteArrayResource(data);
         return ResponseEntity
                 .ok()
