@@ -22,7 +22,7 @@ public class JwtService {
                 .withClaim("role", user.getRole().name())
                 .withClaim("id", user.getId())
                 .withIssuedAt(ZonedDateTime.now().toInstant())
-                .withExpiresAt(ZonedDateTime.now().plusHours(1).toInstant())
+                .withExpiresAt(ZonedDateTime.now().plusHours(23).toInstant())
                 .sign(Algorithm.HMAC512(secretKey));
     }
 
