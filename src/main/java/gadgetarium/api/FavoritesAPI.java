@@ -29,7 +29,7 @@ public class FavoritesAPI {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: User", summary = "Метод добовляет несколько гаджетов в избранный")
-    @PostMapping("add-all-favorites")
+    @PostMapping("/add-all-favorites")
     public HttpResponse addAllGadgetsToFavorites(@RequestParam List<Long> subGadgetId){
         return userService.addAllGadgetsToFavorites(subGadgetId);
     }
@@ -43,7 +43,7 @@ public class FavoritesAPI {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: User", summary = "Метод для просмотра всех гаджетов в избранный")
-    @GetMapping("get-all-favorites")
+    @GetMapping("/get-all-favorites")
     public List<AllFavoritesResponse> getAllFavorites(){
         return userService.getAllFavorites();
     }
