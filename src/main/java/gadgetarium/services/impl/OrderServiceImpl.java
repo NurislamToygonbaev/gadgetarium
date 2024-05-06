@@ -1,12 +1,8 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.response.InfoResponse;
-import gadgetarium.dto.response.OrderPagination;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.InfoResponseFor;
-import gadgetarium.dto.response.OrderResponseFindById;
-import gadgetarium.dto.response.OrderInfoResponse;
+import gadgetarium.dto.response.*;
 import gadgetarium.entities.Order;
+import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 import gadgetarium.repositories.OrderRepository;
@@ -28,6 +24,7 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepo;
     private final OrderJDBCTemplate orderJDBCTemplate;
+    private final CurrentUser currentUser;
 
     @Override
     public OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
@@ -104,5 +101,10 @@ public class OrderServiceImpl implements OrderService {
                 .phoneNumber(order.getUser().getPhoneNumber())
                 .address(order.getUser().getAddress())
                 .build();
+    }
+
+    @Override
+    public AllOrderHistoryResponse getAllOrdersHistory() {
+return null;
     }
 }

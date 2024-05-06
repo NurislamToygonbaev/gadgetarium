@@ -20,4 +20,6 @@ public interface OrderService {
     OrderResponseFindById findOrderById(Long orderId);
 
     OrderInfoResponse findOrderInfo(Long orderId);
+
+    AllOrderHistoryResponse getAllOrdersHistory();
 }
