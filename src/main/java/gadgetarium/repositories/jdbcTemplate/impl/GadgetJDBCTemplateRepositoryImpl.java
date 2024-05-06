@@ -241,7 +241,6 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
 
-
                     return new GadgetsResponse(
                             rs.getLong("id"),
                             imagesFirst,
