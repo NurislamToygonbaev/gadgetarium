@@ -59,7 +59,7 @@ public class User implements UserDetails {
     @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> viewed;
 
-    @ManyToMany(cascade = {REFRESH, MERGE})
+    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> likes;
 
     @OneToMany(mappedBy = "user", cascade = {REMOVE, REFRESH})
