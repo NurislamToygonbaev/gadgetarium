@@ -39,7 +39,7 @@ public class Gadget {
     private String videoUrl;
     @Column(length = 500)
     private String PDFUrl;
-    @Column(length = 500)
+    @Column(length = 1000)
     private String description;
 
     @Enumerated(EnumType.STRING)

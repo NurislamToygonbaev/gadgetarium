@@ -1,5 +1,9 @@
 package gadgetarium.services.impl;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.S3Object;
+import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.util.IOUtils;
 import gadgetarium.dto.request.ProductsRequest;
 import gadgetarium.dto.request.AddProductRequest;
 import gadgetarium.dto.request.ProductsIdsRequest;
@@ -12,16 +16,12 @@ import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.dto.response.ViewedProductsResponse;
-import gadgetarium.entities.Gadget;
-import gadgetarium.entities.SubGadget;
-import gadgetarium.entities.User;
-import gadgetarium.entities.SubCategory;
-import gadgetarium.entities.Brand;
-import gadgetarium.entities.CharValue;
+import gadgetarium.entities.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
 import gadgetarium.enums.Sort;
+import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubCategoryRepository;
@@ -37,6 +37,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -51,6 +52,8 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GadgetServiceImpl implements GadgetService {
 
+    @Value("${application.bucket.name}")
+    private String bucketName;
     private final GadgetRepository gadgetRepo;
     private final SubGadgetRepository subGadgetRepo;
     private final CurrentUser currentUser;
@@ -58,6 +61,7 @@ public class GadgetServiceImpl implements GadgetService {
     private final BrandRepository brandRepo;
     private final SubCategoryRepository subCategoryRepo;
     private final CharValueRepository charValueRepo;
+    private final AmazonS3 s3Client;
     private static final String PHONE_URL_PREFIX = "https://nanoreview.net/ru/phone/";
     private static final String LAPTOP_URL_PREFIX = "https://nanoreview.net/ru/laptop/";
 
@@ -164,16 +168,16 @@ public class GadgetServiceImpl implements GadgetService {
         List<ViewedProductsResponse> responses = new ArrayList<>();
 
         for (SubGadget subGadget : viewed) {
-                responses.add(new ViewedProductsResponse(
-                        subGadget.getId(),
-                        subGadget.getDiscount().getPercent(),
-                        subGadget.getImages().getFirst(),
-                        subGadget.getNameOfGadget(),
-                        subGadget.getRating(),
-                        subGadget.getGadget().getFeedbacks().size(),
-                        subGadget.getPrice(),
-                        subGadget.getCurrentPrice()
-                ));
+            responses.add(new ViewedProductsResponse(
+                    subGadget.getId(),
+                    subGadget.getDiscount().getPercent(),
+                    subGadget.getImages().getFirst(),
+                    subGadget.getNameOfGadget(),
+                    subGadget.getRating(),
+                    subGadget.getGadget().getFeedbacks().size(),
+                    subGadget.getPrice(),
+                    subGadget.getCurrentPrice()
+            ));
         }
 
         return responses;
@@ -338,6 +342,95 @@ public class GadgetServiceImpl implements GadgetService {
         return gadgetJDBCTemplateRepo.mainPageRecommend(page, size);
     }
 
+    @Override
+    public GadgetDescriptionResponse getDescriptionGadget(Long id) {
+        Gadget gadget = gadgetRepo.getGadgetById(id);
+        return GadgetDescriptionResponse.builder()
+                .id(gadget.getId())
+                .videoUrl(gadget.getVideoUrl())
+                .description(gadget.getDescription())
+                .build();
+    }
+
+    @Override
+    public GadgetCharacteristicsResponse getCharacteristicsGadget(Long id) {
+        try {
+            Gadget gadget = gadgetRepo.getGadgetById(id);
+
+            SubGadget subGadget = gadget.getSubGadget();
+            if (subGadget == null) {
+                log.warn("SubGadget for Gadget with ID {} is null.", id);
+                return GadgetCharacteristicsResponse.builder().build();
+            }
+
+            Map<String, Map<String, String>> mainCharacteristics = new HashMap<>();
+            Map<CharValue, String> charName = subGadget.getCharName();
+
+            for (Map.Entry<CharValue, String> entry : charName.entrySet()) {
+                CharValue charValue = entry.getKey();
+                if (charValue == null || charValue.getValues() == null) {
+                    log.warn("Null CharValue or its values encountered.");
+                    continue;
+                }
+                Map<String, String> values = new HashMap<>(charValue.getValues());
+                mainCharacteristics.put(entry.getValue(), values);
+            }
+
+            return GadgetCharacteristicsResponse.builder()
+                    .id(gadget.getId())
+                    .mainCharacteristics(mainCharacteristics)
+                    .build();
+        } catch (Exception e) {
+            log.error("Error while retrieving gadget characteristics", e);
+            return GadgetCharacteristicsResponse.builder().build();
+        }
+    }
+
+    @Override
+    public List<GadgetReviewsResponse> getReviewsGadget(Long id) {
+        List<GadgetReviewsResponse> reviewsResponses = new ArrayList<>();
+        try {
+            Gadget gadget = gadgetRepo.getGadgetById(id);
+            if (gadget != null && gadget.getFeedbacks() != null) {
+                for (Feedback feedback : gadget.getFeedbacks()) {
+                    if (feedback != null && feedback.getUser() != null) {
+                        GadgetReviewsResponse reviewsResponse = GadgetReviewsResponse.builder()
+                                .id(feedback.getId())
+                                .image(feedback.getUser().getImage())
+                                .fullName(feedback.getUser().getFirstName() + " " + feedback.getUser().getLastName())
+                                .dateTime(feedback.getDateAndTime())
+                                .rating(feedback.getRating())
+                                .description(feedback.getDescription())
+                                .responseAdmin(feedback.getResponseAdmin())
+                                .build();
+                        reviewsResponses.add(reviewsResponse);
+                    } else {
+                        log.warn("Null feedback or user for Gadget with ID: {}", id);
+                    }
+                }
+            } else {
+                log.warn("Gadget or its feedbacks are null for ID: {}", id);
+            }
+        } catch (Exception e) {
+            log.error("Error while retrieving gadget reviews for ID: {}", id, e);
+        }
+        return reviewsResponses;
+    }
+
+    @Override
+    public GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id) {
+        Gadget gadget = gadgetRepo.getGadgetById(id);
+
+        if (gadget == null || gadget.getOrders() == null || gadget.getOrders().isEmpty()) {
+            throw new IllegalArgumentException("No gadget found or gadget has no orders.");
+        }
+
+        return GadgetDeliveryPriceResponse.builder()
+                .deliveryPrice(gadget.getOrders().getFirst().getDeliveryPrice())
+                .build();
+    }
+
+
     private String buildApiUrl(Gadget gadget) {
         String modelName = gadget.getSubGadget().getNameOfGadget();
         String brand = gadget.getBrand().getBrandName();
@@ -378,5 +471,21 @@ public class GadgetServiceImpl implements GadgetService {
             }
         }
         return data;
+    }
+
+    @Override
+    public byte[] downloadFile(String key, Long gadgetId) {
+        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
+        if (!gadget.getPDFUrl().contains(bucketName+key)){
+            throw new NotFoundException("not found");
+        }
+        S3Object s3Object = s3Client.getObject(bucketName, key);
+        S3ObjectInputStream inputStream = s3Object.getObjectContent();
+        try {
+            return IOUtils.toByteArray(inputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new byte[0];
     }
 }
