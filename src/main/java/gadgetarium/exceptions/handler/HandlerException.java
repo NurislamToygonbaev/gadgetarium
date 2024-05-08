@@ -101,4 +101,15 @@ public class HandlerException {
                 .message(e.getMessage())
                 .build();
     }
+
+    @ExceptionHandler(PaymentProcessingException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionResponse paymentProcessingException(PaymentProcessingException e){
+        log.error(e.getMessage());
+        return ExceptionResponse.builder()
+                .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                .exceptionClassName(e.getClass().getSimpleName())
+                .message(e.getMessage())
+                .build();
+    }
 }

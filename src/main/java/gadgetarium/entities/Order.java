@@ -34,7 +34,7 @@ public class Order {
     private Long number;
     private boolean typeOrder;
     private LocalDate createdAt;
-    private BigDecimal deliveryPrice;
+    private BigDecimal price;
 
     @Enumerated(EnumType.STRING)
     private Payment payment;
@@ -42,11 +42,14 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToMany(cascade = {DETACH, MERGE, REFRESH})
+    @ManyToMany(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Gadget> gadgets;
 
     @ManyToOne(cascade = {DETACH})
     private User user;
+
+    @OneToOne(cascade = {DETACH})
+    private DeliveryPrice deliveryPrice;
 
     private void addGadget(Gadget gadget) {
         if (this.gadgets == null) this.gadgets = new ArrayList<>();
