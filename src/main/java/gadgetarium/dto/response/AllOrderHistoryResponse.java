@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 @Builder
 public record AllOrderHistoryResponse(
+        Long id,
         LocalDate createdAt,
         Long number,
         Status status,

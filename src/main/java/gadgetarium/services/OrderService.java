@@ -5,6 +5,7 @@ import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface OrderService {
     OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size);
@@ -21,5 +22,7 @@ public interface OrderService {
 
     OrderInfoResponse findOrderInfo(Long orderId);
 
-    AllOrderHistoryResponse getAllOrdersHistory();
+    List<AllOrderHistoryResponse> getAllOrdersHistory();
+
+    OrderHistoryResponse getOrderHistoryById(Long orderId);
 }

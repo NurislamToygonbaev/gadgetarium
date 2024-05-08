@@ -1,10 +1,13 @@
 package gadgetarium.services.impl;
 
 import gadgetarium.dto.response.*;
+import gadgetarium.entities.Gadget;
 import gadgetarium.entities.Order;
+import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
+import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
 import gadgetarium.services.OrderService;
@@ -16,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -104,7 +108,56 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public AllOrderHistoryResponse getAllOrdersHistory() {
-return null;
+    public List<AllOrderHistoryResponse> getAllOrdersHistory() {
+        return orderRepo.getAllHistory(currentUser.get().getId());
+    }
+
+    @Override
+    public OrderHistoryResponse getOrderHistoryById(Long orderId) throws NotFoundException {
+        Optional<Order> optionalOrder = currentUser.get().getOrders().stream()
+                .filter(order -> Objects.equals(order.getId(), orderId))
+                .findFirst();
+
+        Order foundOrder = optionalOrder.orElseThrow(() -> new NotFoundException("Order not found"));
+
+        User user = foundOrder.getUser();
+        return OrderHistoryResponse.builder()
+                .number(foundOrder.getNumber())
+                .privateGadgetResponse( mapGadgets(foundOrder.getGadgets()))
+                .status(foundOrder.getStatus())
+                .clientFullName(user.getFirstName() + " " + user.getLastName())
+                .userName(user.getFirstName())
+                .address(user.getAddress())
+                .phoneNumber(user.getPhoneNumber())
+                .email(user.getEmail())
+                .discount(foundOrder.getDiscountPrice())
+                .currentPrice(foundOrder.getTotalPrice())
+                .createdAt(foundOrder.getCreatedAt())
+                .payment(foundOrder.getPayment())
+                .lastName(user.getLastName())
+                .build();
+    }
+
+    private List<PrivateGadgetResponse> mapGadgets(List<Gadget> gadgets) {
+        List<PrivateGadgetResponse> gadgetResponses = new ArrayList<>();
+
+        for (Gadget gadget : gadgets) {
+            SubGadget subGadget = gadget.getSubGadget();
+            List<String> images = subGadget != null && !subGadget.getImages().isEmpty() ?
+                    Collections.singletonList(subGadget.getImages().getFirst()) :
+                    Collections.emptyList();
+            PrivateGadgetResponse privateGadgetResponse = PrivateGadgetResponse.builder()
+                    .id(gadget.getId())
+                    .gadgetImage(images.isEmpty() ? null : Collections.singletonList(images.getFirst()))
+                    .nameOfGadget(subGadget != null ? subGadget.getNameOfGadget() : null)
+                    .subCategoryName(gadget.getSubCategory().getSubCategoryName())
+                    .rating(subGadget != null ? subGadget.getRating() : null)
+                    .countRating(0)
+                    .currentPrice(subGadget != null ? subGadget.getCurrentPrice() : null)
+                    .build();
+            gadgetResponses.add(privateGadgetResponse);
+
+        }
+        return gadgetResponses;
     }
 }
