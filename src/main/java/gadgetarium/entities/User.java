@@ -1,6 +1,7 @@
 package gadgetarium.entities;
 
 import gadgetarium.enums.Role;
+import gadgetarium.exceptions.BadRequestException;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -8,13 +9,10 @@ import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-
-import java.util.Collection;
 
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
@@ -52,8 +50,8 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "user", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Feedback> feedbacks;
 
-    @ManyToMany(cascade = {REFRESH, MERGE})
-    private List<SubGadget> basket;
+    @ElementCollection(fetch = FetchType.EAGER)
+    private Map<SubGadget, Integer> basket;
 
     @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> comparison;
@@ -61,7 +59,7 @@ public class User implements UserDetails {
     @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> viewed;
 
-    @ManyToMany(cascade = {REFRESH, MERGE})
+    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> likes;
 
     @OneToMany(mappedBy = "user", cascade = {REMOVE, REFRESH})
@@ -77,9 +75,30 @@ public class User implements UserDetails {
         this.feedbacks.add(feedback);
     }
 
-    public void addBasket(SubGadget basket) {
-        if (this.basket == null) this.basket = new ArrayList<>();
-        this.basket.add(basket);
+    public void addToBasket(SubGadget subGadget, int quantity) {
+        if (this.basket.containsKey(subGadget)) {
+            if (quantity <= subGadget.getQuantity()) {
+                this.basket.put(subGadget, quantity);
+            } else {
+                throw new BadRequestException("you can't add more gadgets than there are in the database");
+            }
+        } else {
+            this.basket.put(subGadget, Math.min(quantity, subGadget.getQuantity()));
+        }
+    }
+
+    public void removeFromBasket(SubGadget subGadget) {
+        if (this.basket.containsKey(subGadget)) {
+            int currentQuantity = this.basket.get(subGadget);
+            int newQuantity = currentQuantity - 1;
+            if (newQuantity >= 1) {
+                this.basket.put(subGadget, newQuantity);
+            }
+        }
+    }
+
+    public void deleteFromBasket(SubGadget subGadget) {
+        basket.remove(subGadget);
     }
 
     public void addComparison(SubGadget comparison) {
@@ -110,6 +129,7 @@ public class User implements UserDetails {
         this.viewed = new ArrayList<>();
         this.likes = new ArrayList<>();
         this.passwordResetTokens = new ArrayList<>();
+        this.basket = new LinkedHashMap<>();
     }
 
     @Override
