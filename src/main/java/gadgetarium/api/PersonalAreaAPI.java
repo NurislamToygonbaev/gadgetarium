@@ -1,13 +1,13 @@
 package gadgetarium.api;
 
-import gadgetarium.dto.response.AllOrderHistoryResponse;
-import gadgetarium.dto.response.OrderHistoryResponse;
+import gadgetarium.dto.request.ChangePasswordRequest;
+import gadgetarium.dto.request.CurrentUserProfileRequest;
+import gadgetarium.dto.request.UserImageRequest;
+import gadgetarium.dto.response.*;
 import gadgetarium.services.OrderService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -27,4 +27,20 @@ public class PersonalAreaAPI {
     public OrderHistoryResponse getOrderHistoryById(@PathVariable Long orderId){
         return orderService.getOrderHistoryById(orderId);
     }
+
+    @PostMapping("/edit-profile")
+    public CurrentUserProfileResponse editProfile(@RequestBody @Valid CurrentUserProfileRequest currentUserProfileRequest){
+        return orderService.editProfile(currentUserProfileRequest);
+    }
+
+    @PutMapping("/add-image")
+    public UserImageResponse addPhotoAndEdit(@RequestBody @Valid UserImageRequest userImageRequest ){
+        return orderService.addPhotoAndEdit(userImageRequest);
+    }
+
+    @PostMapping("/change-password")
+    public HttpResponse changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
+        return orderService.changePassword(changePasswordRequest);
+    }
+
 }

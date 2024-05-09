@@ -1,5 +1,8 @@
 package gadgetarium.services;
 
+import gadgetarium.dto.request.ChangePasswordRequest;
+import gadgetarium.dto.request.CurrentUserProfileRequest;
+import gadgetarium.dto.request.UserImageRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
@@ -25,4 +28,10 @@ public interface OrderService {
     List<AllOrderHistoryResponse> getAllOrdersHistory();
 
     OrderHistoryResponse getOrderHistoryById(Long orderId);
+
+    CurrentUserProfileResponse editProfile(CurrentUserProfileRequest currentUserProfileRequest);
+
+    UserImageResponse addPhotoAndEdit(UserImageRequest userImageRequest);
+
+    HttpResponse changePassword(ChangePasswordRequest changePasswordRequest);
 }
