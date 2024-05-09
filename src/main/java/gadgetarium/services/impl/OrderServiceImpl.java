@@ -150,11 +150,13 @@ public class OrderServiceImpl implements OrderService {
         user.setFirstName(currentUserProfileRequest.userName());
         user.setLastName(currentUserProfileRequest.lastName());
         user.setEmail(currentUserProfileRequest.email());
+        user.setPhoneNumber(currentUserProfileRequest.phoneNumber());
         user.setAddress(currentUserProfileRequest.address());
         return CurrentUserProfileResponse.builder()
                 .userName(user.getFirstName())
                 .lastName(user.getLastName())
                 .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
                 .build();
     }
