@@ -12,7 +12,6 @@ import java.util.Map;
 public class CarDetails {
     @CardNumberValidation
     private String cardNumber;
-    @ExpirationDateValidation
     private String expirationMonth;
     @ExpirationDateValidation
     private String expirationYear;

@@ -5,11 +5,9 @@ import lombok.Builder;
 import java.time.LocalDate;
 
 @Builder
-public record StripeResponse(
+public record OrderNumber(
         Long number,
-        LocalDate localDate,
-        String email,
-        String message
+        LocalDate date,
+        String email
 ) {
-
 }

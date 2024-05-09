@@ -1,13 +1,15 @@
 package gadgetarium.api;
 
-import gadgetarium.dto.request.CarDetails;
+import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.OrderNumber;
 import gadgetarium.dto.response.OrderOverViewResponse;
-import gadgetarium.dto.response.StripeResponse;
 import gadgetarium.enums.Payment;
-import gadgetarium.services.StripeService;
-import jakarta.validation.Valid;
+import gadgetarium.services.PaymentService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -16,23 +18,45 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class PaymentApi {
 
-    private final StripeService stripeService;
+    private final PaymentService paymentService;
 
-    @PostMapping("/check-payment/{orderId}")
-    public String checkPayment(@RequestBody @Valid CarDetails cardDetails,
-                               @RequestParam Payment payment,
-                               @PathVariable Long orderId) {
-        return stripeService.checkPayment(cardDetails, payment, orderId);
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(description = "Авторизация: USER", summary = "способ оплаты")
+    @PostMapping("/payment-type/{orderId}")
+    public HttpResponse paymentMethod(@RequestParam Payment payment,
+                                      @PathVariable Long orderId) {
+        return paymentService.paymentMethod(payment, orderId);
     }
 
-    @PostMapping("/pay/{orderId}")
-    public StripeResponse createPayment(@PathVariable Long orderId,
-                                        @RequestParam String token)  {
-        return stripeService.createPayment(orderId, token);
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(description = "Авторизация: USER", summary = "проверка валидности карты")
+    @PostMapping("/validate-card")
+    public ResponseEntity<String> validateCard(@RequestParam String nonce,
+                                               @RequestParam String cardholderName,
+                                               @RequestParam String customerId) {
+        return paymentService.validateCard(nonce, cardholderName, customerId);
     }
 
-    @GetMapping("/oder-over-view/{orderId}")
-    public OrderOverViewResponse orderOverView(@PathVariable Long orderId){
-        return stripeService.orderOverView(orderId);
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(description = "Авторизация: USER", summary = "оплата")
+    @PostMapping("/confirm-payment/{orderId}")
+    public ResponseEntity<String> confirmPayment(@RequestParam String paymentMethodNonce,
+                                                 @PathVariable Long orderId,
+                                                 @RequestParam String customerId) {
+       return paymentService.confirmPayment(paymentMethodNonce, orderId, customerId);
+    }
+
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(description = "Авторизация: USER", summary = "get info of order")
+    @PostMapping("/order-view/{orderId}")
+    public OrderOverViewResponse orderView(@PathVariable Long orderId) {
+        return paymentService.orderView(orderId);
+    }
+
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(description = "Авторизация: USER", summary = "get of order number")
+    @PostMapping("/order-number/{orderId}")
+    public OrderNumber orderNumberInfo(@PathVariable Long orderId) {
+        return paymentService.orderNumberInfo(orderId);
     }
 }

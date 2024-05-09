@@ -5,14 +5,16 @@ import jakarta.validation.ConstraintValidatorContext;
 
 import java.time.LocalDate;
 
-public class ExpirationDateValidator implements ConstraintValidator<ExpirationDateValidation, LocalDate> {
+public class ExpirationDateValidator implements ConstraintValidator<ExpirationDateValidation, String> {
     @Override
-    public boolean isValid(LocalDate date, ConstraintValidatorContext constraintValidatorContext) {
+    public boolean isValid(String date, ConstraintValidatorContext constraintValidatorContext) {
+        if (!date.matches("\\d+")) {
+            return false;
+        }
+
         LocalDate currentDate = LocalDate.now();
+        int year = Integer.parseInt(date);
 
-        int month = Integer.parseInt(String.valueOf(date.getMonth()));
-        int year = Integer.parseInt(String.valueOf(date.getYear()));
-
-        return year > currentDate.getYear() || (year == currentDate.getYear() && month >= currentDate.getMonthValue());
+        return year > currentDate.getYear() || (year == currentDate.getYear());
     }
 }

@@ -55,7 +55,7 @@ application:
       bucket:
           name: gadgetarium-java12
 
-stripe:
-    api:
-        publicKey: pk_test_51PD1LhRtdDLpwnyXteQSI1JNCXwAxR6fhc80IALN9DFJniBXThCEOCfxunfVG3OvaorF9t1FG1fEAbEKKW9FFkoN00I86wa3pD
-        secretKey: sk_test_51PD1LhRtdDLpwnyXD1LJjFSuSDEjp92d27IDedMrOssz6ZqwOnOJ7RVCP1cQIFM3ntQFMSoRjxw2aygQ6m8oF9vM00SvNUod6L
+braintree:
+    merchantId: y36kxp644p7msfqb
+    publicKey: kk9tzrh6yrjd9k3k
+    privateKey: 23127d6951c9704ccd6a54cb404f0bbe
