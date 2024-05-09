@@ -421,13 +421,8 @@ public class GadgetServiceImpl implements GadgetService {
     public GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id) {
         Gadget gadget = gadgetRepo.getGadgetById(id);
 
-        if (gadget == null || gadget.getOrders() == null || gadget.getOrders().isEmpty()) {
-            throw new IllegalArgumentException("No gadget found or gadget has no orders.");
-        }
 
-        return GadgetDeliveryPriceResponse.builder()
-                .deliveryPrice(gadget.getOrders().getFirst().getDeliveryPrice())
-                .build();
+        return null;
     }
 
 

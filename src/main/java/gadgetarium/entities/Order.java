@@ -34,7 +34,8 @@ public class Order {
     private Long number;
     private boolean typeOrder;
     private LocalDate createdAt;
-    private BigDecimal deliveryPrice;
+    private BigDecimal totalPrice;
+    private BigDecimal discountPrice;
 
     @Enumerated(EnumType.STRING)
     private Payment payment;

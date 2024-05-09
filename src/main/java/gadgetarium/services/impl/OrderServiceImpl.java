@@ -1,15 +1,15 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.response.InfoResponse;
-import gadgetarium.dto.response.OrderPagination;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.InfoResponseFor;
-import gadgetarium.dto.response.OrderResponseFindById;
-import gadgetarium.dto.response.OrderInfoResponse;
+import gadgetarium.dto.request.PersonalDataRequest;
+import gadgetarium.dto.response.*;
+import gadgetarium.entities.Gadget;
 import gadgetarium.entities.Order;
+import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
+import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.OrderRepository;
+import gadgetarium.repositories.UserRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
 import gadgetarium.services.OrderService;
 import jakarta.transaction.Transactional;
@@ -20,6 +20,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
@@ -28,6 +31,9 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepo;
     private final OrderJDBCTemplate orderJDBCTemplate;
+    private final GadgetRepository gadgetRepository;
+    private final CurrentUser currentUser;
+    private final UserRepository userRepo;
 
     @Override
     public OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
@@ -104,5 +110,65 @@ public class OrderServiceImpl implements OrderService {
                 .phoneNumber(order.getUser().getPhoneNumber())
                 .address(order.getUser().getAddress())
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse placingAnOrder(List<Long> gadgetIds, boolean orderType, PersonalDataRequest personalDataRequest, BigDecimal orderSumma, BigDecimal discountSumma) {
+        User currentUserr = currentUser.get();
+        List<Gadget> gadgets = new ArrayList<>();
+        Order order = new Order();
+        long orderNumber = ThreadLocalRandom.current().nextLong(100000, 1000000);
+
+        for (Long gadgetId : gadgetIds) {
+            Gadget gadgetById = gadgetRepository.getGadgetById(gadgetId);
+            gadgets.add(gadgetById);
+        }
+
+        currentUserr.setFirstName(personalDataRequest.firstName());
+        currentUserr.setLastName(personalDataRequest.lastName());
+        currentUserr.setEmail(personalDataRequest.email());
+        currentUserr.setPhoneNumber(personalDataRequest.phoneNumber());
+
+        if (orderType){
+            order.setTypeOrder(true);
+            order.setTotalPrice(orderSumma);
+        }else {
+            order.setTypeOrder(false);
+            currentUserr.setAddress(personalDataRequest.deliveryAddress());
+
+            if (BigDecimal.valueOf(10000).compareTo(orderSumma) >= 0){
+                order.setTotalPrice(orderSumma.add(BigDecimal.valueOf(200)));
+            }else {
+                order.setTotalPrice(orderSumma);
+            }
+        }
+
+        order.setStatus(Status.PENDING);
+        order.setDiscountPrice(discountSumma);
+        order.setNumber(orderNumber);
+        order.setGadgets(gadgets);
+        order.setUser(currentUserr);
+        currentUserr.getOrders().add(order);
+        orderRepo.save(order);
+
+        return HttpResponse
+                .builder()
+                .status(HttpStatus.OK)
+                .message("Order saved!")
+                .build();
+    }
+
+    @Override
+    public PersonalDataResponse personalDataCustomer() {
+        User currentUserr = currentUser.get();
+
+        return new PersonalDataResponse(
+                currentUserr.getFirstName(),
+                currentUserr.getLastName(),
+                currentUserr.getEmail(),
+                currentUserr.getPhoneNumber(),
+                currentUserr.getPhoneNumber()
+        );
     }
 }
