@@ -14,7 +14,6 @@ import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.FeedbackRepository;
 import gadgetarium.repositories.GadgetRepository;
-import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.FeedbackService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -250,6 +249,36 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message("You haven't bought this gadget!")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse updateFeedback(Long feedId, String message, int rating) {
+        Feedback feedback = feedbackRepo.getByIdd(feedId);
+        checkResponse(feedback);
+        feedback.setDescription(message);
+        feedback.setRating(rating);
+        feedbackRepo.save(feedback);
+        return HttpResponse.builder()
+                .status(HttpStatus.OK)
+                .message("success updated")
+                .build();
+    }
+
+    private void checkResponse(Feedback feedback){
+        if (feedback.getResponseAdmin() != null){
+            throw new BadRequestException("can't update or delete the feedback");
+        }
+    }
+    @Override
+    public HttpResponse deleteFeedback(Long feedId) {
+        Feedback feedback = feedbackRepo.getByIdd(feedId);
+        checkResponse(feedback);
+        feedbackRepo.delete(feedback);
+        return HttpResponse.builder()
+                .status(HttpStatus.OK)
+                .message("success deleted")
                 .build();
     }
 
