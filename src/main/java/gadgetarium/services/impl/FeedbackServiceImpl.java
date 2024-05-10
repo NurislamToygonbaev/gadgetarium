@@ -9,6 +9,7 @@ import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.entities.*;
 import gadgetarium.enums.FeedbackType;
 import gadgetarium.enums.ReviewType;
+import gadgetarium.enums.Role;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.BadRequestException;
@@ -274,7 +275,9 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     public HttpResponse deleteFeedback(Long feedId) {
         Feedback feedback = feedbackRepo.getByIdd(feedId);
-        checkResponse(feedback);
+        if (!currentUserr.get().getRole().equals(Role.ADMIN)){
+            checkResponse(feedback);
+        }
         feedbackRepo.delete(feedback);
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
