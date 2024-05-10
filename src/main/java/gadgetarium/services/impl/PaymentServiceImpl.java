@@ -65,6 +65,7 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     @Override
+    @Transactional
     public HttpResponse paymentMethod(Payment payment, Long orderId) {
         Order order = orderRepo.getOrderById(orderId);
         order.setPayment(payment);
