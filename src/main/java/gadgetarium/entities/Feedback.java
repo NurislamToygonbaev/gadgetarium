@@ -60,5 +60,6 @@ public class Feedback {
         this.reviewType = ReviewType.NOT_READ;
         this.dateAndTime = LocalDateTime.now();
         this.images = new ArrayList<>();
+        this.dateAndTime = LocalDateTime.now();
     }
 }

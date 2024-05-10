@@ -59,7 +59,7 @@ public class FeedbackAPI {
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: Админстратор", summary = "Смотреть один отзыв ")
     @GetMapping("/get-feedback-by-id/{id}")
-    public FeedbackResponse getFeedbackById(@PathVariable Long id){
+    public FeedbackResponse getFeedbackById(@PathVariable Long id) {
         return feedbackService.getFeedbackById(id);
 
     }
@@ -67,7 +67,7 @@ public class FeedbackAPI {
     @PreAuthorize("hasAnyAuthority('USER')")
     @Operation(description = "Авторизация: Пользователь", summary = "Статистика отзывов по гаджету.")
     @GetMapping("/reviews-statistics/{gadgetId}")
-    public FeedbackStatisticsResponse reviewsStatistics(@PathVariable Long gadgetId){
+    public FeedbackStatisticsResponse reviewsStatistics(@PathVariable Long gadgetId) {
         return feedbackService.reviewsStatistics(gadgetId);
     }
 
@@ -75,7 +75,23 @@ public class FeedbackAPI {
     @Operation(description = "Авторизация: Пользователь", summary = "Оставить отзыв по ID гаджету.")
     @PostMapping("/leave-feedback/{gadgetId}")
     public HttpResponse leaveFeedback(@PathVariable Long gadgetId,
-                                      @RequestBody @Valid FeedbackRequest feedbackRequest){
+                                      @RequestBody @Valid FeedbackRequest feedbackRequest) {
         return feedbackService.leaveFeedback(gadgetId, feedbackRequest);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(description = "Авторизация: Пользователь", summary = "обновление отзыва ")
+    @PostMapping("/update-feedback/{feedId}")
+    public HttpResponse updateFeedback(@PathVariable Long feedId,
+                                       @RequestParam String message,
+                                       @RequestParam int rating) {
+        return feedbackService.updateFeedback(feedId, message, rating);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(description = "Авторизация: Пользователь", summary = "удаление отзыва ")
+    @PostMapping("/delete-feedback/{feedId}")
+    public HttpResponse deleteFeedback(@PathVariable Long feedId) {
+        return feedbackService.deleteFeedback(feedId);
     }
 }
