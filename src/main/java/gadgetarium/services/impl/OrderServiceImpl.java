@@ -1,5 +1,6 @@
 package gadgetarium.services.impl;
 
+import gadgetarium.dto.request.BasketIdsRequest;
 import gadgetarium.dto.request.PersonalDataRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.Gadget;
@@ -11,6 +12,7 @@ import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
+import gadgetarium.services.BasketService;
 import gadgetarium.services.OrderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +37,7 @@ public class OrderServiceImpl implements OrderService {
     private final GadgetRepository gadgetRepository;
     private final CurrentUser currentUser;
     private final UserRepository userRepo;
+    private final BasketService basketService;
 
     @Override
     public OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
@@ -114,17 +118,35 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public HttpResponse placingAnOrder(List<Long> gadgetIds, boolean orderType, PersonalDataRequest personalDataRequest, BigDecimal orderSumma, BigDecimal discountSumma) {
+    public HttpResponse placingAnOrder(List<Long> gadgetIds, boolean orderType, PersonalDataRequest personalDataRequest) {
         User currentUserr = currentUser.get();
         List<Gadget> gadgets = new ArrayList<>();
         Order order = new Order();
         long orderNumber = ThreadLocalRandom.current().nextLong(100000, 1000000);
 
+        BigDecimal totalSumma = BigDecimal.ZERO;
+        BigDecimal totalPriceWithDiscount = BigDecimal.ZERO;
+        BigDecimal discountSumma = BigDecimal.ZERO;
+
         for (Long gadgetId : gadgetIds) {
             Gadget gadgetById = gadgetRepository.getGadgetById(gadgetId);
+            if (gadgetById == null || gadgetById.getSubGadget() == null) {
+                continue; // Пропускаем итерацию цикла, если нет данных о гаджете или подгаджете
+            }
             gadgets.add(gadgetById);
+            BigDecimal price = gadgetById.getSubGadget().getPrice();
+            BigDecimal discount = BigDecimal.ZERO;
+
+            if (gadgetById.getSubGadget().getDiscount() != null){
+                int percent = gadgetById.getSubGadget().getDiscount().getPercent();
+                discount = price.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            }
+
+            totalSumma = totalSumma.add(price);
+            discountSumma = discountSumma.add(discount);
         }
 
+        totalPriceWithDiscount = totalSumma.subtract(discountSumma);
         currentUserr.setFirstName(personalDataRequest.firstName());
         currentUserr.setLastName(personalDataRequest.lastName());
         currentUserr.setEmail(personalDataRequest.email());
@@ -132,15 +154,15 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderType){
             order.setTypeOrder(true);
-            order.setTotalPrice(orderSumma);
+            order.setTotalPrice(totalPriceWithDiscount);
         }else {
             order.setTypeOrder(false);
             currentUserr.setAddress(personalDataRequest.deliveryAddress());
 
-            if (BigDecimal.valueOf(10000).compareTo(orderSumma) >= 0){
-                order.setTotalPrice(orderSumma.add(BigDecimal.valueOf(200)));
+            if (BigDecimal.valueOf(10000).compareTo(totalPriceWithDiscount) >= 0){
+                order.setTotalPrice(totalPriceWithDiscount.add(BigDecimal.valueOf(200)));
             }else {
-                order.setTotalPrice(orderSumma);
+                order.setTotalPrice(totalPriceWithDiscount);
             }
         }
 

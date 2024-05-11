@@ -86,10 +86,8 @@ public class OrderApi {
     @PostMapping("/placing-an-order")
     public HttpResponse placingAnOrder(@RequestParam List<Long> gadgetIds,
                                        @RequestParam boolean deliveryType,
-                                       @RequestParam BigDecimal orderSumma,
-                                       @RequestParam BigDecimal discountSumma,
                                        @RequestBody @Valid PersonalDataRequest personalDataRequest){
-        return orderService.placingAnOrder(gadgetIds, deliveryType, personalDataRequest, orderSumma, discountSumma);
+        return orderService.placingAnOrder(gadgetIds, deliveryType, personalDataRequest);
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")
