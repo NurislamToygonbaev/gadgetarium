@@ -22,4 +22,8 @@ public interface FeedbackService {
     FeedbackStatisticsResponse reviewsStatistics(Long gadgetId);
 
     HttpResponse leaveFeedback(Long gadgetId, FeedbackRequest feedbackRequest);
+
+    HttpResponse updateFeedback(Long feedId, String message, int rating);
+
+    HttpResponse deleteFeedback(Long feedId);
 }
