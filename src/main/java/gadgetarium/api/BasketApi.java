@@ -7,6 +7,7 @@ import gadgetarium.dto.response.GetAllBasketResponse;
 import gadgetarium.dto.response.SumOrderWithGadgetResponse;
 import gadgetarium.services.BasketService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,7 +41,7 @@ public class BasketApi {
     @Operation(summary = "Добавить в корзину", description = "авторизация: USER")
     @PostMapping("/add-to-basket/{gadgetId}")
     public HttpResponse addToBasket(@PathVariable Long gadgetId,
-                                    @RequestParam(value = "quantity", defaultValue = "1") int quantity) {
+                                    @RequestParam(value = "quantity",required = false, defaultValue = "1") int quantity) {
         return basketService.addToBasket(gadgetId, quantity);
     }
 

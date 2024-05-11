@@ -4,6 +4,7 @@ import gadgetarium.dto.request.BasketIdsRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.services.BasketService;
 import jakarta.transaction.Transactional;
@@ -26,6 +27,9 @@ public class BasketServiceImpl implements BasketService {
     @Override
     @Transactional
     public HttpResponse addToBasket(Long gadgetId, int quantity) {
+        if (quantity <= 0){
+            throw new BadRequestException("can't be quantity -");
+        }
         SubGadget gadget = gadgetRepo.getByID(gadgetId);
         User user = currentUser.get();
         user.addToBasket(gadget, quantity);

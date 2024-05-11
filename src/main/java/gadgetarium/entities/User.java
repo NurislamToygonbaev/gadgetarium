@@ -77,15 +77,18 @@ public class User implements UserDetails {
 
     public void addToBasket(SubGadget subGadget, int quantity) {
         if (this.basket.containsKey(subGadget)) {
-            if (quantity <= subGadget.getQuantity()) {
-                this.basket.put(subGadget, quantity);
+            int currentQuantity = this.basket.get(subGadget);
+            int newQuantity = currentQuantity + quantity;
+            if (newQuantity <= subGadget.getQuantity()) {
+                this.basket.put(subGadget, newQuantity);
             } else {
-                throw new BadRequestException("you can't add more gadgets than there are in the database");
+                throw new BadRequestException("You can't add more gadgets than there are in the database");
             }
         } else {
             this.basket.put(subGadget, Math.min(quantity, subGadget.getQuantity()));
         }
     }
+
 
     public void removeFromBasket(SubGadget subGadget) {
         if (this.basket.containsKey(subGadget)) {
