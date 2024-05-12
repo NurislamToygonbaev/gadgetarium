@@ -52,6 +52,8 @@ dependencies {
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     // for parsing from html
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.2'
+    // for RDS
+    implementation 'org.flywaydb:flyway-core:8.0.4'
 }
 
 tasks.named('test') {
