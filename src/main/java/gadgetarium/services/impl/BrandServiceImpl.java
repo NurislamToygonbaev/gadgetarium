@@ -45,6 +45,12 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public HttpResponse saveBrand(MultipartFile file, String brandName) {
+        if (file == null || file.isEmpty()) {
+            return HttpResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message("No file provided")
+                    .build();
+        }
         checkBrandName(brandName);
         String key = UUID.randomUUID().toString();
         File fileObj = convertMultiPartFileToFile(file);

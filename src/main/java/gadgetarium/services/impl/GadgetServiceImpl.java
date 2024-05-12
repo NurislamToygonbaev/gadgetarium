@@ -304,12 +304,12 @@ public class GadgetServiceImpl implements GadgetService {
                         Map<String, String> value = entry.getValue();
 
                         CharValue charValue = new CharValue();
+                        charValueRepo.save(charValue);
                         for (Map.Entry<String, String> charEntry : value.entrySet()) {
                             charValue.addCharacteristic(charEntry.getKey(), charEntry.getValue());
                         }
 
                         subGadget.getCharName().put(charValue, s);
-                        charValueRepo.save(charValue);
                     }
 
                     gadgetRepo.save(gadget);

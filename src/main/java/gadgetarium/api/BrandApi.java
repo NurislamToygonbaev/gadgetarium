@@ -24,7 +24,7 @@ public class BrandApi {
     @Operation(summary = "Сохранение бренда", description = "авторизация: АДМИН")
     @PostMapping("/save")
     public HttpResponse saveBrand(@RequestParam(value = "file") MultipartFile file,
-                                  @RequestParam String brandName){
+                                  @RequestParam String brandName) {
         return brandService.saveBrand(file, brandName);
     }
 
