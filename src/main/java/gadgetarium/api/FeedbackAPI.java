@@ -24,8 +24,8 @@ public class FeedbackAPI {
 
     private final FeedbackService feedbackService;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(description = "Авторизация: Админстратор", summary = "Просмотр всех отзывов")
+    @PreAuthorize("hasAnyAuthority({'ADMIN', 'USER'})")
+    @Operation(description = "Авторизация: Все", summary = "Просмотр всех отзывов")
     @GetMapping("/get-all-feedbacks")
     public AllFeedbackResponse getAllFeedbacks(@RequestParam FeedbackType feedbackType) {
         return feedbackService.getAllFeedbacks(feedbackType);
@@ -56,8 +56,8 @@ public class FeedbackAPI {
 
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(description = "Авторизация: Админстратор", summary = "Смотреть один отзыв ")
+    @PreAuthorize("hasAnyAuthority({'ADMIN', 'USER'})")
+    @Operation(description = "Авторизация: Все", summary = "Смотреть один отзыв ")
     @GetMapping("/get-feedback-by-id/{id}")
     public FeedbackResponse getFeedbackById(@PathVariable Long id) {
         return feedbackService.getFeedbackById(id);
