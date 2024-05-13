@@ -236,7 +236,9 @@ public class FeedbackServiceImpl implements FeedbackService {
                 double rating = feedbackRating(gadgetId);
                 gadget.getSubGadget().setRating(rating);
                 feedbackRepo.save(feedback);
-                feedback.setImages(feedbackRequest.images());
+                if (!feedbackRequest.images().isEmpty()) {
+                    feedback.setImages(feedbackRequest.images());
+                }
 
                 return HttpResponse
                         .builder()
