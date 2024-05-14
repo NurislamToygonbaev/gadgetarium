@@ -44,7 +44,7 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = {DETACH, MERGE, REFRESH})
+    @OneToMany(mappedBy = "user", cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Order> orders;
 
     @OneToMany(mappedBy = "user", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
