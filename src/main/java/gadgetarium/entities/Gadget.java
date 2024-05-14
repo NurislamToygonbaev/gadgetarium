@@ -2,6 +2,7 @@ package gadgetarium.entities;
 
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
+import gadgetarium.enums.RemotenessStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,6 +49,9 @@ public class Gadget {
     @Enumerated(EnumType.STRING)
     private Ram ram;
 
+    @Enumerated(EnumType.STRING)
+    private RemotenessStatus remotenessStatus;
+
     @OneToOne(mappedBy = "gadget", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
     private SubGadget subGadget;
 
@@ -77,5 +81,6 @@ public class Gadget {
     private void initialReview() {
         this.feedbacks = new ArrayList<>();
         this.orders = new ArrayList<>();
+        this.remotenessStatus = RemotenessStatus.NOT_REMOTE;
     }
 }

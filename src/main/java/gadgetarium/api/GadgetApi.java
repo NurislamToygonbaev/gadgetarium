@@ -1,9 +1,6 @@
 package gadgetarium.api;
 
-import gadgetarium.dto.request.AddProductRequest;
-import gadgetarium.dto.request.ProductDocRequest;
-import gadgetarium.dto.request.ProductPriceRequest;
-import gadgetarium.dto.request.ProductsIdsRequest;
+import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.AddProductsResponse;
 import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
@@ -17,6 +14,7 @@ import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.IOException;
 import gadgetarium.services.GadgetService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -176,7 +174,25 @@ public class GadgetApi {
                 .body(resource);
     }
 
-}
+//    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
+    @PostMapping("/update-gadget/{gadgetID}")
+    public HttpResponse updateGadget(@PathVariable Long gadgetID,
+                                     @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest,
+                                     @RequestParam Ram ram,
+                                     @RequestParam Memory memory
+    ){
+        return gadgetService.updateGadget(gadgetID, gadgetNewDataRequest, ram, memory);
+    }
+
+
+    //    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Удвление гаджета по ID", description = "Авторизация ADMIN")
+    @DeleteMapping("/delete-gadget/{gadgetID}")
+    public HttpResponse deleteGadget(@PathVariable Long gadgetID){
+        return gadgetService.deleteGadget(gadgetID);
+    }
+    }
 
 
 

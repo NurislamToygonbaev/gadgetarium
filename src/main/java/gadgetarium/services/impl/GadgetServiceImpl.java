@@ -4,11 +4,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
-import gadgetarium.dto.request.ProductsRequest;
-import gadgetarium.dto.request.AddProductRequest;
-import gadgetarium.dto.request.ProductsIdsRequest;
-import gadgetarium.dto.request.ProductPriceRequest;
-import gadgetarium.dto.request.ProductDocRequest;
+import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.*;
 import gadgetarium.dto.response.AddProductsResponse;
 import gadgetarium.dto.response.GadgetResponse;
@@ -17,17 +13,12 @@ import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.dto.response.ViewedProductsResponse;
 import gadgetarium.entities.*;
+import gadgetarium.enums.*;
 import gadgetarium.enums.Discount;
-import gadgetarium.enums.Memory;
-import gadgetarium.enums.Ram;
-import gadgetarium.enums.Sort;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
-import gadgetarium.repositories.GadgetRepository;
-import gadgetarium.repositories.SubCategoryRepository;
-import gadgetarium.repositories.SubGadgetRepository;
-import gadgetarium.repositories.CharValueRepository;
-import gadgetarium.repositories.BrandRepository;
+import gadgetarium.repositories.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.GadgetService;
 import jakarta.transaction.Transactional;
@@ -62,6 +53,9 @@ public class GadgetServiceImpl implements GadgetService {
     private final SubCategoryRepository subCategoryRepo;
     private final CharValueRepository charValueRepo;
     private final AmazonS3 s3Client;
+    private final UserRepository userRepo;
+    private final OrderRepository orderRepo;
+
     private static final String PHONE_URL_PREFIX = "https://nanoreview.net/ru/phone/";
     private static final String LAPTOP_URL_PREFIX = "https://nanoreview.net/ru/laptop/";
 
@@ -476,7 +470,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Override
     public byte[] downloadFile(String key, Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-        if (!gadget.getPDFUrl().contains(bucketName+key)){
+        if (!gadget.getPDFUrl().contains(bucketName + key)) {
             throw new NotFoundException("not found");
         }
         S3Object s3Object = s3Client.getObject(bucketName, key);
@@ -487,5 +481,55 @@ public class GadgetServiceImpl implements GadgetService {
             e.printStackTrace();
         }
         return new byte[0];
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse updateGadget(Long gadgetID, GadgetNewDataRequest gadgetNewDataRequest, Ram ram, Memory memory) {
+        Gadget gadget = gadgetRepo.getGadgetById(gadgetID);
+
+        gadget.setWarranty(gadgetNewDataRequest.warranty());
+        gadget.setReleaseDate(gadgetNewDataRequest.issueDate());
+        gadget.getSubGadget().setMainColour(gadgetNewDataRequest.colour());
+        gadget.setRam(ram);
+        gadget.setMemory(memory);
+        gadget.getSubGadget().setCountSim(gadgetNewDataRequest.countSim());
+        gadget.getSubGadget().setImages(gadgetNewDataRequest.images());
+
+        gadgetRepo.save(gadget);
+        return HttpResponse
+                .builder()
+                .status(HttpStatus.OK)
+                .message("Gadget updated!")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse deleteGadget(Long gadgetID) {
+        Gadget gadget = gadgetRepo.getGadgetById(gadgetID);
+
+        List<User> usersWithGadget = userRepo.findByBasketContainingKey(gadget.getSubGadget());
+        for (User user : usersWithGadget) {
+            user.getBasket().remove(gadget.getSubGadget());
+
+            user.getComparison().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
+            user.getViewed().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
+            user.getLikes().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
+            userRepo.save(user);
+        }
+
+        List<Order> orders = orderRepo.findByGadgetsContaining(gadget);
+        if (!orders.isEmpty()) {
+            gadget.setRemotenessStatus(RemotenessStatus.REMOTE);
+        } else {
+            gadgetRepo.delete(gadget);
+        }
+
+        return HttpResponse
+                .builder()
+                .status(HttpStatus.OK)
+                .message("Gadget deleted!")
+                .build();
     }
 }
