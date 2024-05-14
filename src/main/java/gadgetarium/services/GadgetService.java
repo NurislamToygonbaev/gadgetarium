@@ -1,9 +1,6 @@
 package gadgetarium.services;
 
-import gadgetarium.dto.request.AddProductRequest;
-import gadgetarium.dto.request.ProductDocRequest;
-import gadgetarium.dto.request.ProductPriceRequest;
-import gadgetarium.dto.request.ProductsIdsRequest;
+import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.AddProductsResponse;
 import gadgetarium.dto.response.GadgetResponse;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
@@ -55,4 +52,8 @@ public interface GadgetService {
     GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id);
 
     byte[] downloadFile(String key, Long gadgetId);
+
+    HttpResponse updateGadget(Long gadgetID, GadgetNewDataRequest gadgetNewDataRequest, Ram ram, Memory memory);
+
+    HttpResponse deleteGadget(Long gadgetID);
 }

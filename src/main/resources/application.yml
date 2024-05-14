@@ -11,12 +11,14 @@ spring:
     jpa:
         show-sql: true
         open-in-view: false
+        hibernate:
+            ddl-auto: update
 
    # FlyWay
     flyway:
-        enabled: true
+        enabled: false
         locations: classpath:db.migration
-        baseline-on-migrate: true
+        baseline-on-migrate: false
 
     #    Java Mail sender
     mail:
@@ -35,7 +37,7 @@ spring:
     sql:
       init:
           continue-on-error: true
-          mode: always
+          mode: never
 
 #    Settings Servlet control size file
     servlet:
@@ -72,3 +74,7 @@ braintree:
     merchantId: y36kxp644p7msfqb
     publicKey: kk9tzrh6yrjd9k3k
     privateKey: 23127d6951c9704ccd6a54cb404f0bbe
+
+app:
+    jwt:
+        secret: gadgetarium
