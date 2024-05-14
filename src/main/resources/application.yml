@@ -67,3 +67,8 @@ cloud:
 application:
       bucket:
           name: gadgetarium-java12
+
+braintree:
+    merchantId: y36kxp644p7msfqb
+    publicKey: kk9tzrh6yrjd9k3k
+    privateKey: 23127d6951c9704ccd6a54cb404f0bbe

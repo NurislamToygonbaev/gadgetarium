@@ -53,7 +53,10 @@ dependencies {
     // for parsing from html
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.2'
     // for RDS
-    implementation 'org.flywaydb:flyway-core:8.0.4'
+    implementation 'org.flywaydb:flyway-core:8.0.4'   
+    // braintree for payment
+    implementation 'com.braintreepayments.gateway:braintree-java:3.34.0'
+
 }
 
 tasks.named('test') {
