@@ -57,5 +57,6 @@ public class Order {
     @PrePersist
     private void initialReview() {
         this.gadgets = new ArrayList<>();
+        this.createdAt = LocalDate.now();
     }
 }
