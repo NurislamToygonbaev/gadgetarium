@@ -1,21 +1,20 @@
 package gadgetarium.api;
 
-import gadgetarium.dto.response.InfoResponse;
-import gadgetarium.dto.response.InfoResponseFor;
-import gadgetarium.dto.response.OrderPagination;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.OrderResponseFindById;
-import gadgetarium.dto.response.OrderInfoResponse;
+import gadgetarium.dto.request.PersonalDataRequest;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 import gadgetarium.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -80,5 +79,22 @@ public class OrderApi {
     @GetMapping("/order_info/{orderId}")
     public OrderInfoResponse findOrderInfo(@PathVariable Long orderId){
         return orderService.findOrderInfo(orderId);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(summary = "Оформление заказа.", description = "Авторизация: ПОЛЬЗВАТЕЛЬ")
+    @PostMapping("/placing-an-order")
+    public HttpResponse placingAnOrder(@RequestParam List<Long> gadgetIds,
+                                       @RequestParam boolean deliveryType,
+                                       @RequestBody @Valid PersonalDataRequest personalDataRequest){
+        return orderService.placingAnOrder(gadgetIds, deliveryType, personalDataRequest);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(summary = "Возвращение дынне.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/personal-data-customer")
+    public PersonalDataResponse personalData(){
+        return orderService.personalDataCustomer();
+
     }
 }
