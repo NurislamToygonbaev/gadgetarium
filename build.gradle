@@ -52,6 +52,8 @@ dependencies {
     implementation 'javax.xml.bind:jaxb-api:2.3.1'
     // for parsing from html
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.2'
+    // braintree for payment
+    implementation 'com.braintreepayments.gateway:braintree-java:3.34.0'
 }
 
 tasks.named('test') {
