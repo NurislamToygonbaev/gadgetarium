@@ -1,0 +1,27 @@
+version: "3.9"
+services:
+    backend:
+        image: gadgetarium
+        container_name: gadget
+        restart: always
+        ports:
+            - "80:2024"
+        environment:
+            SPRING_PROFILES_ACTIVE: main
+            SERVER_PORT: 2024
+            POSTGRES_DB: jdbc:postgresql://database:5432/postgres
+            POSTGRES_USER: java12user
+            POSTGRES_PASSWORD: java12pass
+    database:
+        image: postgres:15
+        restart: always
+        container_name: database
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: java12user
+            POSTGRES_PASSWORD: java12pass
+        volumes:
+            - db_data:/var/lib/postgresql/data
+volumes:
+    db_data:
