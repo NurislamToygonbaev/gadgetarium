@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/google")
-public class AuthGoogleAPI {
+public class AuthGoogleApi {
     private final FirebaseAuthenticationService firebaseAuthenticationService;
 
     @Operation(summary = "Вход пользователя через Google", description = "авторизация: Все")

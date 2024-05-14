@@ -24,22 +24,22 @@ public class OrderApi {
 
     private final OrderService orderService;
 
-    @GetMapping("/info")
-    @Operation(description = "Инфографика")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Инфографика", description = "Авторизация: АДМИНСТРАТОР")
+    @GetMapping("/info")
     public InfoResponse getInfo(){
         return orderService.getInfo();
     }
 
-    @GetMapping("/info-withRequest")
-    @Operation(description = "Инфографика за (день или месяц или год)")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Инфографика за (день или месяц или год)", description = "Авторизация: АДМИНСТРАТОР")
+    @GetMapping("/info-withRequest")
     public InfoResponseFor getInfoForPeriod(@RequestParam ForPeriod forPeriod){
         return orderService.getInfoForPeriod(forPeriod);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "все гаджеты", description = "авторизация: АДМИН")
+    @Operation(summary = "Все гаджеты", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/get-all")
     public OrderPagination getAllOrders(
                         @RequestParam(required = false) String keyword,
@@ -53,7 +53,7 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Изменение статуса гаджета", description = "авторизация: АДМИН")
+    @Operation(summary = "Изменение статуса гаджета", description = "Авторизация: АДМИНСТРАТОР")
     @PatchMapping("/change-status/{orderId}")
     public HttpResponse changeStatus(@PathVariable Long orderId,
                                      @RequestParam Status status){
@@ -61,21 +61,21 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "удаление заказа по ID", description = "авторизация: АДМИН")
+    @Operation(summary = "Удаление заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @DeleteMapping("/delete-order/{orderId}")
     public HttpResponse deleteOrder(@PathVariable Long orderId){
         return orderService.deleteOrder(orderId);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "найти заказа по ID", description = "авторизация: АДМИН")
+    @Operation(summary = "найти заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/find-by-id/{orderId}")
     public OrderResponseFindById findOrderById(@PathVariable Long orderId){
         return orderService.findOrderById(orderId);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "инфо заказа по ID", description = "авторизация: АДМИН")
+    @Operation(summary = "инфо заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/order_info/{orderId}")
     public OrderInfoResponse findOrderInfo(@PathVariable Long orderId){
         return orderService.findOrderInfo(orderId);
@@ -91,10 +91,9 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")
-    @Operation(summary = "Возвращение дынне.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @Operation(summary = "Возвращение дынные.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/personal-data-customer")
     public PersonalDataResponse personalData(){
         return orderService.personalDataCustomer();
-
     }
 }

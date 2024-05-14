@@ -117,7 +117,6 @@ public class FeedbackServiceImpl implements FeedbackService {
         Feedback feedback = feedbackRepo.getByIdd(id);
         feedback.setReviewType(ReviewType.READ);
         String image = feedback.getImages() != null && !feedback.getImages().isEmpty() ? feedback.getImages().getFirst() : null;
-
         return FeedbackResponse.builder()
                 .id(feedback.getId())
                 .gadgetImage(image)

@@ -136,7 +136,7 @@ public class OrderServiceImpl implements OrderService {
         for (Long gadgetId : gadgetIds) {
             Gadget gadgetById = gadgetRepository.getGadgetById(gadgetId);
             if (gadgetById == null || gadgetById.getSubGadget() == null) {
-                continue; // Пропускаем итерацию цикла, если нет данных о гаджете или подгаджете
+                continue;
             }
             gadgets.add(gadgetById);
             BigDecimal price = gadgetById.getSubGadget().getPrice();
@@ -224,7 +224,7 @@ public class OrderServiceImpl implements OrderService {
                     currentUserr.getLastName(),
                     currentUserr.getEmail(),
                     currentUserr.getPhoneNumber(),
-                    currentUserr.getPhoneNumber()
+                    currentUserr.getAddress()
             );
         }
 

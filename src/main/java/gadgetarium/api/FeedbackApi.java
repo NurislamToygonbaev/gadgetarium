@@ -9,23 +9,20 @@ import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.enums.FeedbackType;
 import gadgetarium.services.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
-import jakarta.persistence.PersistenceContext;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/feedback")
-public class FeedbackAPI {
+public class FeedbackApi {
 
     private final FeedbackService feedbackService;
 
-    @PreAuthorize("hasAnyAuthority({'ADMIN', 'USER'})")
-    @Operation(description = "Авторизация: Все", summary = "Просмотр всех отзывов")
+    @PreAuthorize("hasAuthority({'ADMIN'})")
+    @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Просмотр всех отзывов")
     @GetMapping("/get-all-feedbacks")
     public AllFeedbackResponse getAllFeedbacks(@RequestParam FeedbackType feedbackType) {
         return feedbackService.getAllFeedbacks(feedbackType);
@@ -33,7 +30,7 @@ public class FeedbackAPI {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(description = "Авторизация: Админстратор", summary = "Ответ админстротора на комментарий")
+    @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Ответ админстротора на комментарий")
     @PostMapping("/reply-to-comment/{id}")
     public HttpResponse replyToComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.replyToComment(responseAdmin, id);
@@ -41,7 +38,7 @@ public class FeedbackAPI {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(description = "Авторизация: Админстратор", summary = "Редактировать ответ")
+    @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Редактировать ответ")
     @PutMapping("/edit-comment/{id}")
     public HttpResponse editComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.editComment(responseAdmin, id);
@@ -49,30 +46,29 @@ public class FeedbackAPI {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(description = "Авторизация: Админстратор", summary = "Удалить отзыв")
+    @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Удалить отзыв")
     @DeleteMapping("/delete-review/{id}")
     public HttpResponse deleteReview(@PathVariable Long id) {
         return feedbackService.deleteReview(id);
 
     }
 
-    @PreAuthorize("hasAnyAuthority({'ADMIN', 'USER'})")
-    @Operation(description = "Авторизация: Все", summary = "Смотреть один отзыв ")
+    @PreAuthorize("hasAuthority({'ADMIN'})")
+    @Operation(description = "Авторизация: ВСЕ", summary = "Смотреть один отзыв ")
     @GetMapping("/get-feedback-by-id/{id}")
     public FeedbackResponse getFeedbackById(@PathVariable Long id) {
         return feedbackService.getFeedbackById(id);
 
     }
 
-    @PreAuthorize("hasAnyAuthority('USER')")
-    @Operation(description = "Авторизация: Пользователь", summary = "Статистика отзывов по гаджету.")
+    @Operation(description = "Авторизация: ВСЕ", summary = "Статистика отзывов по гаджету.")
     @GetMapping("/reviews-statistics/{gadgetId}")
     public FeedbackStatisticsResponse reviewsStatistics(@PathVariable Long gadgetId) {
         return feedbackService.reviewsStatistics(gadgetId);
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")
-    @Operation(description = "Авторизация: Пользователь", summary = "Оставить отзыв по ID гаджету.")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Оставить отзыв по ID гаджету.")
     @PostMapping("/leave-feedback/{gadgetId}")
     public HttpResponse leaveFeedback(@PathVariable Long gadgetId,
                                       @RequestBody @Valid FeedbackRequest feedbackRequest) {
@@ -80,8 +76,8 @@ public class FeedbackAPI {
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")
-    @Operation(description = "Авторизация: Пользователь", summary = "обновление отзыва ")
-    @PostMapping("/update-feedback/{feedId}")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Обновление отзыва ")
+    @PutMapping("/update-feedback/{feedId}")
     public HttpResponse updateFeedback(@PathVariable Long feedId,
                                        @RequestParam String message,
                                        @RequestParam int rating) {
@@ -89,8 +85,8 @@ public class FeedbackAPI {
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")
-    @Operation(description = "Авторизация: Пользователь", summary = "удаление отзыва ")
-    @PostMapping("/delete-feedback/{feedId}")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Удаление отзыва ")
+    @DeleteMapping("/delete-feedback/{feedId}")
     public HttpResponse deleteFeedback(@PathVariable Long feedId) {
         return feedbackService.deleteFeedback(feedId);
     }
