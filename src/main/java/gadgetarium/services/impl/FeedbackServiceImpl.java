@@ -117,6 +117,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         Feedback feedback = feedbackRepo.getByIdd(id);
         feedback.setReviewType(ReviewType.READ);
         String image = feedback.getImages() != null && !feedback.getImages().isEmpty() ? feedback.getImages().getFirst() : null;
+
         return FeedbackResponse.builder()
                 .id(feedback.getId())
                 .gadgetImage(image)
@@ -155,6 +156,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         String firstName = getSafely(user::getFirstName);
         String lastName = getSafely(user::getLastName);
         String fullName = (firstName != null && lastName != null)
+
                 ? firstName + " " + lastName
                 : (firstName != null ? firstName : "") + (lastName != null ? lastName : "");
 
@@ -221,6 +223,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         if (feedbackRequest.images().size() > 5) {
             throw new BadRequestException("Cannot be length more 5");
         }
+
         User currentUser = currentUserr.get();
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
         Feedback feedback = new Feedback();
@@ -281,6 +284,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         if (!currentUserr.get().getRole().equals(Role.ADMIN)) {
             checkResponse(feedback);
         }
+
         feedbackRepo.delete(feedback);
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
