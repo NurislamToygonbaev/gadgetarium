@@ -38,13 +38,3 @@ public class FlywayConfig {
         return new FlywayMigrationInitializer(flyway, null);
     }
 }
-
-
-
-
-
-
-
-
-
-
