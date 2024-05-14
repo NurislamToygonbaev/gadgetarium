@@ -420,7 +420,7 @@ public class GadgetServiceImpl implements GadgetService {
         }
 
         return GadgetDeliveryPriceResponse.builder()
-                .deliveryPrice(gadget.getOrders().getFirst().getDeliveryPrice())
+                .deliveryPrice(gadget.getOrders().getFirst().getTotalPrice())
                 .build();
     }
 
