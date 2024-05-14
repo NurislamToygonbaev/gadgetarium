@@ -37,13 +37,15 @@ public class Order {
     private BigDecimal totalPrice;
     private BigDecimal discountPrice;
 
+    private BigDecimal deliveryPrice;
+  
     @Enumerated(EnumType.STRING)
     private Payment payment;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToMany(cascade = {DETACH, MERGE, REFRESH})
+    @ManyToMany(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Gadget> gadgets;
 
     @ManyToOne(cascade = {DETACH})

@@ -12,7 +12,13 @@ spring:
         show-sql: true
         open-in-view: false
 
-#    Java Mail sender
+   # FlyWay
+    flyway:
+        enabled: true
+        locations: classpath:db.migration
+        baseline-on-migrate: true
+
+    #    Java Mail sender
     mail:
         host: smtp.gmail.com
         port: 587
@@ -39,6 +45,13 @@ spring:
             max-file-size: 100MB
             max-request-size: 100MB
 
+#    FlyWay
+flyway:
+  user: postgres
+  password: postgres
+  url: jdbc:postgresql://my-db-instance.craasoo04x3m.eu-north-1.rds.amazonaws.com:5433/postgres
+
+
 #   Configuration of AWS cloud resources.
 cloud:
       aws:
@@ -54,3 +67,8 @@ cloud:
 application:
       bucket:
           name: gadgetarium-java12
+
+braintree:
+    merchantId: y36kxp644p7msfqb
+    publicKey: kk9tzrh6yrjd9k3k
+    privateKey: 23127d6951c9704ccd6a54cb404f0bbe
