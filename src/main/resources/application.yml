@@ -1,24 +1,35 @@
 
-# the server always outputs a stack trace when an error occurs
+#The server always outputs a stack trace when an error occurs
 server:
     error:
         include-stacktrace: always
 
-#  The DataBase. Connection to Postgresql
+#The DataBase. Connection to Postgresql
 spring:
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        password: ${POSTGRES_PASSWORD}
+        url: ${POSTGRES_DB}
+        username: ${POSTGRES_USER}
 
-#       Hibernate/JPA settings.
+#Hibernate/JPA settings.
     jpa:
+        hibernate:
+            ddl-auto: update
         show-sql: true
         open-in-view: false
 
-   # FlyWay
+        properties:
+            hibernate:
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+
+#FlyWay
     flyway:
         enabled: true
         locations: classpath:db.migration
         baseline-on-migrate: true
 
-    #    Java Mail sender
+#Java Mail sender
     mail:
         host: smtp.gmail.com
         port: 587
@@ -31,13 +42,13 @@ spring:
                     starttls:
                         enable: true
 
-#    Data-Init
+#Data-Init
     sql:
       init:
           continue-on-error: true
           mode: always
 
-#    Settings Servlet control size file
+#Settings Servlet control size file
     servlet:
         multipart:
             enabled: true
@@ -45,14 +56,14 @@ spring:
             max-file-size: 100MB
             max-request-size: 100MB
 
-#    FlyWay
+#FlyWay
 flyway:
-  user: postgres
-  password: postgres
-  url: jdbc:postgresql://my-db-instance.craasoo04x3m.eu-north-1.rds.amazonaws.com:5433/postgres
+  user: ${POSTGRES_USER}
+  password: ${POSTGRES_PASSWORD}
+  url: ${POSTGRES_DB}
 
 
-#   Configuration of AWS cloud resources.
+#Configuration of AWS cloud resources.
 cloud:
       aws:
           credentials:
@@ -63,7 +74,8 @@ cloud:
           stack:
               auto: false
 
-#     AWS Bucket Storage
+
+#AWS Bucket Storage
 application:
       bucket:
           name: gadgetarium-java12
@@ -72,3 +84,8 @@ braintree:
     merchantId: y36kxp644p7msfqb
     publicKey: kk9tzrh6yrjd9k3k
     privateKey: 23127d6951c9704ccd6a54cb404f0bbe
+
+#JWT
+app:
+    jwt:
+        secret: gadget-java-12
