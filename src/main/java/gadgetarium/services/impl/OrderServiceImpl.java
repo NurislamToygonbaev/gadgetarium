@@ -1,16 +1,8 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.request.BasketIdsRequest;
-import gadgetarium.dto.request.PersonalDataRequest;
-import gadgetarium.dto.response.*;
-import gadgetarium.entities.Gadget;
-import gadgetarium.entities.Order;
-import gadgetarium.entities.User;
-import gadgetarium.enums.ForPeriod;
-import gadgetarium.enums.Status;
-import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.dto.request.ChangePasswordRequest;
 import gadgetarium.dto.request.CurrentUserProfileRequest;
+import gadgetarium.dto.request.PersonalDataRequest;
 import gadgetarium.dto.request.UserImageRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.Gadget;
@@ -20,6 +12,7 @@ import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.NotFoundException;
+import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
@@ -35,10 +28,8 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ThreadLocalRandom;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 @Slf4j
 @Service
