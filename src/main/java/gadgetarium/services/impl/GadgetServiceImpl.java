@@ -13,10 +13,9 @@ import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.dto.response.ViewedProductsResponse;
 import gadgetarium.entities.*;
+import gadgetarium.enums.*;
 import gadgetarium.enums.Discount;
-import gadgetarium.enums.Memory;
-import gadgetarium.enums.Ram;
-import gadgetarium.enums.Sort;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.*;
@@ -55,6 +54,7 @@ public class GadgetServiceImpl implements GadgetService {
     private final CharValueRepository charValueRepo;
     private final AmazonS3 s3Client;
     private final UserRepository userRepo;
+    private final OrderRepository orderRepo;
 
     private static final String PHONE_URL_PREFIX = "https://nanoreview.net/ru/phone/";
     private static final String LAPTOP_URL_PREFIX = "https://nanoreview.net/ru/laptop/";
@@ -512,18 +512,19 @@ public class GadgetServiceImpl implements GadgetService {
         List<User> usersWithGadget = userRepo.findByBasketContainingKey(gadget.getSubGadget());
         for (User user : usersWithGadget) {
             user.getBasket().remove(gadget.getSubGadget());
-            userRepo.save(user);
-        }
 
-        for (User user : usersWithGadget) {
             user.getComparison().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
             user.getViewed().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
             user.getLikes().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
             userRepo.save(user);
         }
 
-
-        gadgetRepo.delete(gadget);
+        List<Order> orders = orderRepo.findByGadgetsContaining(gadget);
+        if (!orders.isEmpty()) {
+            gadget.setRemotenessStatus(RemotenessStatus.REMOTE);
+        } else {
+            gadgetRepo.delete(gadget);
+        }
 
         return HttpResponse
                 .builder()
