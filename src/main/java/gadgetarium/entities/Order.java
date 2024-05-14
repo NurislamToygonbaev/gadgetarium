@@ -34,15 +34,18 @@ public class Order {
     private Long number;
     private boolean typeOrder;
     private LocalDate createdAt;
-    private BigDecimal deliveryPrice;
+    private BigDecimal totalPrice;
+    private BigDecimal discountPrice;
 
+    private BigDecimal deliveryPrice;
+  
     @Enumerated(EnumType.STRING)
     private Payment payment;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToMany(cascade = {DETACH, MERGE, REFRESH})
+    @ManyToMany(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Gadget> gadgets;
 
     @ManyToOne(cascade = {DETACH})
@@ -56,5 +59,6 @@ public class Order {
     @PrePersist
     private void initialReview() {
         this.gadgets = new ArrayList<>();
+        this.createdAt = LocalDate.now();
     }
 }
