@@ -33,7 +33,7 @@ public class GadgetAPI {
 
     private final GadgetService gadgetService;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "все Гаджеты ", description = "авторизация: АДМИН")
     @GetMapping("/get-all")
     public ResultPaginationGadget allGadgets(@RequestParam(required = false) Sort sort,

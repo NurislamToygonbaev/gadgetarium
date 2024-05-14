@@ -6,10 +6,7 @@ import gadgetarium.dto.response.GadgetPaginationForMain;
 import gadgetarium.dto.response.GadgetResponseMainPage;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
-import gadgetarium.enums.Discount;
-import gadgetarium.enums.Memory;
-import gadgetarium.enums.Ram;
-import gadgetarium.enums.Sort;
+import gadgetarium.enums.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,16 +29,18 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         int limit = size;
         String orderBy = "";
         String where = "";
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
+
 
         if (sort != null) {
             if (sort.equals(Sort.NEW_PRODUCTS)) orderBy = " order by ga.release_date desc ";
             else if (sort.equals(Sort.PROMOTION)) {
                 if (discount != null) {
-                    if (discount.equals(Discount.ALL_DISCOUNTS)) where = " where d.percent is not null ";
-                    else if (discount.equals(Discount.UP_TO_50)) where = " where d.percent < 50 ";
-                    else if (discount.equals(Discount.OVER_50)) where = " where d.percent > 50 ";
+                    if (discount.equals(Discount.ALL_DISCOUNTS)) where = " and  d.percent is not null ";
+                    else if (discount.equals(Discount.UP_TO_50)) where = " and  d.percent < 50 ";
+                    else if (discount.equals(Discount.OVER_50)) where = " and  d.percent > 50 ";
                 }
-            } else if (sort.equals(Sort.RECOMMENDED)) where = " where g.rating > 4 ";
+            } else if (sort.equals(Sort.RECOMMENDED)) where = " and  g.rating > 4 ";
             else if (sort.equals(Sort.HIGH_TO_LOW)) orderBy = " order by g.price desc ";
             else if (sort.equals(Sort.LOW_TO_HIGH)) orderBy = " order by g.price asc ";
 
@@ -62,6 +61,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         join gadgets ga on ga.id = g.gadget_id
                         join brands b on ga.brand_id = b.id
                         left outer join discounts d on g.id = d.sub_gadget_id
+                        where ga.remoteness_status ="""+"'"+status+"'"+"""
                         """ + where + """
                         group by g.id, ga.article, g.name_of_gadget, ga.release_date,
                                    b.brand_name,  g.quantity, d.percent, g.price, d.end_date
@@ -107,19 +107,20 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
         String orderBy = "";
         String where = "";
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         if (brand != null || sort != null || discount != null || memory != null || ram != null || costFrom != null || costUpTo != null || colour != null) {
             boolean needAnd = false;
 
             if (brand != null) {
-                where += " where b.brand_name ilike '"+brand+"'";
+                where += " and b.brand_name ilike '"+brand+"'";
                 needAnd = true;
             }
             if (costFrom != null && costUpTo != null){
                 if (needAnd){
                     where += " and ";
                 } else {
-                    where += " where ";
+                    where += " and ";
                 }
                 where += " g.price between '"+costFrom+"' and '"+costUpTo+"'";
                 needAnd = true;
@@ -127,14 +128,14 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 if (needAnd){
                     where += " and ";
                 } else {
-                    where += " where ";
+                    where += " and ";
                 }
                 where += " g.price > '"+costFrom+"'";
             } else if (costUpTo != null) {
                 if (needAnd){
                     where += " and ";
                 } else {
-                    where += " where ";
+                    where += " and ";
                 }
                 where += " g.price < '"+costUpTo+"'";
             }
@@ -142,7 +143,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 if (needAnd) {
                     where += " and ";
                 } else {
-                    where += " where ";
+                    where += " and ";
                 }
                 where += " g.main_colour ilike '" + colour + "'";
                 needAnd = true;
@@ -151,7 +152,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 if (needAnd){
                     where += " and ";
                 } else {
-                    where += " where ";
+                    where += " and ";
                 }
                 where += " ga.memory ilike '" + memory.name() + "'";
                 needAnd = true;
@@ -160,7 +161,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 if (needAnd){
                     where += " and ";
                 } else {
-                    where += " where ";
+                    where += " and ";
                 }
                 where += " ga.ram ilike '" + ram.name() + "'";
                 needAnd = true;
@@ -170,7 +171,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     if (needAnd){
                         where += " and ";
                     } else {
-                        where += " where ";
+                        where += " and ";
                     }
                     where += " g.rating > 3.9 or (select count(*) from orders o where o.id = og.orders_id) > 10 ";
                 } else if (sort.equals(Sort.NEW_PRODUCTS)) {
@@ -181,21 +182,21 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             if (needAnd){
                                 where += " and ";
                             } else {
-                                where += " where ";
+                                where += " and ";
                             }
                             where += " d.percent is not null ";
                         } else if (discount.equals(Discount.UP_TO_50)) {
                             if (needAnd){
                                 where += " and ";
                             } else {
-                                where += " where ";
+                                where += " and ";
                             }
                             where += " d.percent < 50 ";
                         } else if (discount.equals(Discount.OVER_50)) {
                             if (needAnd){
                                 where += " and ";
                             } else {
-                                where += " where ";
+                                where += " and ";
                             }
                             where += " d.percent > 50 ";
                         }
@@ -230,6 +231,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         left join orders_gadgets og on ga.id = og.gadgets_id
                         left join orders o on o.id = og.orders_id
                         left outer join feedbacks f on ga.id = f.gadget_id
+                        where ga.remoteness_status ="""+"'"+status+"'"+"""
                         """ + where + """
                          group by g.id, g.name_of_gadget, b.brand_name,  g.quantity, d.percent, g.price,
                                    ga.memory, g.main_colour, g.current_price, g.rating, ga.release_date
