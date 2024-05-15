@@ -1,5 +1,6 @@
 package gadgetarium.services;
 
+import gadgetarium.dto.request.PersonalDataRequest;
 import gadgetarium.dto.request.ChangePasswordRequest;
 import gadgetarium.dto.request.CurrentUserProfileRequest;
 import gadgetarium.dto.request.UserImageRequest;
@@ -25,6 +26,9 @@ public interface OrderService {
 
     OrderInfoResponse findOrderInfo(Long orderId);
 
+    HttpResponse placingAnOrder(List<Long> gadgetIds, boolean deliveryType, PersonalDataRequest personalDataRequest);
+
+    PersonalDataResponse personalDataCustomer();
     List<AllOrderHistoryResponse> getAllOrdersHistory();
 
     OrderHistoryResponse getOrderHistoryById(Long orderId);

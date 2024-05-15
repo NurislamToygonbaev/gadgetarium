@@ -22,7 +22,7 @@ public class BannerApi {
     private final BannerService bannerService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Загрузить баннер", description = "авторизация: АДМИН")
+    @Operation(summary = "Загрузить баннер", description = "Авторизация: АДМИНСТРАТОР")
     @PostMapping("/create")
     public BannerResponse createBanner(@RequestBody @Valid BannerRequest bannerRequest){
         return bannerService.create(bannerRequest);

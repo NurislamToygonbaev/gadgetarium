@@ -16,40 +16,40 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/personal-area")
-public class PersonalAreaAPI {
+public class PersonalAreaApi {
 
     private final OrderService orderService;
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
-    @Operation(summary = "Посмотреть весь истории заказов.", description = "авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @Operation(summary = "Посмотреть весь истории заказов.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/view-all-history")
     public List<AllOrderHistoryResponse> getAllOrdersHistory(){
         return orderService.getAllOrdersHistory();
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
-    @Operation(summary = "Посмотреть один историю заказа.", description = "авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @Operation(summary = "Посмотреть один историю заказа.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/view-order/{orderId}")
     public OrderHistoryResponse getOrderHistoryById(@PathVariable Long orderId){
         return orderService.getOrderHistoryById(orderId);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
-    @Operation(summary = "Изменить профиль.", description = "авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @Operation(summary = "Изменить профиль.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/edit-profile")
     public CurrentUserProfileResponse editProfile(@RequestBody @Valid CurrentUserProfileRequest currentUserProfileRequest){
         return orderService.editProfile(currentUserProfileRequest);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
-    @Operation(summary = "Изменить фото профиля.", description = "авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @Operation(summary = "Изменить фото профиля.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PutMapping("/add-image")
     public UserImageResponse addPhotoAndEdit(@RequestBody @Valid UserImageRequest userImageRequest ){
         return orderService.addPhotoAndEdit(userImageRequest);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
-    @Operation(summary = "Сменить пароль.", description = "авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @Operation(summary = "Сменить пароль.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/change-password")
     public HttpResponse changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
         return orderService.changePassword(changePasswordRequest);

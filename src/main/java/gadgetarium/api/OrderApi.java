@@ -1,21 +1,20 @@
 package gadgetarium.api;
 
-import gadgetarium.dto.response.InfoResponse;
-import gadgetarium.dto.response.InfoResponseFor;
-import gadgetarium.dto.response.OrderPagination;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.OrderResponseFindById;
-import gadgetarium.dto.response.OrderInfoResponse;
+import gadgetarium.dto.request.PersonalDataRequest;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 import gadgetarium.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -25,22 +24,22 @@ public class OrderApi {
 
     private final OrderService orderService;
 
-    @GetMapping("/info")
-    @Operation(description = "Инфографика")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Инфографика", description = "Авторизация: АДМИНСТРАТОР")
+    @GetMapping("/info")
     public InfoResponse getInfo(){
         return orderService.getInfo();
     }
 
-    @GetMapping("/info-withRequest")
-    @Operation(description = "Инфографика за (день или месяц или год)")
     @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Инфографика за (день или месяц или год)", description = "Авторизация: АДМИНСТРАТОР")
+    @GetMapping("/info-withRequest")
     public InfoResponseFor getInfoForPeriod(@RequestParam ForPeriod forPeriod){
         return orderService.getInfoForPeriod(forPeriod);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "все гаджеты", description = "авторизация: АДМИН")
+    @Operation(summary = "Все гаджеты", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/get-all")
     public OrderPagination getAllOrders(
                         @RequestParam(required = false) String keyword,
@@ -54,7 +53,7 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Изменение статуса гаджета", description = "авторизация: АДМИН")
+    @Operation(summary = "Изменение статуса гаджета", description = "Авторизация: АДМИНСТРАТОР")
     @PatchMapping("/change-status/{orderId}")
     public HttpResponse changeStatus(@PathVariable Long orderId,
                                      @RequestParam Status status){
@@ -62,23 +61,39 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "удаление заказа по ID", description = "авторизация: АДМИН")
+    @Operation(summary = "Удаление заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @DeleteMapping("/delete-order/{orderId}")
     public HttpResponse deleteOrder(@PathVariable Long orderId){
         return orderService.deleteOrder(orderId);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "найти заказа по ID", description = "авторизация: АДМИН")
+    @Operation(summary = "найти заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/find-by-id/{orderId}")
     public OrderResponseFindById findOrderById(@PathVariable Long orderId){
         return orderService.findOrderById(orderId);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "инфо заказа по ID", description = "авторизация: АДМИН")
+    @Operation(summary = "инфо заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/order_info/{orderId}")
     public OrderInfoResponse findOrderInfo(@PathVariable Long orderId){
         return orderService.findOrderInfo(orderId);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(summary = "Оформление заказа.", description = "Авторизация: ПОЛЬЗВАТЕЛЬ")
+    @PostMapping("/placing-an-order")
+    public HttpResponse placingAnOrder(@RequestParam List<Long> gadgetIds,
+                                       @RequestParam boolean deliveryType,
+                                       @RequestBody @Valid PersonalDataRequest personalDataRequest){
+        return orderService.placingAnOrder(gadgetIds, deliveryType, personalDataRequest);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(summary = "Возвращение дынные.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/personal-data-customer")
+    public PersonalDataResponse personalData(){
+        return orderService.personalDataCustomer();
     }
 }
