@@ -26,7 +26,7 @@ public class DiscountApi {
     private final DiscountService discountService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "СОЗДАТЬ СКИДКУ", description = "авторизация: АДМИН")
+    @Operation(summary = "Создать скидку", description = "Авторизация: АДМИНСТРАТОР")
     @PostMapping("/create")
     public DiscountResponse create(@RequestParam @NotNull List<Long> subGadgetsId, @RequestBody @Valid DiscountRequest discountRequest){
         return discountService.create(subGadgetsId, discountRequest);
