@@ -23,11 +23,7 @@ import gadgetarium.enums.Ram;
 import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
-import gadgetarium.repositories.GadgetRepository;
-import gadgetarium.repositories.SubCategoryRepository;
-import gadgetarium.repositories.SubGadgetRepository;
-import gadgetarium.repositories.CharValueRepository;
-import gadgetarium.repositories.BrandRepository;
+import gadgetarium.repositories.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.GadgetService;
 import jakarta.transaction.Transactional;
@@ -55,6 +51,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Value("${application.bucket.name}")
     private String bucketName;
     private final GadgetRepository gadgetRepo;
+    private final CategoryRepository categoryRepo;
     private final SubGadgetRepository subGadgetRepo;
     private final CurrentUser currentUser;
     private final GadgetJDBCTemplateRepository gadgetJDBCTemplateRepo;
@@ -487,5 +484,15 @@ public class GadgetServiceImpl implements GadgetService {
             e.printStackTrace();
         }
         return new byte[0];
+    }
+
+    @Override
+    public List<CatResponse> getCategories() {
+        return categoryRepo.getAllCategories();
+    }
+
+    @Override
+    public List<CatResponse> getSubCategories(Long catId) {
+        return subCategoryRepo.getSubCategories(catId);
     }
 }

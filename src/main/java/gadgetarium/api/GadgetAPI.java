@@ -114,6 +114,20 @@ public class GadgetAPI {
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "det-all-categories.", description = "Авторизация ADMIN")
+    @GetMapping("/get-categories")
+    public List<CatResponse> getCategories() {
+        return gadgetService.getCategories();
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "det-sub-categories.", description = "Авторизация ADMIN")
+    @GetMapping("/{catId}/get-sub-categories")
+    public List<CatResponse> getSubCategories(@PathVariable Long catId) {
+        return gadgetService.getSubCategories(catId);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Добавление документа на товары ", description = "Авторизация ADMIN")
     @PostMapping("/set-document")
     public HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException {
