@@ -10,8 +10,8 @@ import java.util.List;
 @Builder
 public record ProductsRequest(
         String mainColour,
-        Memory memory,
-        Ram ram,
+        String memory,
+        String ram,
         @CountSimValidation
         int countSim,
         List<String> images

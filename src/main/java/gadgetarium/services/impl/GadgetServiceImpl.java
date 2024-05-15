@@ -197,8 +197,8 @@ public class GadgetServiceImpl implements GadgetService {
             gadget.setWarranty(addProductRequest.warranty());
 
             subGadget.setMainColour(productsRequest.mainColour());
-            gadget.setMemory(productsRequest.memory());
-            gadget.setRam(productsRequest.ram());
+            gadget.setMemory(Memory.fromString(productsRequest.memory()));
+            gadget.setRam(Ram.fromString(productsRequest.ram()));
             subGadget.setCountSim(productsRequest.countSim());
             subGadget.setImages(productsRequest.images());
 
@@ -532,4 +532,6 @@ public class GadgetServiceImpl implements GadgetService {
                 .message("Gadget deleted!")
                 .build();
     }
+
+
 }
