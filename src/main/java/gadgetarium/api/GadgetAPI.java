@@ -33,7 +33,7 @@ public class GadgetAPI {
 
     private final GadgetService gadgetService;
 
-//    @PreAuthorize("hasAuthority('ADMIN')")
+    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "все Гаджеты ", description = "авторизация: АДМИН")
     @GetMapping("/get-all")
     public ResultPaginationGadget allGadgets(@RequestParam(required = false) Sort sort,
@@ -100,14 +100,14 @@ public class GadgetAPI {
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Установить цены на добавленные товары.", description = "Авторизация ADMIN")
     @PostMapping("/set-all-price")
-    public HttpResponse addPrice(@RequestBody ProductsIdsRequest productsIds) {
+    public HttpResponse addPrice(@RequestBody @Valid ProductsIdsRequest productsIds) {
         return gadgetService.addPrice(productsIds);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Установить цены по одному.", description = "Авторизация ADMIN")
     @PostMapping("/set-price")
-    public HttpResponse addPrice(@RequestBody ProductPriceRequest productPriceRequest) {
+    public HttpResponse addPrice(@RequestBody @Valid ProductPriceRequest productPriceRequest) {
         return gadgetService.setPriceOneProduct(productPriceRequest);
     }
 
