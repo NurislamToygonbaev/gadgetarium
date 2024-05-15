@@ -64,6 +64,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Transactional
     public GadgetResponse getGadgetById(Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
+
         if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
             User user = currentUser.get();
             user.addViewed(gadget.getSubGadget());
