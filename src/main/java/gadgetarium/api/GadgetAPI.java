@@ -184,18 +184,17 @@ public class GadgetAPI {
                                      @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest,
                                      @RequestParam Ram ram,
                                      @RequestParam Memory memory
-    ){
+    ) {
         return gadgetService.updateGadget(gadgetID, gadgetNewDataRequest, ram, memory);
     }
 
-
-    //    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Удвление гаджета по ID", description = "Авторизация ADMIN")
     @DeleteMapping("/delete-gadget/{gadgetID}")
-    public HttpResponse deleteGadget(@PathVariable Long gadgetID){
+    public HttpResponse deleteGadget(@PathVariable Long gadgetID) {
         return gadgetService.deleteGadget(gadgetID);
     }
-    }
+}
 
 
 
