@@ -50,7 +50,7 @@ public class Feedback {
     @ManyToOne(cascade = {DETACH})
     private User user;
 
-    private void addImage(String image) {
+    public void addImage(String image) {
         if (this.images == null) this.images = new ArrayList<>();
         this.images.add(image);
     }

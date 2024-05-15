@@ -21,7 +21,7 @@ public class BrandApi {
     private final BrandService brandService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Сохранение бренда", description = "авторизация: АДМИН")
+    @Operation(summary = "Сохранение бренда", description = "Авторизация: АДМИНСТРАТОР")
     @PostMapping("/save")
     public HttpResponse saveBrand(@RequestParam(value = "file") MultipartFile file,
                                   @RequestParam String brandName){

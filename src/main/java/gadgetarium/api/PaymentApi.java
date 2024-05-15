@@ -21,7 +21,7 @@ public class PaymentApi {
     private final PaymentService paymentService;
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: USER", summary = "способ оплаты")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Способ оплаты")
     @PostMapping("/payment-type/{orderId}")
     public HttpResponse paymentMethod(@RequestParam Payment payment,
                                       @PathVariable Long orderId) {
@@ -29,7 +29,7 @@ public class PaymentApi {
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: USER", summary = "проверка валидности карты")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Проверка валидности карты")
     @PostMapping("/validate-card")
     public ResponseEntity<String> validateCard(@RequestParam String nonce,
                                                @RequestParam String cardholderName,
@@ -38,7 +38,7 @@ public class PaymentApi {
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: USER", summary = "оплата")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Оплата")
     @PostMapping("/confirm-payment/{orderId}")
     public ResponseEntity<String> confirmPayment(@RequestParam String paymentMethodNonce,
                                                  @PathVariable Long orderId,
@@ -47,14 +47,14 @@ public class PaymentApi {
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: USER", summary = "get info of order")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Получить информацию о заказе")
     @PostMapping("/order-view/{orderId}")
     public OrderOverViewResponse orderView(@PathVariable Long orderId) {
         return paymentService.orderView(orderId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: USER", summary = "get of order number")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Получить номер заказа")
     @PostMapping("/order-number/{orderId}")
     public OrderNumber orderNumberInfo(@PathVariable Long orderId) {
         return paymentService.orderNumberInfo(orderId);

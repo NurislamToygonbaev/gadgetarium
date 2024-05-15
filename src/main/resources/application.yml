@@ -25,9 +25,9 @@ spring:
 
 #FlyWay
     flyway:
-        enabled: true
+        enabled: false
         locations: classpath:db.migration
-        baseline-on-migrate: true
+        baseline-on-migrate: false
 
 #Java Mail sender
     mail:
@@ -46,7 +46,7 @@ spring:
     sql:
       init:
           continue-on-error: true
-          mode: always
+          mode: never
 
 #Settings Servlet control size file
     servlet:
@@ -89,3 +89,4 @@ braintree:
 app:
     jwt:
         secret: gadget-java-12
+
