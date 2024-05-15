@@ -1,5 +1,6 @@
 package gadgetarium.dto.request;
 
+import gadgetarium.validation.warranty.WarrantyValidation;
 import lombok.Builder;
 
 import java.time.LocalDate;
@@ -10,6 +11,7 @@ public record AddProductRequest(
         List<ProductsRequest> productsRequests,
         String nameOfGadget,
         LocalDate dateOfIssue,
+        @WarrantyValidation
         int warranty
 ) {
 }

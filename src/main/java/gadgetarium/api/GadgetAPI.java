@@ -86,7 +86,7 @@ public class GadgetAPI {
     @PostMapping("/add-gadget/{subCategoryId}/{brandId}")
     public HttpResponse addGadget(@PathVariable Long subCategoryId,
                                   @PathVariable Long brandId,
-                                  @RequestBody AddProductRequest addProductRequest) {
+                                  @RequestBody @Valid AddProductRequest addProductRequest) {
         return gadgetService.addGadget(subCategoryId, brandId, addProductRequest);
     }
 
@@ -177,7 +177,7 @@ public class GadgetAPI {
                 .body(resource);
     }
 
-//    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
     @PostMapping("/update-gadget/{gadgetID}")
     public HttpResponse updateGadget(@PathVariable Long gadgetID,
