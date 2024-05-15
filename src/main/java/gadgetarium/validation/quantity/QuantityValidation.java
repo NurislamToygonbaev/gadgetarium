@@ -1,4 +1,4 @@
-package gadgetarium.validation.price;
+package gadgetarium.validation.quantity;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
@@ -6,12 +6,12 @@ import jakarta.validation.Payload;
 import java.lang.annotation.*;
 
 @Documented
-@Constraint(validatedBy = {PriceValidator.class})
+@Constraint(validatedBy = {QuantityValidator.class})
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface PriceValidation {
+public @interface QuantityValidation {
 
-    String message() default "{The price should not be minus!}";
+    String message() default "{The quantity should not be minus!}";
 
     Class<?>[] groups() default {};
 

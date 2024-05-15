@@ -1,6 +1,5 @@
 package gadgetarium.validation.price;
 
-import gadgetarium.validation.rating.RatingValidation;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
