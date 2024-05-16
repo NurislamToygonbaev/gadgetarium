@@ -25,10 +25,11 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/gadget")
-@Slf4j
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class GadgetApi {
 
     private final GadgetService gadgetService;

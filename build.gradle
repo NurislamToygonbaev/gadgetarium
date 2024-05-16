@@ -56,7 +56,8 @@ dependencies {
     implementation 'org.flywaydb:flyway-core:8.0.4'   
     // braintree for payment
     implementation 'com.braintreepayments.gateway:braintree-java:3.34.0'
-
+    // cors
+    implementation 'javax.servlet:javax.servlet-api:4.0.1'
 }
 
 tasks.named('test') {

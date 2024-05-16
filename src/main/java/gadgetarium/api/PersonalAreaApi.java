@@ -8,14 +8,17 @@ import gadgetarium.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/personal-area")
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class PersonalAreaApi {
 
     private final OrderService orderService;

@@ -20,6 +20,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/order")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class OrderApi {
 
     private final OrderService orderService;
