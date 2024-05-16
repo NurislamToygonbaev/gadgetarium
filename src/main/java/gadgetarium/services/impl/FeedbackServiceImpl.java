@@ -116,9 +116,10 @@ public class FeedbackServiceImpl implements FeedbackService {
     public FeedbackResponse getFeedbackById(Long id) {
         Feedback feedback = feedbackRepo.getByIdd(id);
         feedback.setReviewType(ReviewType.READ);
+        String image = feedback.getImages() != null && !feedback.getImages().isEmpty() ? feedback.getImages().getFirst() : null;
         return FeedbackResponse.builder()
                 .id(feedback.getId())
-                .gadgetImage(feedback.getImages().getFirst())
+                .gadgetImage(image)
                 .subCategoryName(feedback.getGadget().getSubCategory().getSubCategoryName())
                 .nameOfGadget(feedback.getGadget().getSubGadget().getNameOfGadget())
                 .article(feedback.getGadget().getArticle())
@@ -154,6 +155,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         String firstName = getSafely(user::getFirstName);
         String lastName = getSafely(user::getLastName);
         String fullName = (firstName != null && lastName != null)
+
                 ? firstName + " " + lastName
                 : (firstName != null ? firstName : "") + (lastName != null ? lastName : "");
 
@@ -217,26 +219,28 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional
     public HttpResponse leaveFeedback(Long gadgetId, FeedbackRequest feedbackRequest) {
-        User currentUser = currentUserr.get();
-        Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
-        Feedback feedback = new Feedback();
+        if (feedbackRequest.images().size() > 5) {
+            throw new BadRequestException("Cannot be length more 5");
+        }
 
+        User currentUser = currentUserr.get();
+        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
+        Feedback feedback = new Feedback();
         feedback.setRating(feedbackRequest.grade());
         feedback.setDescription(feedbackRequest.comment());
-        List<String> images = feedback.getImages();
-        images = new ArrayList<>(feedbackRequest.images());
-        feedback.setImages(images);
 
-        for (Order order : gadgetById.getOrders()) {
+        for (Order order : gadget.getOrders()) {
             if (order.getUser().getId().equals(currentUser.getId()) && (order.getStatus().equals(Status.DELIVERED) || order.getStatus().equals(Status.RECEIVED))) {
                 currentUser.getFeedbacks().add(feedback);
                 feedback.setUser(currentUser);
-                gadgetById.getFeedbacks().add(feedback);
-                feedback.setGadget(gadgetById);
+                gadget.getFeedbacks().add(feedback);
+                feedback.setGadget(gadget);
                 double rating = feedbackRating(gadgetId);
-                gadgetById.getSubGadget().setRating(rating);
-                gadgetById.getSubGadget().setRating(rating);
+                gadget.getSubGadget().setRating(rating);
                 feedbackRepo.save(feedback);
+                if (!feedbackRequest.images().isEmpty()) {
+                    feedback.setImages(feedbackRequest.images());
+                }
 
                 return HttpResponse
                         .builder()
@@ -267,17 +271,19 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .build();
     }
 
-    private void checkResponse(Feedback feedback){
-        if (feedback.getResponseAdmin() != null){
+    private void checkResponse(Feedback feedback) {
+        if (feedback.getResponseAdmin() != null) {
             throw new BadRequestException("can't update or delete the feedback");
         }
     }
+
     @Override
     public HttpResponse deleteFeedback(Long feedId) {
         Feedback feedback = feedbackRepo.getByIdd(feedId);
-        if (!currentUserr.get().getRole().equals(Role.ADMIN)){
+        if (!currentUserr.get().getRole().equals(Role.ADMIN)) {
             checkResponse(feedback);
         }
+
         feedbackRepo.delete(feedback);
         return HttpResponse.builder()
                 .status(HttpStatus.OK)

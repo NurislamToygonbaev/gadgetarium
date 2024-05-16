@@ -16,17 +16,17 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reset-password")
-public class ResetPassword {
+public class ResetPasswordApi {
 
     private final PasswordResetTokenService passwordResetService;
 
-    @Operation(summary = "Метод для того чтоб отправить ссылка на email", description = "авторизация: все")
+    @Operation(summary = "Метод для того чтоб отправить ссылка на email", description = "Авторизация: ВСЕ")
     @PostMapping("/forgot")
     public HttpResponse forgotPassword(@RequestParam("email") String email) {
         return passwordResetService.sendResetEmail(email);
     }
 
-    @Operation(summary = "Метод  для изменение пароля", description = "авторизация: все")
+    @Operation(summary = "Метод  для изменение пароля", description = "Авторизация: ВСЕ")
     @PostMapping("/reset")
     public SignResponse resetPassword(@RequestParam("token") String token,
                                       @RequestBody @Valid PasswordRequest request) {

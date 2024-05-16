@@ -18,13 +18,13 @@ public class AuthApi {
 
     private final UserService userService;
 
-    @Operation(summary = "Метод  для регистрации", description = "авторизация: Все")
+    @Operation(summary = "Метод  для регистрации", description = "Авторизация: Все")
     @PostMapping("/sign-up")
     public SignResponse signUp(@RequestBody @Valid SignUpRequest signUpRequest) {
         return userService.signUp(signUpRequest);
     }
 
-    @Operation(summary = "Вход пользователя", description = "авторизация: Все")
+    @Operation(summary = "Вход пользователя", description = "Авторизация: Все")
     @PostMapping("sign-in")
     public SignResponse signIn(@RequestBody @Valid SignInRequest signInRequest) {
         return userService.signIn(signInRequest);
