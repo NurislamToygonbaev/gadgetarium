@@ -17,8 +17,8 @@ import java.util.List;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/personal-area")
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@RequestMapping("/api/personal")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class PersonalAreaApi {
 
     private final OrderService orderService;

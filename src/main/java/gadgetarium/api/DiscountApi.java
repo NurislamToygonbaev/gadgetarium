@@ -18,7 +18,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/discount")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class DiscountApi {
 
     private final DiscountService discountService;
