@@ -26,7 +26,7 @@ public class AuthApi {
     }
 
     @Operation(summary = "Вход пользователя", description = "Авторизация: Все")
-    @PostMapping("sign-in")
+    @PostMapping("/sign-in")
     public SignResponse signIn(@RequestBody @Valid SignInRequest signInRequest) {
         return userService.signIn(signInRequest);
     }
