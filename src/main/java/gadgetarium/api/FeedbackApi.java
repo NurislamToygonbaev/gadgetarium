@@ -11,12 +11,15 @@ import gadgetarium.services.FeedbackService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/feedback")
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class FeedbackApi {
 
     private final FeedbackService feedbackService;

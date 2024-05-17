@@ -19,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/basket")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class BasketApi {
 
     private final BasketService basketService;

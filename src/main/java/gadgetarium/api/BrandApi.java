@@ -16,6 +16,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/brand")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class BrandApi {
 
     private final BrandService brandService;

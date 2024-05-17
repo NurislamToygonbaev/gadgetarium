@@ -7,11 +7,15 @@ import gadgetarium.services.PasswordResetTokenService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/reset")
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class ResetPasswordApi {
 
     private final PasswordResetTokenService passwordResetService;

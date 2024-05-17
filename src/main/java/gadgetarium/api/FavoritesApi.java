@@ -6,14 +6,17 @@ import gadgetarium.dto.response.ListComparisonResponse;
 import gadgetarium.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/favorites")
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class FavoritesApi {
 
     private final UserService userService;

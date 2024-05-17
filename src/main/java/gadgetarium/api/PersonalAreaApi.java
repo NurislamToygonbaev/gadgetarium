@@ -8,14 +8,17 @@ import gadgetarium.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/personal")
+@RequestMapping("/api/personal-area")
+@CrossOrigin(origins = "*", maxAge = 100000L)
 public class PersonalAreaApi {
 
     private final OrderService orderService;
@@ -36,21 +39,21 @@ public class PersonalAreaApi {
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Изменить профиль.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PutMapping
+    @PostMapping("/edit-profile")
     public CurrentUserProfileResponse editProfile(@RequestBody @Valid CurrentUserProfileRequest currentUserProfileRequest){
         return orderService.editProfile(currentUserProfileRequest);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Изменить фото профиля.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PatchMapping
+    @PutMapping("/add-image")
     public UserImageResponse addPhotoAndEdit(@RequestBody @Valid UserImageRequest userImageRequest ){
         return orderService.addPhotoAndEdit(userImageRequest);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Сменить пароль.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PatchMapping("/password")
+    @PostMapping("/change-password")
     public HttpResponse changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
         return orderService.changePassword(changePasswordRequest);
     }
