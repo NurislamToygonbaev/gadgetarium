@@ -25,17 +25,18 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/gadget")
-@Slf4j
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class GadgetApi {
 
     private final GadgetService gadgetService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Все Гаджеты ", description = "Авторизация: АДМИНСТРАТОР")
-    @GetMapping("/get-all")
+    @GetMapping
     public ResultPaginationGadget allGadgets(@RequestParam(required = false) Sort sort,
                                              @RequestParam(required = false) Discount discount,
                                              @RequestParam(value = "page", defaultValue = "1") int page,
@@ -44,7 +45,7 @@ public class GadgetApi {
     }
 
     @Operation(summary = "Все гаджеты с фильтрацией", description = "Авторизация: ВСЕ")
-    @GetMapping("/all-gadgets")
+    @GetMapping("/filter")
     public PaginationSHowMoreGadget allGadgetsForEvery(@RequestParam(required = false) Sort sort,
                                                        @RequestParam(required = false) Discount discount,
                                                        @RequestParam(required = false) Memory memory,
@@ -59,13 +60,13 @@ public class GadgetApi {
     }
 
     @Operation(summary = "Получение гаджета по ID.", description = "Авторизация: ВСЕ")
-    @GetMapping("/get-gadget/{gadgetId}")
+    @GetMapping("/by-id/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId) {
         return gadgetService.getGadgetById(gadgetId);
     }
 
     @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "Авторизация: ВСЕ")
-    @GetMapping("/select-colour")
+    @GetMapping("/colour")
     public GadgetResponse getGadgetByColour(@RequestParam String colour,
                                             @RequestParam String nameOfGadget) {
         return gadgetService.getGadgetSelectColour(colour, nameOfGadget);
@@ -80,7 +81,7 @@ public class GadgetApi {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = " Добавление продукта ", description = "Авторизация: АДМИНСТРАТОР")
-    @PostMapping("/add-gadget/{subCategoryId}/{brandId}")
+    @PostMapping("/{subCategoryId}/{brandId}")
     public HttpResponse addGadget(@PathVariable Long subCategoryId,
                                   @PathVariable Long brandId,
                                   @RequestBody @Valid AddProductRequest addProductRequest) {
@@ -89,7 +90,7 @@ public class GadgetApi {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Возвращение добавленных товаров.", description = "Авторизация: АДМИНСТРАТОР")
-    @GetMapping("/get-new-products")
+    @GetMapping("/get-new")
     public List<AddProductsResponse> getNewProducts() {
         return gadgetService.getNewProducts();
     }
@@ -108,60 +109,74 @@ public class GadgetApi {
         return gadgetService.setPriceOneProduct(productPriceRequest);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Добавление документа на товары ", description = "Авторизация: АДМИНСТРАТОР")
+    @Operation(summary = " Все категории", description = "Авторизация: АДМИНСТРАТОР")
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @GetMapping("/categories")
+    public List<CatResponse> getCategories() {
+        return gadgetService.getCategories();
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = " Все подкатегории", description = "Авторизация ADMIN")
+    @GetMapping("/{catId}/sub-categories")
+    public List<CatResponse> getSubCategories(@PathVariable Long catId) {
+        return gadgetService.getSubCategories(catId);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Добавление документа на товары ", description = "Авторизация ADMIN")
     @PostMapping("/set-document")
     public HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException {
         return gadgetService.addDocument(productDocRequest);
     }
 
     @Operation(summary = "Все Гаджеты по акции", description = "Авторизация: ВСЕ")
-    @GetMapping("/all-gadgets-with-discounts")
+    @GetMapping("/discounts")
     public GadgetPaginationForMain mainPageDiscounts(@RequestParam(value = "page", defaultValue = "1") int page,
                                                      @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageDiscounts(page, size);
     }
 
     @Operation(summary = "Новинки", description = "Авторизация: ВСЕ")
-    @GetMapping("/all-new-gadgets")
+    @GetMapping("/new")
     public GadgetPaginationForMain mainPageNews(@RequestParam(value = "page", defaultValue = "1") int page,
                                                 @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageNews(page, size);
     }
 
     @Operation(summary = "Рекомендуемые", description = "Авторизация: ВСЕ")
-    @GetMapping("/all-gadgets-recommend")
+    @GetMapping("/recommend")
     public GadgetPaginationForMain mainPageRecommend(@RequestParam(value = "page", defaultValue = "1") int page,
                                                      @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageRecommend(page, size);
     }
 
     @Operation(summary = "Посмотреть описание гаджета", description = "Авторизация: ВСЕ")
-    @GetMapping("/see-gadget-description/{id}")
+    @GetMapping("/description/{id}")
     public GadgetDescriptionResponse getDescriptionGadget(@PathVariable Long id) {
         return gadgetService.getDescriptionGadget(id);
     }
 
     @Operation(summary = "Посмотреть характеристики гаджета", description = "Авторизация: ВСЕ")
-    @GetMapping("/see-gadget-characteristics/{id}")
+    @GetMapping("/characteristics/{id}")
     public GadgetCharacteristicsResponse getCharacteristicsGadget(@PathVariable Long id) {
         return gadgetService.getCharacteristicsGadget(id);
     }
 
     @Operation(summary = "Посмотреть отзывы гаджета", description = "Авторизация: ВСЕ")
-    @GetMapping("/see-gadget-reviews/{id}")
+    @GetMapping("/reviews/{id}")
     public List<GadgetReviewsResponse> getReviewsGadget(@PathVariable Long id) {
         return gadgetService.getReviewsGadget(id);
     }
 
     @Operation(summary = "Информация про доставка и оплата", description = "Авторизация: ВСЕ")
-    @GetMapping("/see-gadget-delivery/{id}")
+    @GetMapping("/delivery/{id}")
     public GadgetDeliveryPriceResponse getDeliveryPriceGadget(@PathVariable Long id) {
         return gadgetService.getDeliveryPriceGadget(id);
     }
 
     @Operation(summary = "Метод для скачивание PDF", description = "Авторизация: ВСЕ")
-    @GetMapping("/download-doc/{key}/{id}")
+    @GetMapping("/doc/{key}/{id}")
     public ResponseEntity<ByteArrayResource> downloadPDF(@PathVariable String key,
                                                          @PathVariable Long id) {
         byte[] data = gadgetService.downloadFile(key, id);
@@ -176,19 +191,19 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
-    @PostMapping("/update-gadget/{gadgetID}")
+    @PutMapping("/{gadgetID}")
     public HttpResponse updateGadget(@PathVariable Long gadgetID,
                                      @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest,
                                      @RequestParam Ram ram,
-                                     @RequestParam Memory memory
-    ) {
+                                     @RequestParam Memory memory){
         return gadgetService.updateGadget(gadgetID, gadgetNewDataRequest, ram, memory);
     }
 
+
     @PreAuthorize("hasAnyAuthority('ADMIN')")
-    @Operation(summary = "Удвление гаджета по ID", description = "Авторизация ADMIN")
-    @DeleteMapping("/delete-gadget/{gadgetID}")
-    public HttpResponse deleteGadget(@PathVariable Long gadgetID) {
+    @Operation(summary = "Удаление гаджета по ID", description = "Авторизация ADMIN")
+    @DeleteMapping("/{gadgetID}")
+    public HttpResponse deleteGadget(@PathVariable Long gadgetID){
         return gadgetService.deleteGadget(gadgetID);
     }
 }

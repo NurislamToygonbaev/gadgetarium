@@ -3,6 +3,7 @@ package gadgetarium.services.impl;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import gadgetarium.dto.response.BrandResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.entities.Brand;
 import gadgetarium.exceptions.AlreadyExistsException;
@@ -18,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -45,6 +47,12 @@ public class BrandServiceImpl implements BrandService {
 
     @Override
     public HttpResponse saveBrand(MultipartFile file, String brandName) {
+        if (file == null || file.isEmpty()) {
+            return HttpResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST)
+                    .message("No file provided")
+                    .build();
+        }
         checkBrandName(brandName);
         String key = UUID.randomUUID().toString();
         File fileObj = convertMultiPartFileToFile(file);
@@ -60,6 +68,11 @@ public class BrandServiceImpl implements BrandService {
                 .status(HttpStatus.OK)
                 .message("success saved")
                 .build();
+    }
+
+    @Override
+    public List<BrandResponse> getAllBrands() {
+        return brandRepo.getAllBrands();
     }
 
     private File convertMultiPartFileToFile(MultipartFile file) {

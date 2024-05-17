@@ -10,10 +10,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
-@Slf4j
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthApi {
 
     private final UserService userService;
@@ -31,3 +32,5 @@ public class AuthApi {
     }
 
 }
+
+

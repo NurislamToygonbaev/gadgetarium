@@ -8,28 +8,31 @@ import gadgetarium.services.OrderService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/personal-area")
+@RequestMapping("/api/personal")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class PersonalAreaApi {
 
     private final OrderService orderService;
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть весь истории заказов.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/view-all-history")
+    @GetMapping
     public List<AllOrderHistoryResponse> getAllOrdersHistory(){
         return orderService.getAllOrdersHistory();
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть один историю заказа.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/view-order/{orderId}")
+    @GetMapping("/by-id/{orderId}")
     public OrderHistoryResponse getOrderHistoryById(@PathVariable Long orderId){
         return orderService.getOrderHistoryById(orderId);
     }

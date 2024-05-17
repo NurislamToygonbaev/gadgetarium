@@ -11,6 +11,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -18,6 +19,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.cors.CorsConfiguration;
 
 @Configuration
 @EnableWebSecurity
@@ -30,19 +32,30 @@ public class SecurityConfig {
 
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests(request -> {
-            request
-                    .requestMatchers(
-                            "/**",
-                            "/api/auth/**",
-                            "/api/reset-password/**",
-                            "/swagger-ui/index.html/**"
-                    )
-                    .permitAll()
-                    .anyRequest()
-                    .authenticated();
-        });
-        http.csrf(AbstractHttpConfigurer::disable);
+        http.cors(cors -> cors.configurationSource(request -> {
+                    var corsConfiguration = new CorsConfiguration();
+                    corsConfiguration.addAllowedOrigin("*");
+                    corsConfiguration.addAllowedMethod("*");
+                    corsConfiguration.addAllowedHeader("*");
+                    return corsConfiguration;
+                }))
+                .csrf(AbstractHttpConfigurer::disable)
+                .authorizeHttpRequests(request -> {
+                    request
+                            .requestMatchers(
+                                    "/",
+                                    "/api/auth/**",
+                                    "/swagger-ui/index.html/**",
+                                    "/api/reset-password/**"
+                            )
+                            .permitAll()
+                            .anyRequest()
+                            .authenticated();
+                })
+                .sessionManagement((sessionManagement) ->
+                        sessionManagement
+                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
