@@ -24,7 +24,7 @@ public class NewsLetterApi {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Создать рассылку", description = "Авторизация: АДМИНСТРАТОР")
-    @PostMapping("/send")
+    @PostMapping
     public NewsLetterResponse sendNewsLetter(@RequestBody @Valid NewsLetterRequest newsLetterRequest){
         return mailingService.sendNewsLetter(newsLetterRequest);
     }

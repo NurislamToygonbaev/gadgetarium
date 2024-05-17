@@ -15,42 +15,42 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/personal-area")
+@RequestMapping("/api/personal")
 public class PersonalAreaApi {
 
     private final OrderService orderService;
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть весь истории заказов.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/view-all-history")
+    @GetMapping
     public List<AllOrderHistoryResponse> getAllOrdersHistory(){
         return orderService.getAllOrdersHistory();
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть один историю заказа.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/view-order/{orderId}")
+    @GetMapping("/by-id/{orderId}")
     public OrderHistoryResponse getOrderHistoryById(@PathVariable Long orderId){
         return orderService.getOrderHistoryById(orderId);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Изменить профиль.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/edit-profile")
+    @PutMapping
     public CurrentUserProfileResponse editProfile(@RequestBody @Valid CurrentUserProfileRequest currentUserProfileRequest){
         return orderService.editProfile(currentUserProfileRequest);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Изменить фото профиля.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PutMapping("/add-image")
+    @PatchMapping
     public UserImageResponse addPhotoAndEdit(@RequestBody @Valid UserImageRequest userImageRequest ){
         return orderService.addPhotoAndEdit(userImageRequest);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Сменить пароль.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/change-password")
+    @PatchMapping("/password")
     public HttpResponse changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
         return orderService.changePassword(changePasswordRequest);
     }
