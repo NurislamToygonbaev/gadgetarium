@@ -11,12 +11,12 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/google")
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class AuthGoogleApi {
     private final FirebaseAuthenticationService firebaseAuthenticationService;
 
     @Operation(summary = "Вход пользователя через Google", description = "авторизация: Все")
-    @PostMapping("/google/authenticate")
+    @PostMapping
     public ResponseEntity<?> authenticateUser(@RequestBody String idToken) {
         return firebaseAuthenticationService.authenticateUser(idToken);
     }

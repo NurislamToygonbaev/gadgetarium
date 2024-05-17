@@ -16,14 +16,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/payment")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class PaymentApi {
 
     private final PaymentService paymentService;
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Способ оплаты")
-    @PostMapping("/payment-type/{orderId}")
+    @PostMapping("/type/{orderId}")
     public HttpResponse paymentMethod(@RequestParam Payment payment,
                                       @PathVariable Long orderId) {
         return paymentService.paymentMethod(payment, orderId);
@@ -31,7 +31,7 @@ public class PaymentApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Проверка валидности карты")
-    @PostMapping("/validate-card")
+    @GetMapping("/validate")
     public ResponseEntity<String> validateCard(@RequestParam String nonce,
                                                @RequestParam String cardholderName,
                                                @RequestParam String customerId) {
@@ -40,7 +40,7 @@ public class PaymentApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Оплата")
-    @PostMapping("/confirm-payment/{orderId}")
+    @PostMapping("/payment/{orderId}")
     public ResponseEntity<String> confirmPayment(@RequestParam String paymentMethodNonce,
                                                  @PathVariable Long orderId,
                                                  @RequestParam String customerId) {
@@ -49,14 +49,14 @@ public class PaymentApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Получить информацию о заказе")
-    @PostMapping("/order-view/{orderId}")
+    @GetMapping("/info/{orderId}")
     public OrderOverViewResponse orderView(@PathVariable Long orderId) {
         return paymentService.orderView(orderId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Получить номер заказа")
-    @PostMapping("/order-number/{orderId}")
+    @GetMapping("/number/{orderId}")
     public OrderNumber orderNumberInfo(@PathVariable Long orderId) {
         return paymentService.orderNumberInfo(orderId);
     }

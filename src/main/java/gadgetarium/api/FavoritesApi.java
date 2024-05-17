@@ -16,49 +16,49 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/favorites")
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class FavoritesApi {
 
     private final UserService userService;
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Метод для добовления гаджетов в избранное или удалении", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/add-favorites/{subGadgetId}")
+    @PostMapping("/{subGadgetId}")
     public HttpResponse addToFavorites(@PathVariable Long subGadgetId) {
         return userService.addToFavorites(subGadgetId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод добовляет несколько гаджетов в избранный")
-    @PostMapping("/add-all-favorites")
+    @PostMapping("/add-all")
     public HttpResponse addAllGadgetsToFavorites(@RequestParam List<Long> subGadgetId){
         return userService.addAllGadgetsToFavorites(subGadgetId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод показывает гаджетов в избранный")
-    @GetMapping("/list-favorites")
+    @GetMapping("/favorites")
     public List<ListComparisonResponse> listFavorites() {
         return userService.seeFavorites();
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для просмотра всех гаджетов в избранный")
-    @GetMapping("/get-all-favorites")
+    @GetMapping
     public List<AllFavoritesResponse> getAllFavorites(){
         return userService.getAllFavorites();
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для удаление одного гаджета в избранный")
-    @DeleteMapping("/delete-by-id/{subGadgetId}")
+    @DeleteMapping("/{subGadgetId}")
     public HttpResponse deleteById(@PathVariable Long subGadgetId){
         return userService.deleteById(subGadgetId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод удаляет всех гаджетов в избранный")
-    @DeleteMapping("/clear-favorites")
+    @DeleteMapping("/clear")
     public HttpResponse clearFavorites(){
         return userService.clearFavorites();
     }

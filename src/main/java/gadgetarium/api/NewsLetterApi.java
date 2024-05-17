@@ -15,14 +15,14 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/news-letter")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class NewsLetterApi {
 
     private final MailingService mailingService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Создать рассылку", description = "Авторизация: АДМИНСТРАТОР")
-    @PostMapping("/send")
+    @PostMapping
     public NewsLetterResponse sendNewsLetter(@RequestBody @Valid NewsLetterRequest newsLetterRequest){
         return mailingService.sendNewsLetter(newsLetterRequest);
     }

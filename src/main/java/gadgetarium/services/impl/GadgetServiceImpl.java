@@ -46,6 +46,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Value("${application.bucket.name}")
     private String bucketName;
     private final GadgetRepository gadgetRepo;
+    private final CategoryRepository categoryRepo;
     private final SubGadgetRepository subGadgetRepo;
     private final CurrentUser currentUser;
     private final GadgetJDBCTemplateRepository gadgetJDBCTemplateRepo;
@@ -298,12 +299,12 @@ public class GadgetServiceImpl implements GadgetService {
                         Map<String, String> value = entry.getValue();
 
                         CharValue charValue = new CharValue();
+                        charValueRepo.save(charValue);
                         for (Map.Entry<String, String> charEntry : value.entrySet()) {
                             charValue.addCharacteristic(charEntry.getKey(), charEntry.getValue());
                         }
 
                         subGadget.getCharName().put(charValue, s);
-                        charValueRepo.save(charValue);
                     }
 
                     gadgetRepo.save(gadget);
@@ -470,7 +471,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Override
     public byte[] downloadFile(String key, Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-        if (!gadget.getPDFUrl().contains(bucketName + key)) {
+        if (!gadget.getPDFUrl().contains(bucketName+key)){
             throw new NotFoundException("not found");
         }
         S3Object s3Object = s3Client.getObject(bucketName, key);
@@ -531,5 +532,15 @@ public class GadgetServiceImpl implements GadgetService {
                 .status(HttpStatus.OK)
                 .message("Gadget deleted!")
                 .build();
+    }
+
+    @Override
+    public List<CatResponse> getCategories() {
+        return categoryRepo.getAllCategories();
+    }
+
+    @Override
+    public List<CatResponse> getSubCategories(Long catId) {
+        return subCategoryRepo.getSubCategories(catId);
     }
 }

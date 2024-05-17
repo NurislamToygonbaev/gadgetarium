@@ -9,24 +9,25 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/reset-password")
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@RequestMapping("/api/reset")
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class ResetPasswordApi {
 
     private final PasswordResetTokenService passwordResetService;
 
     @Operation(summary = "Метод для того чтоб отправить ссылка на email", description = "Авторизация: ВСЕ")
-    @PostMapping("/forgot")
+    @PostMapping
     public HttpResponse forgotPassword(@RequestParam("email") String email) {
         return passwordResetService.sendResetEmail(email);
     }
 
     @Operation(summary = "Метод  для изменение пароля", description = "Авторизация: ВСЕ")
-    @PostMapping("/reset")
+    @PatchMapping
     public SignResponse resetPassword(@RequestParam("token") String token,
                                       @RequestBody @Valid PasswordRequest request) {
         return passwordResetService.resetPassword(token, request);

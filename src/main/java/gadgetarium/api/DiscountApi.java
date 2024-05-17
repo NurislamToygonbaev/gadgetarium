@@ -18,14 +18,14 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/discount")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class DiscountApi {
 
     private final DiscountService discountService;
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Создать скидку", description = "Авторизация: АДМИНСТРАТОР")
-    @PostMapping("/create")
+    @PostMapping
     public DiscountResponse create(@RequestParam @NotNull List<Long> subGadgetsId, @RequestBody @Valid DiscountRequest discountRequest){
         return discountService.create(subGadgetsId, discountRequest);
     }

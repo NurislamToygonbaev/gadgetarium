@@ -17,21 +17,21 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/comparison")
-@CrossOrigin(origins = "*", maxAge = 100000L)
+@CrossOrigin(origins = "*", maxAge = 3600)
 public class ComparisonApi {
 
     private final UserService userService;
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для добовления гаджетов в сравнении или удалении")
-    @PostMapping("/add-compare/{subGadgetId}")
+    @PostMapping("/{subGadgetId}")
     public HttpResponse addCompare(@PathVariable Long subGadgetId) {
         return userService.addCompare(subGadgetId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод показывает гаджетов в сравнении")
-    @GetMapping("/list-compare")
+    @GetMapping
     public List<ListComparisonResponse> listCompare() {
         return userService.seeComparison();
     }
@@ -46,7 +46,7 @@ public class ComparisonApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для удаление одного гаджета в сравнении")
-    @DeleteMapping("/delete/{subGadgetId}")
+    @DeleteMapping("/{subGadgetId}")
     public HttpResponse deleteSub(@PathVariable Long subGadgetId) {
         return userService.deleteSubGadget(subGadgetId);
     }
