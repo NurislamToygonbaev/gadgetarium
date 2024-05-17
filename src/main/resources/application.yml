@@ -1,8 +1,10 @@
-
 #The server always outputs a stack trace when an error occurs
 server:
     error:
         include-stacktrace: always
+    tomcat:
+        uri-encoding: UTF-8
+        max-http-header-size: 8096
 
 #The DataBase. Connection to Postgresql
 spring:
