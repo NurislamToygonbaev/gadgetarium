@@ -6,10 +6,7 @@ import gadgetarium.dto.response.GadgetPaginationForMain;
 import gadgetarium.dto.response.GadgetResponseMainPage;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
-import gadgetarium.enums.Discount;
-import gadgetarium.enums.Memory;
-import gadgetarium.enums.Ram;
-import gadgetarium.enums.Sort;
+import gadgetarium.enums.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -32,16 +29,18 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         int limit = size;
         String orderBy = "";
         String where = "";
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
+
 
         if (sort != null) {
             if (sort.equals(Sort.NEW_PRODUCTS)) orderBy = " order by ga.release_date desc ";
             else if (sort.equals(Sort.PROMOTION)) {
                 if (discount != null) {
-                    if (discount.equals(Discount.ALL_DISCOUNTS)) where = " where d.percent is not null ";
-                    else if (discount.equals(Discount.UP_TO_50)) where = " where d.percent < 50 ";
-                    else if (discount.equals(Discount.OVER_50)) where = " where d.percent > 50 ";
+                    if (discount.equals(Discount.ALL_DISCOUNTS)) where = " and  d.percent is not null ";
+                    else if (discount.equals(Discount.UP_TO_50)) where = " and  d.percent < 50 ";
+                    else if (discount.equals(Discount.OVER_50)) where = " and  d.percent > 50 ";
                 }
-            } else if (sort.equals(Sort.RECOMMENDED)) where = " where g.rating > 4 ";
+            } else if (sort.equals(Sort.RECOMMENDED)) where = " and  g.rating > 4 ";
             else if (sort.equals(Sort.HIGH_TO_LOW)) orderBy = " order by g.price desc ";
             else if (sort.equals(Sort.LOW_TO_HIGH)) orderBy = " order by g.price asc ";
 
@@ -58,10 +57,11 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                d.end_date,
                                g.price
                         from sub_gadgets g
-                        join sub_gadget_images gi on g.id = gi.sub_gadget_id
+                        left outer join sub_gadget_images gi on g.id = gi.sub_gadget_id
                         join gadgets ga on ga.id = g.gadget_id
                         join brands b on ga.brand_id = b.id
                         left outer join discounts d on g.id = d.sub_gadget_id
+                        where ga.remoteness_status ="""+"'"+status+"'"+"""
                         """ + where + """
                         group by g.id, ga.article, g.name_of_gadget, ga.release_date,
                                    b.brand_name,  g.quantity, d.percent, g.price, d.end_date
@@ -107,97 +107,41 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
         String orderBy = "";
         String where = "";
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         if (brand != null || sort != null || discount != null || memory != null || ram != null || costFrom != null || costUpTo != null || colour != null) {
-            boolean needAnd = false;
-
             if (brand != null) {
-                where += " where b.brand_name ilike '"+brand+"'";
-                needAnd = true;
+                where += " and b.brand_name ilike '"+brand+"'";
             }
             if (costFrom != null && costUpTo != null){
-                if (needAnd){
-                    where += " and ";
-                } else {
-                    where += " where ";
-                }
-                where += " g.price between '"+costFrom+"' and '"+costUpTo+"'";
-                needAnd = true;
+                where += " and g.current_price between '"+costFrom+"' and '"+costUpTo+"'";
             } else if (costFrom != null){
-                if (needAnd){
-                    where += " and ";
-                } else {
-                    where += " where ";
-                }
-                where += " g.price > '"+costFrom+"'";
+                where += " and g.current_price > '"+costFrom+"'";
             } else if (costUpTo != null) {
-                if (needAnd){
-                    where += " and ";
-                } else {
-                    where += " where ";
-                }
-                where += " g.price < '"+costUpTo+"'";
+                where += " and g.current_price < '"+costUpTo+"'";
             }
             if (colour != null){
-                if (needAnd) {
-                    where += " and ";
-                } else {
-                    where += " where ";
-                }
-                where += " g.main_colour ilike '" + colour + "'";
-                needAnd = true;
+                where += " and g.main_colour ilike '" + colour + "'";
             }
             if (memory != null){
-                if (needAnd){
-                    where += " and ";
-                } else {
-                    where += " where ";
-                }
-                where += " ga.memory ilike '" + memory.name() + "'";
-                needAnd = true;
+                where += " and ga.memory ilike '" + memory.name() + "'";
             }
             if (ram != null){
-                if (needAnd){
-                    where += " and ";
-                } else {
-                    where += " where ";
-                }
-                where += " ga.ram ilike '" + ram.name() + "'";
-                needAnd = true;
+                where += " and ga.ram ilike '" + ram.name() + "'";
             }
             if (sort != null){
                 if (sort.equals(Sort.RECOMMENDED)){
-                    if (needAnd){
-                        where += " and ";
-                    } else {
-                        where += " where ";
-                    }
-                    where += " g.rating > 3.9 or (select count(*) from orders o where o.id = og.orders_id) > 10 ";
+                    where += " and g.rating > 3.9 or (select count(*) from orders o where o.id = og.orders_id) > 10 ";
                 } else if (sort.equals(Sort.NEW_PRODUCTS)) {
                     orderBy = " order by ga.release_date desc ";
                 } else if (sort.equals(Sort.PROMOTION)) {
                     if (discount != null){
                         if (discount.equals(Discount.ALL_DISCOUNTS)){
-                            if (needAnd){
-                                where += " and ";
-                            } else {
-                                where += " where ";
-                            }
-                            where += " d.percent is not null ";
+                            where += " and d.percent is not null ";
                         } else if (discount.equals(Discount.UP_TO_50)) {
-                            if (needAnd){
-                                where += " and ";
-                            } else {
-                                where += " where ";
-                            }
-                            where += " d.percent < 50 ";
+                            where += " and d.percent < 50 ";
                         } else if (discount.equals(Discount.OVER_50)) {
-                            if (needAnd){
-                                where += " and ";
-                            } else {
-                                where += " where ";
-                            }
-                            where += " d.percent > 50 ";
+                            where += " and d.percent > 50 ";
                         }
                     }
                 } else if (sort.equals(Sort.HIGH_TO_LOW)) {
@@ -230,6 +174,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         left join orders_gadgets og on ga.id = og.gadgets_id
                         left join orders o on o.id = og.orders_id
                         left outer join feedbacks f on ga.id = f.gadget_id
+                        where ga.remoteness_status ="""+"'"+status+"'"+"""
                         """ + where + """
                          group by g.id, g.name_of_gadget, b.brand_name,  g.quantity, d.percent, g.price,
                                    ga.memory, g.main_colour, g.current_price, g.rating, ga.release_date
@@ -274,6 +219,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     public GadgetPaginationForMain mainPageDiscounts(int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         List<GadgetResponseMainPage> responseMainPages = jdbcTemplate.query("""
                         select g.id,
@@ -293,7 +239,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         join brands b on ga.brand_id = b.id
                         left outer join discounts d on g.id = d.sub_gadget_id
                         left outer join feedbacks f on f.gadget_id = ga.id
-                        where d.percent is not null
+                        where d.percent is not null and ga.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, g.quantity, d.percent,
                                 g.price, currentPrice, ga.memory, g.rating, colour
                         limit ? offset ?
@@ -328,6 +274,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     public GadgetPaginationForMain mainPageNews(int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         List<GadgetResponseMainPage> newGadgets = jdbcTemplate.query("""
                         select g.id,
@@ -348,6 +295,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         join brands b on ga.brand_id = b.id
                         left outer join discounts d on g.id = d.sub_gadget_id
                         left outer join feedbacks f on f.gadget_id = ga.id
+                        where ga.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, g.quantity, d.percent,
                                 g.price, currentPrice, ga.memory, g.rating, colour, ga.release_date
                         order by ga.release_date desc
@@ -383,6 +331,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     public GadgetPaginationForMain mainPageRecommend(int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         List<GadgetResponseMainPage> newGadgets = jdbcTemplate.query("""
                         select g.id,
@@ -402,6 +351,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         join brands b on ga.brand_id = b.id
                         left outer join discounts d on g.id = d.sub_gadget_id
                         left outer join feedbacks f on f.gadget_id = ga.id
+                        where ga.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, g.quantity, d.percent,
                                 g.price, currentPrice, ga.memory, g.rating, colour
                         having g.rating > 3.9 or count(f.id) > 10

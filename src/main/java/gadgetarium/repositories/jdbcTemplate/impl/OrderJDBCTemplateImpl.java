@@ -3,6 +3,7 @@ package gadgetarium.repositories.jdbcTemplate.impl;
 import gadgetarium.dto.response.OrderPagination;
 import gadgetarium.dto.response.OrderResponse;
 import gadgetarium.dto.response.OrderResponseFindById;
+import gadgetarium.enums.RemotenessStatus;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
@@ -41,10 +42,10 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
 
             if (keyword != null) {
                 whereClause += """
-                        (u.last_name ilike concat('%', ?, '%')
-                        or u.first_name ilike concat('%', ?, '%')
-                        or o.number::text ilike concat('%', ?, '%'))
-                        """;
+                    (u.last_name ilike concat('%', ?, '%')
+                    or u.first_name ilike concat('%', ?, '%')
+                    or o.number::text ilike concat('%', ?, '%'))
+                    """;
                 params.add(keyword.trim());
                 params.add(keyword.trim());
                 params.add(keyword.trim());
@@ -87,23 +88,23 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
         params.add(offset);
 
         List<OrderResponse> orderResponses = jdbcTemplate.query("""
-                        select o.id,
-                               concat(u.last_name, ' ', u.first_name) as fullName,
-                               o.number,
-                               o.created_at,
-                               count(g.id) as totalGadgets,
-                               sum(s.current_price) as totalPrice,
-                               o.type_order,
-                               o.status
-                        from orders o
-                        join users u on o.user_id = u.id
-                        join orders_gadgets og on o.id = og.orders_id
-                        join gadgets g on og.gadgets_id = g.id
-                        join sub_gadgets s on s.gadget_id = g.id
-                        """ + whereClause + """
-                        group by o.id, fullName, o.number, o.created_at, o.type_order, o.status
-                        limit ? offset ?
-                        """,
+                    select o.id,
+                           concat(u.last_name, ' ', u.first_name) as fullName,
+                           o.number,
+                           o.created_at,
+                           count(g.id) as totalGadgets,
+                           sum(s.current_price) as totalPrice,
+                           o.type_order,
+                           o.status
+                    from orders o
+                    join users u on o.user_id = u.id
+                    join orders_gadgets og on o.id = og.orders_id
+                    join gadgets g on og.gadgets_id = g.id
+                    join sub_gadgets s on s.gadget_id = g.id
+                    """ + whereClause + """
+                    group by o.id, fullName, o.number, o.created_at, o.type_order, o.status
+                    limit ? offset ?
+                    """,
                 params.toArray(),
                 (rs, rowNum) -> {
                     return new OrderResponse(

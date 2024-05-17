@@ -65,38 +65,43 @@ public class GadgetServiceImpl implements GadgetService {
     @Transactional
     public GadgetResponse getGadgetById(Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-        User user = currentUser.get();
-        user.addViewed(gadget.getSubGadget());
 
-        SubGadget subGadget = gadget.getSubGadget();
-        gadgetarium.entities.Discount discount = null;
-        int percent = 0;
+        if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
+            User user = currentUser.get();
+            user.addViewed(gadget.getSubGadget());
 
-        if (subGadget != null) {
-            discount = subGadget.getDiscount();
+            SubGadget subGadget = gadget.getSubGadget();
+            gadgetarium.entities.Discount discount = null;
+            int percent = 0;
+
+            if (subGadget != null) {
+                discount = subGadget.getDiscount();
+            }
+
+            if (discount != null) {
+                percent = discount.getPercent();
+            }
+
+            return new GadgetResponse(
+                    gadget.getId(),
+                    gadget.getBrand().getLogo(),
+                    gadget.getSubGadget().getImages(),
+                    gadget.getSubGadget().getNameOfGadget(),
+                    gadget.getSubGadget().getQuantity(),
+                    gadget.getArticle(),
+                    gadget.getSubGadget().getRating(),
+                    percent,
+                    gadget.getSubGadget().getPrice(),
+                    gadget.getSubGadget().getCurrentPrice(),
+                    gadget.getSubGadget().getMainColour(),
+                    gadget.getReleaseDate(),
+                    gadget.getWarranty(),
+                    gadget.getMemory().name(),
+                    gadget.getSubGadget().getCharacteristics()
+            );
+        }else {
+            throw new NotFoundException("Not found!");
         }
-
-        if (discount != null) {
-            percent = discount.getPercent();
-        }
-
-        return new GadgetResponse(
-                gadget.getId(),
-                gadget.getBrand().getLogo(),
-                gadget.getSubGadget().getImages(),
-                gadget.getSubGadget().getNameOfGadget(),
-                gadget.getSubGadget().getQuantity(),
-                gadget.getArticle(),
-                gadget.getSubGadget().getRating(),
-                percent,
-                gadget.getSubGadget().getPrice(),
-                gadget.getSubGadget().getCurrentPrice(),
-                gadget.getSubGadget().getMainColour(),
-                gadget.getReleaseDate(),
-                gadget.getWarranty(),
-                gadget.getMemory().name(),
-                gadget.getSubGadget().getCharacteristics()
-        );
     }
 
     @Override
@@ -198,8 +203,8 @@ public class GadgetServiceImpl implements GadgetService {
             gadget.setWarranty(addProductRequest.warranty());
 
             subGadget.setMainColour(productsRequest.mainColour());
-            gadget.setMemory(productsRequest.memory());
-            gadget.setRam(productsRequest.ram());
+            gadget.setMemory(Memory.fromString(productsRequest.memory()));
+            gadget.setRam(Ram.fromString(productsRequest.ram()));
             subGadget.setCountSim(productsRequest.countSim());
             subGadget.setImages(productsRequest.images());
 
@@ -543,4 +548,6 @@ public class GadgetServiceImpl implements GadgetService {
     public List<CatResponse> getSubCategories(Long catId) {
         return subCategoryRepo.getSubCategories(catId);
     }
+
+
 }
