@@ -97,7 +97,8 @@ public class GadgetServiceImpl implements GadgetService {
                     gadget.getReleaseDate(),
                     gadget.getWarranty(),
                     gadget.getMemory().name(),
-                    gadget.getSubGadget().getCharacteristics()
+                    gadget.getRam().name(),
+                    gadget.getSubGadget().getCountSim()
             );
         }else {
             throw new NotFoundException("Not found!");
