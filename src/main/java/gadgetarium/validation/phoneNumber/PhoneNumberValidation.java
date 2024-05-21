@@ -14,9 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PhoneNumberValidation {
 
-    String message() default "{Phone number must be start with +996 and length 13}";
-
+    String message() default "Invalid phone number";
     Class<?>[] groups() default {};
-
     Class<? extends Payload>[] payload() default {};
 }
