@@ -65,7 +65,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
     private void sendEmail(String email, String resetLink) {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom("ntoygonbaev098@gmail.com");
+        mailMessage.setFrom("GADGETARIUM");
         mailMessage.setTo(email);
         mailMessage.setSubject("Забыли пароль!");
         mailMessage.setText("<p style=\"font-size: 20px;\">Чтоб изменить пароль, нажмите на эту ссылку:</p> " + resetLink);
