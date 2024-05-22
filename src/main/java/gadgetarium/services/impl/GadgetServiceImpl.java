@@ -67,9 +67,9 @@ public class GadgetServiceImpl implements GadgetService {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
-            User user = currentUser.get();
-            user.addViewed(gadget.getSubGadget());
-
+            if (currentUser.get() != null) {
+                currentUser.get().addViewed(gadget.getSubGadget());
+            }
             SubGadget subGadget = gadget.getSubGadget();
             gadgetarium.entities.Discount discount = null;
             int percent = 0;
@@ -97,7 +97,8 @@ public class GadgetServiceImpl implements GadgetService {
                     gadget.getReleaseDate(),
                     gadget.getWarranty(),
                     gadget.getMemory().name(),
-                    gadget.getSubGadget().getCharacteristics()
+                    gadget.getRam().name(),
+                    gadget.getSubGadget().getCountSim()
             );
         }else {
             throw new NotFoundException("Not found!");
@@ -153,7 +154,9 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getGadget().getReleaseDate(),
                 gadget.getGadget().getWarranty(),
                 gadget.getGadget().getMemory().name(),
-                gadget.getCharacteristics()
+                gadget.getGadget().getRam().name(),
+                gadget.getGadget().getSubGadget().getCountSim()
+
         );
     }
 
