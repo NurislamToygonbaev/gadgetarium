@@ -50,9 +50,11 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
 
             if (!userExists) {
                 User newUser = new User();
-                String[] name = decodedToken.getName().split(" ");
-                String firstName = (name.length > 0) ? name[0] : "Unknown";
+                String[] nameParts = decodedToken.getName().split(" ");
+                String firstName = (nameParts.length > 0) ? nameParts[0] : "Unknown";
+                String lastName = (nameParts.length > 1) ? nameParts[1] : "Unknown";
                 newUser.setFirstName(firstName);
+                newUser.setLastName(lastName);
                 newUser.setEmail(email);
                 newUser.setRole(Role.USER);
                 String password = UUID.randomUUID().toString();
