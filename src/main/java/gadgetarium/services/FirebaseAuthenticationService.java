@@ -1,8 +1,7 @@
 package gadgetarium.services;
 
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
+import gadgetarium.dto.response.SignResponse;
 
 public interface FirebaseAuthenticationService {
-    ResponseEntity<?> authenticateUser(String idToken);
+    SignResponse authenticateUser(String idToken);
 }

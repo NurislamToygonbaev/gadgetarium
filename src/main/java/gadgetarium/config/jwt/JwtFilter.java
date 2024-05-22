@@ -42,8 +42,7 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = headerToken.substring(bearer.length());
 
             try {
-                FirebaseToken decodedToken = FirebaseAuth.getInstance().verifyIdToken(token);
-                String email = decodedToken.getEmail();
+                String email = jwtService.verifyToken(token);
                 User user = userRepo.getByEmail(email);
                 SecurityContextHolder.getContext().setAuthentication(
                         new UsernamePasswordAuthenticationToken(
@@ -52,26 +51,13 @@ public class JwtFilter extends OncePerRequestFilter {
                                 user.getAuthorities()
                         )
                 );
-            } catch (FirebaseAuthException firebaseAuthException) {
-                try {
-                    String email = jwtService.verifyToken(token);
-                    User user = userRepo.getByEmail(email);
-                    SecurityContextHolder.getContext().setAuthentication(
-                            new UsernamePasswordAuthenticationToken(
-                                    user.getUsername(),
-                                    null,
-                                    user.getAuthorities()
-                            )
-                    );
-                } catch (JWTVerificationException jwtVerificationException) {
-                    logger.error("Both Firebase and JWT authentication failed: " + jwtVerificationException.getMessage());
-                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                    return;
-                }
+            } catch (JWTVerificationException jwtVerificationException) {
+                logger.error("Both Firebase and JWT authentication failed: " + jwtVerificationException.getMessage());
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED,
+                        "Invalid JWT token");
             }
         }
-
         chain.doFilter(request, response);
     }
-
 }
+
