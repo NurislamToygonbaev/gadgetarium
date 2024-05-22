@@ -67,9 +67,9 @@ public class GadgetServiceImpl implements GadgetService {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
-            User user = currentUser.get();
-            user.addViewed(gadget.getSubGadget());
-
+            if (currentUser.get() != null) {
+                currentUser.get().addViewed(gadget.getSubGadget());
+            }
             SubGadget subGadget = gadget.getSubGadget();
             gadgetarium.entities.Discount discount = null;
             int percent = 0;
