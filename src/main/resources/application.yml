@@ -14,8 +14,8 @@ spring:
 #Hibernate/JPA settings.
     jpa:
         hibernate:
-            ddl-auto: create
-        show-sql: true
+            ddl-auto: update
+        show-sql: false
         open-in-view: false
 
         properties:
@@ -45,7 +45,7 @@ spring:
     sql:
       init:
           continue-on-error: true
-          mode: always
+          mode: never
 
 #Settings Servlet control size file
     servlet:

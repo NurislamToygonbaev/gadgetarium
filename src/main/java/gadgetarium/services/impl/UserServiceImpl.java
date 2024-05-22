@@ -11,6 +11,7 @@ import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.UserRepository;
+import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.UserService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -281,6 +282,11 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
+        User user = currentUser.get();
+        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(gadget, user);
+        boolean comparison = GadgetJDBCTemplateRepositoryImpl.checkComparison(gadget, user);
+        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(gadget, user);
+
         Gadget parentGadget = gadget.getGadget();
         List<String> images = gadget.getImages();
         Category category = parentGadget.getSubCategory().getCategory();
@@ -296,14 +302,19 @@ public class UserServiceImpl implements UserService {
                 gadget.getMainColour(),
                 gadget.getRating(),
                 gadget.getPrice(),
-                gadget.getCurrentPrice()
+                gadget.getCurrentPrice(),
+                likes,
+                comparison,
+                basket
         );
     }
 
     private ListComparisonResponse convert(SubGadget subGadget) {
+        User user = currentUser.get();
+        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
         return new ListComparisonResponse(subGadget.getId(),
                 Collections.singletonList(subGadget.getImages().getFirst()),
                 subGadget.getNameOfGadget(), subGadget.getMainColour(),
-                subGadget.getGadget().getMemory(), subGadget.getPrice());
+                subGadget.getGadget().getMemory(), subGadget.getPrice(), basket);
     }
 }

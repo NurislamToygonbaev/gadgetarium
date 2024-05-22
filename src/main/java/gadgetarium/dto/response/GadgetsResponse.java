@@ -17,6 +17,9 @@ public record GadgetsResponse(
          int countOfRating,
          BigDecimal price,
          BigDecimal currentPrice,
-         int percent
+         int percent,
+         boolean likes,
+         boolean compression,
+         boolean basked
 ) {
 }
