@@ -45,18 +45,19 @@ public class GadgetApi {
     }
 
     @Operation(summary = "Все гаджеты с фильтрацией", description = "Авторизация: ВСЕ")
-    @GetMapping("/filter")
-    public PaginationSHowMoreGadget allGadgetsForEvery(@RequestParam(required = false) Sort sort,
+    @GetMapping("/{catId}/filter")
+    public PaginationSHowMoreGadget allGadgetsForEvery(@PathVariable Long catId,
+                                                       @RequestParam(required = false) Sort sort,
                                                        @RequestParam(required = false) Discount discount,
-                                                       @RequestParam(required = false) Memory memory,
-                                                       @RequestParam(required = false) Ram ram,
+                                                       @RequestParam(required = false) List<String> brand,
+                                                       @RequestParam(required = false) List<String> colour,
                                                        @RequestParam(required = false) BigDecimal costFrom,
                                                        @RequestParam(required = false) BigDecimal costUpTo,
-                                                       @RequestParam(required = false) String colour,
-                                                       @RequestParam(required = false) String brand,
+                                                       @RequestParam(required = false) List<Memory> memory,
+                                                       @RequestParam(required = false) List<Ram> ram,
                                                        @RequestParam(value = "page", defaultValue = "1") int page,
                                                        @RequestParam(value = "size", defaultValue = "12") int size) {
-        return gadgetService.allGadgetsForEvery(sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
+        return gadgetService.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
     }
 
     @Operation(summary = "Получение гаджета по ID.", description = "Авторизация: ВСЕ")
@@ -109,15 +110,13 @@ public class GadgetApi {
         return gadgetService.setPriceOneProduct(productPriceRequest);
     }
 
-    @Operation(summary = " Все категории", description = "Авторизация: АДМИНСТРАТОР")
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = " Все категории", description = "Авторизация: ВСЕ")
     @GetMapping("/categories")
     public List<CatResponse> getCategories() {
         return gadgetService.getCategories();
     }
 
-    @PreAuthorize("hasAnyAuthority('ADMIN')")
-    @Operation(summary = " Все подкатегории", description = "Авторизация ADMIN")
+    @Operation(summary = " Все подкатегории", description = "Авторизация ВСЕ")
     @GetMapping("/{catId}/sub-categories")
     public List<CatResponse> getSubCategories(@PathVariable Long catId) {
         return gadgetService.getSubCategories(catId);

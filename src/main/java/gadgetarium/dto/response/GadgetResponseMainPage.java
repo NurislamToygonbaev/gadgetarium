@@ -17,6 +17,9 @@ public record GadgetResponseMainPage(
         double rating,
         int count,
         BigDecimal price,
-        BigDecimal currentPrice
+        BigDecimal currentPrice,
+        boolean likes,
+        boolean comparison,
+        boolean basket
 ) {
 }

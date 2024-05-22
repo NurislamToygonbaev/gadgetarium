@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public record PaginationGadget(
         Long id,
-        List<String> images,
+        String images,
         Long article,
         String nameOfGadget,
         LocalDate releaseDate,
