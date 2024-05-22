@@ -228,7 +228,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 .build();
     }
 
-    public boolean checkLikes(SubGadget subGadget, User user) {
+    public static boolean checkLikes(SubGadget subGadget, User user) {
         if (user != null) {
             for (SubGadget like : user.getLikes()) {
                 if (like.getId().equals(subGadget.getId())) {
@@ -239,7 +239,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         return false;
     }
 
-    public boolean checkComparison(SubGadget subGadget, User user) {
+    public static boolean checkComparison(SubGadget subGadget, User user) {
         if (user != null) {
             for (SubGadget comp : user.getComparison()) {
                 if (comp.getId().equals(subGadget.getId())) {
@@ -250,7 +250,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         return false;
     }
 
-    public boolean checkBasket(SubGadget subGadget, User user) {
+    public static boolean checkBasket(SubGadget subGadget, User user) {
         if (user != null) {
             for (Map.Entry<SubGadget, Integer> entry : user.getBasket().entrySet()) {
                 SubGadget basketGadget = entry.getKey();

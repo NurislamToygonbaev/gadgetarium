@@ -20,6 +20,7 @@ import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
+import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.GadgetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -67,10 +68,15 @@ public class GadgetServiceImpl implements GadgetService {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
-            if (currentUser.get() != null) {
-                currentUser.get().addViewed(gadget.getSubGadget());
+            User user = currentUser.get();
+            if (user != null) {
+                user.addViewed(gadget.getSubGadget());
             }
             SubGadget subGadget = gadget.getSubGadget();
+
+            boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
+            boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
+
             gadgetarium.entities.Discount discount = null;
             int percent = 0;
 
@@ -98,7 +104,9 @@ public class GadgetServiceImpl implements GadgetService {
                     gadget.getWarranty(),
                     gadget.getMemory().name(),
                     gadget.getRam().name(),
-                    gadget.getSubGadget().getCountSim()
+                    gadget.getSubGadget().getCountSim(),
+                    likes,
+                    basket
             );
         }else {
             throw new NotFoundException("Not found!");
@@ -139,6 +147,11 @@ public class GadgetServiceImpl implements GadgetService {
         BigDecimal price = gadget.getPrice();
         BigDecimal currentPrice = checkCurrentPrice(price, percent);
 
+        User user = currentUser.get();
+
+        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(gadget, user);
+        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(gadget, user);
+
         return new GadgetResponse(
                 gadget.getId(),
                 gadget.getGadget().getBrand().getLogo(),
@@ -155,7 +168,9 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getGadget().getWarranty(),
                 gadget.getGadget().getMemory().name(),
                 gadget.getGadget().getRam().name(),
-                gadget.getGadget().getSubGadget().getCountSim()
+                gadget.getGadget().getSubGadget().getCountSim(),
+                likes,
+                basket
 
         );
     }

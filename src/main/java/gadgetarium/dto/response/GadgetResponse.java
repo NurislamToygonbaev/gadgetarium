@@ -26,8 +26,9 @@ public record GadgetResponse(
         LocalDate releaseDate,
         int warranty,
         String memory,
-
         String ram,
-        int countSim
+        int countSim,
+        boolean likes,
+        boolean basket
         ) {
         }
