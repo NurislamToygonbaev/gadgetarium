@@ -154,7 +154,9 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getGadget().getReleaseDate(),
                 gadget.getGadget().getWarranty(),
                 gadget.getGadget().getMemory().name(),
-                gadget.getCharacteristics()
+                gadget.getGadget().getRam().name(),
+                gadget.getGadget().getSubGadget().getCountSim()
+
         );
     }
 
