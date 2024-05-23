@@ -1,5 +1,8 @@
 package gadgetarium.services.impl;
 
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.firebase.FirebaseApp;
+import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
@@ -12,16 +15,21 @@ import gadgetarium.exceptions.AuthenticationException;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.FirebaseAuthenticationService;
+import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.UUID;
 
+@Slf4j
 @RequiredArgsConstructor
 @Service
 public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService {
@@ -30,6 +38,18 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JavaMailSender javaMailSender;
+    @PostConstruct
+    void init() throws IOException {
+        try {
+            GoogleCredentials googleCredentials = GoogleCredentials.fromStream(new ClassPathResource("serviceAccountKey.json").getInputStream());
+            FirebaseOptions firebaseOptions = FirebaseOptions.builder().setCredentials(googleCredentials).build();
+            FirebaseApp.initializeApp(firebaseOptions);
+            log.info("FirebaseApp успешно инициализирован");
+        } catch (IOException e) {
+            log.error("Ошибка при инициализации FirebaseApp: {}", e.getMessage(), e);
+            throw e;
+        }
+    }
 
     @Override
     @Transactional
@@ -49,18 +69,8 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
             boolean userExists = userRepository.existsByEmail(email);
 
             if (!userExists) {
-                User newUser = new User();
-                String[] nameParts = decodedToken.getName().split(" ");
-                String firstName = (nameParts.length > 0) ? nameParts[0] : "Unknown";
-                String lastName = (nameParts.length > 1) ? nameParts[1] : "Unknown";
-                newUser.setFirstName(firstName);
-                newUser.setLastName(lastName);
-                newUser.setEmail(email);
-                newUser.setRole(Role.USER);
-                String password = UUID.randomUUID().toString();
-                newUser.setPassword(passwordEncoder.encode(password));
+                User newUser = createUserFromDecodedToken(decodedToken);
                 userRepository.save(newUser);
-                sendEmail(email, password);
                 return createSignResponse(newUser);
             } else {
                 User foundUser = userRepository.getByEmail(email);
@@ -69,6 +79,29 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
         } catch (FirebaseAuthException e) {
             throw new AuthenticationException("Ошибка аутентификации: " + e.getMessage());
         }
+    }
+
+    private User createUserFromDecodedToken(FirebaseToken decodedToken) {
+        User newUser = new User();
+        String[] nameParts = decodedToken.getName().split(" ");
+        String firstName = (nameParts.length > 0) ? nameParts[0] : "Unknown";
+        String lastName = (nameParts.length > 1) ? nameParts[1] : "Unknown";
+        String pictureUrl = decodedToken.getPicture();
+        if (pictureUrl != null && !pictureUrl.isEmpty()) {
+            newUser.setImage(pictureUrl);
+        }
+        newUser.setFirstName(firstName);
+        newUser.setLastName(lastName);
+        newUser.setEmail(decodedToken.getEmail());
+        newUser.setRole(Role.USER);
+        String password = generateRandomPassword();
+        sendEmail(newUser.getEmail(), password);
+        newUser.setPassword(passwordEncoder.encode(password));
+        return newUser;
+    }
+
+    private String generateRandomPassword() {
+        return UUID.randomUUID().toString();
     }
 
     private SignResponse createSignResponse(User user) {
@@ -95,3 +128,4 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
         javaMailSender.send(mailMessage);
     }
 }
+
