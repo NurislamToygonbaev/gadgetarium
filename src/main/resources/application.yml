@@ -56,10 +56,10 @@ spring:
             max-request-size: 100MB
 
 #FlyWay
-#flyway:
-#  user: ${POSTGRES_USER}
-#  password: ${POSTGRES_PASSWORD}
-#  url: ${POSTGRES_DB}
+flyway:
+  user: ${POSTGRES_USER}
+  password: ${POSTGRES_PASSWORD}
+  url: ${POSTGRES_DB}
 
 
 #Configuration of AWS cloud resources.

@@ -36,7 +36,7 @@ public class AuthApi {
 
     @Operation(summary = "Вход пользователя через Google", description = "авторизация: Все")
     @PostMapping("/google")
-    public SignResponse authenticateUser(@RequestBody String idToken) {
+    public SignResponse authenticateUser(@RequestParam String idToken) {
         return firebaseAuthenticationService.authenticateUser(idToken);
     }
 
