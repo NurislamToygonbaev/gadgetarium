@@ -15,7 +15,15 @@ public class CurrentUser {
 
     public User get() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return null;
+        }
+
         String email = authentication.getName();
+        if (email == null || email.isEmpty()) {
+            return null;
+        }
+
         return userRepo.getByEmail(email);
     }
 }
