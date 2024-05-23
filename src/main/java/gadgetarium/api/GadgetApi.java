@@ -130,21 +130,21 @@ public class GadgetApi {
     }
 
     @Operation(summary = "Все Гаджеты по акции", description = "Авторизация: ВСЕ")
-    @PatchMapping("/discounts")
+    @GetMapping("/discounts")
     public GadgetPaginationForMain mainPageDiscounts(@RequestParam(value = "page", defaultValue = "1") int page,
                                                      @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageDiscounts(page, size);
     }
 
     @Operation(summary = "Новинки", description = "Авторизация: ВСЕ")
-    @PatchMapping("/new")
+    @GetMapping("/new")
     public GadgetPaginationForMain mainPageNews(@RequestParam(value = "page", defaultValue = "1") int page,
                                                 @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageNews(page, size);
     }
 
     @Operation(summary = "Рекомендуемые", description = "Авторизация: ВСЕ")
-    @PatchMapping("/recommend")
+    @GetMapping("/recommend")
     public GadgetPaginationForMain mainPageRecommend(@RequestParam(value = "page", defaultValue = "1") int page,
                                                      @RequestParam(value = "size", defaultValue = "5") int size) {
         return gadgetService.mainPageRecommend(page, size);
