@@ -11,12 +11,15 @@ import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.repositories.PasswordResetTokenRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.PasswordResetTokenService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,8 +45,8 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         String token = UUID.randomUUID().toString();
         createPasswordResetToken(user, token);
 
-        String resetPasswordUrl = "https://example.com/reset-password?token=";
-        String resetLink = resetPasswordUrl + token;
+        String resetPasswordUrl = "http://localhost:5173/auth/newForgotPassword";
+        String resetLink = String.format("%s?token=%s", resetPasswordUrl, token);
         sendEmail(email, resetLink);
         log.info("success send to email");
         return HttpResponse.builder()
@@ -53,7 +56,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     }
 
     private void createPasswordResetToken(User user, String token) {
-        LocalDateTime expiryDate = LocalDateTime.now().plus(Duration.ofMinutes(10));
+        LocalDateTime expiryDate = LocalDateTime.now().plus(Duration.ofMinutes(30));
         PasswordResetToken passwordResetToken = new PasswordResetToken();
         passwordResetToken.setUser(user);
         passwordResetToken.setToken(token);
@@ -64,12 +67,20 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
     }
 
     private void sendEmail(String email, String resetLink) {
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom("GADGETARIUM");
-        mailMessage.setTo(email);
-        mailMessage.setSubject("Забыли пароль!");
-        mailMessage.setText("<p style=\"font-size: 20px;\">Чтоб изменить пароль, нажмите на эту ссылку:</p> " + resetLink);
-        javaMailSender.send(mailMessage);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper;
+        try {
+            helper = new MimeMessageHelper(mimeMessage, true);
+            String htmlMsg = "<p style=\"font-size: 20px;\">Чтоб изменить пароль, нажмите на эту ссылку:</p> " +
+                             "<a href=\"" + resetLink + "\" style=\"font-size: 15px;\">Изменить пароль</a>";
+            helper.setText(htmlMsg, true);
+            helper.setTo(email);
+            helper.setSubject("Забыли пароль!");
+            helper.setFrom("GADGETARIUM");
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -82,6 +93,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
         LocalDateTime now = LocalDateTime.now();
         if (passwordResetToken.getExpiryDate().isBefore(now)) {
+            passwordResetTokenRepo.delete(passwordResetToken);
             throw new IllegalArgumentException("Время действия токена истекло");
         }
 
