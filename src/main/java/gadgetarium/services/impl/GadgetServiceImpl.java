@@ -68,7 +68,12 @@ public class GadgetServiceImpl implements GadgetService {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
-            User user = currentUser.get();
+            User user = null;
+            try {
+                user = currentUser.get();
+            } catch (Exception e) {
+                user = null;
+            }
             if (user != null) {
                 user.addViewed(gadget.getSubGadget());
             }
@@ -147,7 +152,12 @@ public class GadgetServiceImpl implements GadgetService {
         BigDecimal price = gadget.getPrice();
         BigDecimal currentPrice = checkCurrentPrice(price, percent);
 
-        User user = currentUser.get();
+        User user = null;
+        try {
+            user = currentUser.get();
+        } catch (Exception e) {
+            user = null;
+        }
 
         boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(gadget, user);
         boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(gadget, user);

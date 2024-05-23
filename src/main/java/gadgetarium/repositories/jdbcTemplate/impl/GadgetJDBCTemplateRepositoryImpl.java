@@ -195,7 +195,12 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
                     Long id = rs.getLong("id");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
-                    User user = currentUser.get();
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception e) {
+                        user = null;
+                    }
                     return new GadgetsResponse(
                             id,
                             imagesFirst,
@@ -229,37 +234,27 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     }
 
     public static boolean checkLikes(SubGadget subGadget, User user) {
-        if (user != null) {
-            for (SubGadget like : user.getLikes()) {
-                if (like.getId().equals(subGadget.getId())) {
-                    return true;
-                }
-            }
+        if (user == null || subGadget == null) {
+            return false;
         }
-        return false;
+        return user.getLikes().stream()
+                .anyMatch(like -> like.getId().equals(subGadget.getId()));
     }
 
     public static boolean checkComparison(SubGadget subGadget, User user) {
-        if (user != null) {
-            for (SubGadget comp : user.getComparison()) {
-                if (comp.getId().equals(subGadget.getId())) {
-                    return true;
-                }
-            }
+        if (user == null || subGadget == null) {
+            return false;
         }
-        return false;
+        return user.getComparison().stream()
+                .anyMatch(comp -> comp.getId().equals(subGadget.getId()));
     }
 
     public static boolean checkBasket(SubGadget subGadget, User user) {
-        if (user != null) {
-            for (Map.Entry<SubGadget, Integer> entry : user.getBasket().entrySet()) {
-                SubGadget basketGadget = entry.getKey();
-                if (basketGadget.getId().equals(subGadget.getId())) {
-                    return true;
-                }
-            }
+        if (user == null || subGadget == null) {
+            return false;
         }
-        return false;
+        return user.getBasket().keySet().stream()
+                .anyMatch(basketGadget -> basketGadget.getId().equals(subGadget.getId()));
     }
 
     @Override
@@ -297,7 +292,12 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
                     Long id = rs.getLong("id");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
-                    User user = currentUser.get();
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception e) {
+                        user = null;
+                    }
                     return new GadgetResponseMainPage(
                             id,
                             rs.getInt("percent"),
@@ -360,7 +360,12 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
                     Long id = rs.getLong("id");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
-                    User user = currentUser.get();
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception e) {
+                        user = null;
+                    }
                     return new GadgetResponseMainPage(
                             id,
                             rs.getInt("percent"),
@@ -422,7 +427,12 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
                     Long id = rs.getLong("id");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
-                    User user = currentUser.get();
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception e) {
+                        user = null;
+                    }
                     return new GadgetResponseMainPage(
                             rs.getLong("id"),
                             rs.getInt("percent"),
