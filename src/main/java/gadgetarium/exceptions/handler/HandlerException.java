@@ -112,4 +112,15 @@ public class HandlerException {
                 .message(e.getMessage())
                 .build();
     }
+
+    @ExceptionHandler(java.io.IOException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionResponse IoException(java.io.IOException e){
+        log.error(e.getMessage());
+        return ExceptionResponse.builder()
+                .httpStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+                .exceptionClassName(e.getClass().getSimpleName())
+                .message(e.getMessage())
+                .build();
+    }
 }
