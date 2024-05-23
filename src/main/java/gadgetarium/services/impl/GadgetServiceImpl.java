@@ -6,16 +6,9 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
 import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.*;
-import gadgetarium.dto.response.AddProductsResponse;
-import gadgetarium.dto.response.GadgetResponse;
-import gadgetarium.dto.response.PaginationSHowMoreGadget;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ResultPaginationGadget;
-import gadgetarium.dto.response.ViewedProductsResponse;
 import gadgetarium.entities.*;
-import gadgetarium.enums.*;
 import gadgetarium.enums.Discount;
-import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.enums.*;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.*;
@@ -35,8 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.*;
 
 @Slf4j
@@ -71,8 +62,7 @@ public class GadgetServiceImpl implements GadgetService {
             User user = null;
             try {
                 user = currentUser.get();
-            } catch (Exception e) {
-                user = null;
+            } catch (Exception ignored) {
             }
             if (user != null) {
                 user.addViewed(gadget.getSubGadget());
@@ -155,8 +145,7 @@ public class GadgetServiceImpl implements GadgetService {
         User user = null;
         try {
             user = currentUser.get();
-        } catch (Exception e) {
-            user = null;
+        } catch (Exception ignored) {
         }
 
         boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(gadget, user);

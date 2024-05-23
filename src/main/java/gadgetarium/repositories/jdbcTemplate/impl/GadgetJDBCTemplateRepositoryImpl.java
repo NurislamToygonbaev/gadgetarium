@@ -19,9 +19,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Repository
@@ -198,8 +196,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     User user = null;
                     try {
                         user = currentUser.get();
-                    } catch (Exception e) {
-                        user = null;
+                    } catch (Exception ignored) {
                     }
                     return new GadgetsResponse(
                             id,
@@ -295,8 +292,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     User user = null;
                     try {
                         user = currentUser.get();
-                    } catch (Exception e) {
-                        user = null;
+                    } catch (Exception ignored) {
                     }
                     return new GadgetResponseMainPage(
                             id,
@@ -363,8 +359,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     User user = null;
                     try {
                         user = currentUser.get();
-                    } catch (Exception e) {
-                        user = null;
+                    } catch (Exception ignored) {
                     }
                     return new GadgetResponseMainPage(
                             id,
@@ -430,8 +425,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     User user = null;
                     try {
                         user = currentUser.get();
-                    } catch (Exception e) {
-                        user = null;
+                    } catch (Exception ignored) {
                     }
                     return new GadgetResponseMainPage(
                             rs.getLong("id"),
