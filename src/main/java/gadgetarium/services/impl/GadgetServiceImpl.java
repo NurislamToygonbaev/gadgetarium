@@ -6,20 +6,14 @@ import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.util.IOUtils;
 import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.*;
-import gadgetarium.dto.response.AddProductsResponse;
-import gadgetarium.dto.response.GadgetResponse;
-import gadgetarium.dto.response.PaginationSHowMoreGadget;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ResultPaginationGadget;
-import gadgetarium.dto.response.ViewedProductsResponse;
 import gadgetarium.entities.*;
-import gadgetarium.enums.*;
 import gadgetarium.enums.Discount;
-import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.enums.*;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
+import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.GadgetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,8 +28,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.*;
 
 @Slf4j
@@ -67,10 +59,19 @@ public class GadgetServiceImpl implements GadgetService {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
-            User user = currentUser.get();
-            user.addViewed(gadget.getSubGadget());
-
+            User user = null;
+            try {
+                user = currentUser.get();
+            } catch (Exception ignored) {
+            }
+            if (user != null) {
+                user.addViewed(gadget.getSubGadget());
+            }
             SubGadget subGadget = gadget.getSubGadget();
+
+            boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
+            boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
+
             gadgetarium.entities.Discount discount = null;
             int percent = 0;
 
@@ -97,7 +98,10 @@ public class GadgetServiceImpl implements GadgetService {
                     gadget.getReleaseDate(),
                     gadget.getWarranty(),
                     gadget.getMemory().name(),
-                    gadget.getSubGadget().getCharacteristics()
+                    gadget.getRam().name(),
+                    gadget.getSubGadget().getCountSim(),
+                    likes,
+                    basket
             );
         }else {
             throw new NotFoundException("Not found!");
@@ -110,8 +114,8 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public PaginationSHowMoreGadget allGadgetsForEvery(Sort sort, Discount discount, Memory memory, Ram ram, BigDecimal costFrom, BigDecimal costUpTo, String colour, String brand, int page, int size) {
-        return gadgetJDBCTemplateRepo.allGadgetsForEvery(sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
+    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
+        return gadgetJDBCTemplateRepo.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
     }
 
     @Override
@@ -138,6 +142,15 @@ public class GadgetServiceImpl implements GadgetService {
         BigDecimal price = gadget.getPrice();
         BigDecimal currentPrice = checkCurrentPrice(price, percent);
 
+        User user = null;
+        try {
+            user = currentUser.get();
+        } catch (Exception ignored) {
+        }
+
+        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(gadget, user);
+        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(gadget, user);
+
         return new GadgetResponse(
                 gadget.getId(),
                 gadget.getGadget().getBrand().getLogo(),
@@ -153,7 +166,11 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getGadget().getReleaseDate(),
                 gadget.getGadget().getWarranty(),
                 gadget.getGadget().getMemory().name(),
-                gadget.getCharacteristics()
+                gadget.getGadget().getRam().name(),
+                gadget.getGadget().getSubGadget().getCountSim(),
+                likes,
+                basket
+
         );
     }
 

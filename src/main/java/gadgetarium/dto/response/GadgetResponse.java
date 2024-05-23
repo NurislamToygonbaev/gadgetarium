@@ -26,6 +26,9 @@ public record GadgetResponse(
         LocalDate releaseDate,
         int warranty,
         String memory,
-        Map<String, String> characteristics
+        String ram,
+        int countSim,
+        boolean likes,
+        boolean basket
         ) {
         }

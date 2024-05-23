@@ -6,6 +6,7 @@ import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.SubGadgetRepository;
+import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.BasketService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -77,6 +78,7 @@ public class BasketServiceImpl implements BasketService {
         List<GetAllBasketResponse> responses = new ArrayList<>();
         for (Map.Entry<SubGadget, Integer> entry : basket.entrySet()) {
             SubGadget subGadget = entry.getKey();
+            boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
 
             GetAllBasketResponse all = new GetAllBasketResponse(
                     subGadget.getId(), subGadget.getImages().getFirst(),
@@ -85,7 +87,7 @@ public class BasketServiceImpl implements BasketService {
                     subGadget.getGadget().getMemory().name(), subGadget.getMainColour(),
                     subGadget.getRating(), subGadget.getGadget().getFeedbacks().size(),
                     subGadget.getQuantity(), subGadget.getGadget().getArticle(),
-                    subGadget.getCurrentPrice(), entry.getValue()
+                    subGadget.getCurrentPrice(), entry.getValue(), likes
             );
             responses.add(all);
         }

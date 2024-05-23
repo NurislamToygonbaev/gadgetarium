@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 public interface GadgetService {
     ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size);
 
-    PaginationSHowMoreGadget allGadgetsForEvery(Sort sort, Discount discount, Memory memory, Ram ram, BigDecimal costFrom, BigDecimal costUpTo, String colour, String brand, int page, int size);
+    PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size);
 
     GadgetResponse getGadgetSelectColour(String colour, String nameOfGadget);
 

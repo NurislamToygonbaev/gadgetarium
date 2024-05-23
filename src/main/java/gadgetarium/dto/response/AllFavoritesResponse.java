@@ -17,7 +17,10 @@ public record AllFavoritesResponse(
         String color,
         double rating,
         BigDecimal price,
-        BigDecimal currentPrice
+        BigDecimal currentPrice,
+        boolean likes,
+        boolean comparison,
+        boolean basket
 
 ) {
 }

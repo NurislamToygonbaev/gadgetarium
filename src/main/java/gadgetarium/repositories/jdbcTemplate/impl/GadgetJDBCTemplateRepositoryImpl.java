@@ -6,22 +6,29 @@ import gadgetarium.dto.response.GadgetPaginationForMain;
 import gadgetarium.dto.response.GadgetResponseMainPage;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.entities.SubGadget;
+import gadgetarium.entities.User;
 import gadgetarium.enums.*;
+import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
+import gadgetarium.services.impl.CurrentUser;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @Repository
 @RequiredArgsConstructor
 public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepository {
 
     private final JdbcTemplate jdbcTemplate;
+    private final CurrentUser currentUser;
+    private final SubGadgetRepository subGadgetRepo;
 
     @Override
     public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
@@ -54,7 +61,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                ga.release_date,
                                g.quantity,
                                d.percent,
-                               d.end_date,
+                               g.current_price,
                                g.price
                         from sub_gadgets g
                         left outer join sub_gadget_images gi on g.id = gi.sub_gadget_id
@@ -70,25 +77,21 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
-                    BigDecimal price = rs.getBigDecimal("price");
-                    int percent = rs.getInt("percent");
-                    BigDecimal currentPrice = price;
 
-                    Date endDate = rs.getDate("end_date");
-                    if (endDate != null && endDate.after(new Date())) {
-                        currentPrice = price.subtract(price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100))));
-                    }
+                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
+                    String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
+
 
                     return new PaginationGadget(
                             rs.getLong("id"),
-                            Arrays.asList((String[]) rs.getArray("images").getArray()),
+                            imagesFirst,
                             rs.getLong("article"),
                             rs.getString("nameOfGadget"),
                             rs.getDate("release_date").toLocalDate(),
                             rs.getInt("quantity"),
-                            price,
-                            percent,
-                            currentPrice
+                            rs.getBigDecimal("price"),
+                            rs.getInt("percent"),
+                            rs.getBigDecimal("current_price")
                     );
                 });
         return ResultPaginationGadget.builder()
@@ -101,7 +104,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     }
 
     @Override
-    public PaginationSHowMoreGadget allGadgetsForEvery(Sort sort, Discount discount, Memory memory, Ram ram, BigDecimal costFrom, BigDecimal costUpTo, String colour, String brand, int page, int size) {
+    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
 
@@ -110,8 +113,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         if (brand != null || sort != null || discount != null || memory != null || ram != null || costFrom != null || costUpTo != null || colour != null) {
-            if (brand != null) {
-                where += " and b.brand_name ilike '"+brand+"'";
+            if (brand != null && !brand.isEmpty()) {
+                where += " and b.brand_name ilike ANY (array" + brand.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
             }
             if (costFrom != null && costUpTo != null){
                 where += " and g.current_price between '"+costFrom+"' and '"+costUpTo+"'";
@@ -120,14 +123,14 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
             } else if (costUpTo != null) {
                 where += " and g.current_price < '"+costUpTo+"'";
             }
-            if (colour != null){
-                where += " and g.main_colour ilike '" + colour + "'";
+            if (colour != null && !colour.isEmpty()){
+                where += " and g.main_colour ilike ANY (array" + colour.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
             }
-            if (memory != null){
-                where += " and ga.memory ilike '" + memory.name() + "'";
+            if (memory != null && !memory.isEmpty()){
+                where += " and ga.memory ilike ANY (array" + memory.stream().map(Memory::name).toList().toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
             }
-            if (ram != null){
-                where += " and ga.ram ilike '" + ram.name() + "'";
+            if (ram != null && !ram.isEmpty()){
+                where += " and ga.ram ilike ANY (array" + ram.stream().map(Ram::name).toList().toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
             }
             if (sort != null){
                 if (sort.equals(Sort.RECOMMENDED)){
@@ -170,11 +173,14 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         join sub_gadget_images gi on g.id = gi.sub_gadget_id
                         join gadgets ga on ga.id = g.gadget_id
                         join brands b on ga.brand_id = b.id
+                        join sub_categories sc on ga.sub_category_id = sc.id
+                        join categories c on sc.category_id = c.id
                         left outer join discounts d on g.id = d.sub_gadget_id
                         left join orders_gadgets og on ga.id = og.gadgets_id
                         left join orders o on o.id = og.orders_id
                         left outer join feedbacks f on ga.id = f.gadget_id
-                        where ga.remoteness_status ="""+"'"+status+"'"+"""
+                        where c.id ="""+"'"+catId+"'"+ """ 
+                        and  ga.remoteness_status ="""+"'"+status+"'"+ """ 
                         """ + where + """
                          group by g.id, g.name_of_gadget, b.brand_name,  g.quantity, d.percent, g.price,
                                    ga.memory, g.main_colour, g.current_price, g.rating, ga.release_date
@@ -185,9 +191,15 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 (rs, rowNum) -> {
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
-
+                    Long id = rs.getLong("id");
+                    SubGadget subGadget = subGadgetRepo.getByID(id);
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception ignored) {
+                    }
                     return new GadgetsResponse(
-                            rs.getLong("id"),
+                            id,
                             imagesFirst,
                             rs.getInt("quantity"),
                             rs.getString("nameOfGadget"),
@@ -197,7 +209,10 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             rs.getInt("countOf"),
                             rs.getBigDecimal("price"),
                             rs.getBigDecimal("currentPrice"),
-                            rs.getInt("percent")
+                            rs.getInt("percent"),
+                            checkLikes(subGadget, user),
+                            checkComparison(subGadget, user),
+                            checkBasket(subGadget, user)
                     );
                 });
         return PaginationSHowMoreGadget.builder()
@@ -213,6 +228,30 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 .ram(ram)
                 .responses(gadgetsResponses)
                 .build();
+    }
+
+    public static boolean checkLikes(SubGadget subGadget, User user) {
+        if (user == null || subGadget == null) {
+            return false;
+        }
+        return user.getLikes().stream()
+                .anyMatch(like -> like.getId().equals(subGadget.getId()));
+    }
+
+    public static boolean checkComparison(SubGadget subGadget, User user) {
+        if (user == null || subGadget == null) {
+            return false;
+        }
+        return user.getComparison().stream()
+                .anyMatch(comp -> comp.getId().equals(subGadget.getId()));
+    }
+
+    public static boolean checkBasket(SubGadget subGadget, User user) {
+        if (user == null || subGadget == null) {
+            return false;
+        }
+        return user.getBasket().keySet().stream()
+                .anyMatch(basketGadget -> basketGadget.getId().equals(subGadget.getId()));
     }
 
     @Override
@@ -248,8 +287,15 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 (rs, rowNum) -> {
                     String image = Arrays.asList((String[]) rs.getArray("images").getArray()).getFirst();
 
+                    Long id = rs.getLong("id");
+                    SubGadget subGadget = subGadgetRepo.getByID(id);
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception ignored) {
+                    }
                     return new GadgetResponseMainPage(
-                            rs.getLong("id"),
+                            id,
                             rs.getInt("percent"),
                             image,
                             rs.getInt("quantity"),
@@ -259,7 +305,10 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             rs.getDouble("rating"),
                             rs.getInt("countOfFeedback"),
                             rs.getBigDecimal("price"),
-                            rs.getBigDecimal("currentPrice")
+                            rs.getBigDecimal("currentPrice"),
+                            checkLikes(subGadget, user),
+                            checkComparison(subGadget, user),
+                            checkBasket(subGadget, user)
                     );
                 });
 
@@ -305,8 +354,15 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 (rs, rowNum) -> {
                     String image = Arrays.asList((String[]) rs.getArray("images").getArray()).getFirst();
 
+                    Long id = rs.getLong("id");
+                    SubGadget subGadget = subGadgetRepo.getByID(id);
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception ignored) {
+                    }
                     return new GadgetResponseMainPage(
-                            rs.getLong("id"),
+                            id,
                             rs.getInt("percent"),
                             image,
                             rs.getInt("quantity"),
@@ -316,7 +372,10 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             rs.getDouble("rating"),
                             rs.getInt("countOfFeedback"),
                             rs.getBigDecimal("price"),
-                            rs.getBigDecimal("currentPrice")
+                            rs.getBigDecimal("currentPrice"),
+                            checkLikes(subGadget, user),
+                            checkComparison(subGadget, user),
+                            checkBasket(subGadget, user)
                     );
                 });
 
@@ -361,6 +420,13 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 (rs, rowNum) -> {
                     String image = Arrays.asList((String[]) rs.getArray("images").getArray()).getFirst();
 
+                    Long id = rs.getLong("id");
+                    SubGadget subGadget = subGadgetRepo.getByID(id);
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception ignored) {
+                    }
                     return new GadgetResponseMainPage(
                             rs.getLong("id"),
                             rs.getInt("percent"),
@@ -372,7 +438,10 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             rs.getDouble("rating"),
                             rs.getInt("countOfFeedback"),
                             rs.getBigDecimal("price"),
-                            rs.getBigDecimal("currentPrice")
+                            rs.getBigDecimal("currentPrice"),
+                            checkLikes(subGadget, user),
+                            checkComparison(subGadget, user),
+                            checkBasket(subGadget, user)
                     );
                 });
 

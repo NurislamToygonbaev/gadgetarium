@@ -15,12 +15,12 @@ public record PaginationSHowMoreGadget(
         Discount discount,
         int page,
         int size,
-        String brand,
+        List<String> brand,
         BigDecimal costFrom,
         BigDecimal costUpTo,
-        String colour,
-        Memory memory,
-        Ram ram,
+        List<String> colour,
+        List<Memory> memory,
+        List<Ram> ram,
         List<GadgetsResponse> responses
 ) {
 }

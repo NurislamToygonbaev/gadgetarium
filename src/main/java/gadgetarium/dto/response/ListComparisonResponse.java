@@ -13,6 +13,7 @@ public record ListComparisonResponse(
         String nameOfGadget,
         String mainColor,
         Memory memory,
-        BigDecimal price
+        BigDecimal price,
+        boolean basket
 
 ){}

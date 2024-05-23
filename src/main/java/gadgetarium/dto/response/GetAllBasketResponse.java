@@ -16,6 +16,7 @@ public record GetAllBasketResponse(
         int quantity,
         Long article,
         BigDecimal price,
-        int countOfGadget
+        int countOfGadget,
+        boolean likes
 ) {
 }
