@@ -1,7 +1,6 @@
 package gadgetarium.services.impl;
 
 import gadgetarium.config.jwt.JwtService;
-import gadgetarium.dto.request.PasswordRequest;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.SignResponse;
 import gadgetarium.entities.PasswordResetToken;
@@ -17,7 +16,6 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -85,9 +83,9 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
     @Override
     @Transactional
-    public SignResponse resetPassword(String token, PasswordRequest request) {
+    public SignResponse resetPassword(String token, String password, String confirmPassword) {
         PasswordResetToken passwordResetToken = passwordResetTokenRepo.getByToken(token);
-        if (!request.password().equals(request.confirmPassword())) {
+        if (!password.equals(confirmPassword)) {
             throw new BadRequestException("Пароли не совподают");
         }
 
@@ -98,7 +96,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         }
 
         User user = passwordResetToken.getUser();
-        user.setPassword(passwordEncoder.encode(request.password()));
+        user.setPassword(passwordEncoder.encode(password));
         userRepo.save(user);
         passwordResetTokenRepo.delete(passwordResetToken);
         log.info("success changed password");
