@@ -1,4 +1,3 @@
-#Java Mail sender
 spring:
   mail:
     host: smtp.gmail.com

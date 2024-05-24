@@ -1,18 +1,15 @@
-#The DataBase. Connection to Postgresql
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    password: ${POSTGRES_PASSWORD}
     url: ${POSTGRES_DB}
     username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
 
-    #Data-Init
   sql:
      init:
         continue-on-error: true
         mode: always
 
-      #Hibernate/JPA settings.
   jpa:
     hibernate:
         ddl-auto: create

@@ -1,4 +1,3 @@
-#Configuration of AWS cloud resources.
 cloud:
   aws:
     credentials:
@@ -9,12 +8,10 @@ cloud:
     stack:
       auto: false
 
-#AWS Bucket Storage
 application:
   bucket:
     name: gadgetarium-b12
 
-  #Settings Servlet control size file
 spring:
   servlet:
     multipart:
