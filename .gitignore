@@ -37,7 +37,7 @@ out/
 .vscode/
 
 # local ignore yml
-!**/src/main/resources/application-nurislam.yml
-!**/src/main/resources/application-aiturgan.yml
-!**/src/main/resources/application-zhigit.yml
-!**/src/main/resources/application-nurgazy.yml
+src/main/resources/application-nurislam.yml
+src/main/resources/application-aiturgan.yml
+src/main/resources/application-zhigit.yml
+src/main/resources/application-nurgazy.yml
