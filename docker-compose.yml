@@ -1,8 +1,8 @@
 version: "3.9"
 services:
     backend:
-        image: gadgetarium
-        container_name: gadgetarium
+        image: gadget
+        container_name: gadget
         restart: always
         ports:
             - "80:2024"
