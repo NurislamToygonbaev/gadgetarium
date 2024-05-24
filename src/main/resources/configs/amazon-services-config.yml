@@ -5,8 +5,6 @@ cloud:
       secret-key: CvXPhuZMm58Hbw3vbP9QE/VgvidCnePYXUkyb0F0
     region:
       static: eu-central-1
-    stack:
-      auto: false
 
 application:
   bucket:
