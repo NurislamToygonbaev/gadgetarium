@@ -25,10 +25,7 @@ bin/
 out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-/application-nurislam.yml
-/application-aiturgan.yml
-/application-zhigit.yml
-/application.nurgazy.yml
+
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -38,3 +35,9 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# local ignore yml
+!**/src/main/resources/application-nurislam.yml
+!**/src/main/resources/application-aiturgan.yml
+!**/src/main/resources/application-zhigit.yml
+!**/src/main/resources/application-nurgazy.yml
