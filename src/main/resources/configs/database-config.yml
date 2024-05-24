@@ -10,12 +10,12 @@ spring:
   sql:
      init:
         continue-on-error: true
-        mode: never
+        mode: always
 
       #Hibernate/JPA settings.
   jpa:
     hibernate:
-        ddl-auto: update
+        ddl-auto: create
     show-sql: false
     open-in-view: false
 

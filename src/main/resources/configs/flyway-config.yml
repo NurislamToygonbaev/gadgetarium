@@ -1,11 +1,5 @@
-#FlyWay
-flyway:
-  user: ${POSTGRES_USER}
-  password: ${POSTGRES_PASSWORD}
-  url: ${POSTGRES_DB}
-
 spring:
   flyway:
-    enabled: false
+    enabled: true
     locations: classpath:db.migration
-    baseline-on-migrate: false
+    baseline-on-migrate: true
