@@ -4,6 +4,7 @@ import gadgetarium.dto.request.PasswordRequest;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.SignResponse;
 import gadgetarium.services.PasswordResetTokenService;
+import gadgetarium.validation.password.PasswordValidation;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,8 @@ public class ResetPasswordApi {
     @Operation(summary = "Метод  для изменение пароля", description = "Авторизация: ВСЕ")
     @PatchMapping
     public SignResponse resetPassword(@RequestParam("token") String token,
-                                      @RequestBody @Valid PasswordRequest request) {
-        return passwordResetService.resetPassword(token, request);
+                                      @RequestParam @PasswordValidation String password,
+                                      @RequestParam @PasswordValidation String confirmPassword) {
+        return passwordResetService.resetPassword(token, password, confirmPassword);
     }
 }

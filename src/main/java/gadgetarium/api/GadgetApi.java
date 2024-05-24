@@ -45,7 +45,7 @@ public class GadgetApi {
     }
 
     @Operation(summary = "Все гаджеты с фильтрацией", description = "Авторизация: ВСЕ")
-    @PatchMapping("/{catId}/filter")
+    @GetMapping("/{catId}/filter")
     public PaginationSHowMoreGadget allGadgetsForEvery(@PathVariable Long catId,
                                                        @RequestParam(required = false) Sort sort,
                                                        @RequestParam(required = false) Discount discount,

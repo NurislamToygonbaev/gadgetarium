@@ -114,7 +114,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
         if (brand != null || sort != null || discount != null || memory != null || ram != null || costFrom != null || costUpTo != null || colour != null) {
             if (brand != null && !brand.isEmpty()) {
-                where += " and b.brand_name ilike ANY (array" + brand.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
+                where += " and sc.sub_category_name ilike ANY (array" + brand.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
             }
             if (costFrom != null && costUpTo != null){
                 where += " and g.current_price between '"+costFrom+"' and '"+costUpTo+"'";
@@ -158,7 +158,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         List<GadgetsResponse> gadgetsResponses = jdbcTemplate.query("""
                         select g.id,
                                array_agg(gi.images) as images,
-                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
+                               concat(sc.sub_category_name, ' ', g.name_of_gadget) as nameOfGadget,
                                ga.memory,
                                g.main_colour,
                                g.rating,
@@ -182,7 +182,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         where c.id ="""+"'"+catId+"'"+ """ 
                         and  ga.remoteness_status ="""+"'"+status+"'"+ """ 
                         """ + where + """
-                         group by g.id, g.name_of_gadget, b.brand_name,  g.quantity, d.percent, g.price,
+                         group by g.id, g.name_of_gadget, sc.sub_category_name,  g.quantity, d.percent, g.price,
                                    ga.memory, g.main_colour, g.current_price, g.rating, ga.release_date
                         """ + orderBy + """
                          limit ? offset ?
