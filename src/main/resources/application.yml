@@ -1,88 +1,17 @@
+spring:
+    config:
+        import:
+            - classpath:/configs/amazon-services-config.yml
+            - classpath:/configs/email-config.yml
+            - classpath:/configs/database-config.yml
+            - classpath:/configs/flyway-config.yml
+            - classpath:/configs/payment-config.yml
+
+
 #The server always outputs a stack trace when an error occurs
 server:
     error:
         include-stacktrace: always
-
-#The DataBase. Connection to Postgresql
-spring:
-    datasource:
-        driver-class-name: org.postgresql.Driver
-        password: ${POSTGRES_PASSWORD}
-        url: ${POSTGRES_DB}
-        username: ${POSTGRES_USER}
-
-#Hibernate/JPA settings.
-    jpa:
-        hibernate:
-            ddl-auto: update
-        show-sql: false
-        open-in-view: false
-
-        properties:
-            hibernate:
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-
-#FlyWay
-    flyway:
-        enabled: false
-        locations: classpath:db.migration
-        baseline-on-migrate: false
-
-#Java Mail sender
-    mail:
-        host: smtp.gmail.com
-        port: 587
-        username: ntoygonbaev098@gmail.com
-        password: rexu gvod yszc tnhg
-        properties:
-            mail:
-                smtp:
-                    auth: true
-                    starttls:
-                        enable: true
-
-#Data-Init
-    sql:
-      init:
-          continue-on-error: true
-          mode: never
-
-#Settings Servlet control size file
-    servlet:
-        multipart:
-            enabled: true
-            file-size-threshold: 22MB
-            max-file-size: 100MB
-            max-request-size: 100MB
-
-#FlyWay
-flyway:
-  user: ${POSTGRES_USER}
-  password: ${POSTGRES_PASSWORD}
-  url: ${POSTGRES_DB}
-
-
-#Configuration of AWS cloud resources.
-cloud:
-      aws:
-          credentials:
-              access-key: AKIA6GBMDSJX4ELD67G5
-              secret-key: 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
-          region:
-              static: eu-north-1
-          stack:
-              auto: false
-
-
-#AWS Bucket Storage
-application:
-      bucket:
-          name: gadgetarium-java12
-
-braintree:
-    merchantId: y36kxp644p7msfqb
-    publicKey: kk9tzrh6yrjd9k3k
-    privateKey: 23127d6951c9704ccd6a54cb404f0bbe
 
 #JWT
 app:

@@ -1,0 +1,24 @@
+#Configuration of AWS cloud resources.
+cloud:
+  aws:
+    credentials:
+      access-key: AKIA3KYNRCVIBB2TALRT
+      secret-key: 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
+    region:
+      static: eu-central-1
+    stack:
+      auto: false
+
+#AWS Bucket Storage
+application:
+  bucket:
+    name: gadgetarium-b12
+
+  #Settings Servlet control size file
+spring:
+  servlet:
+    multipart:
+      enabled: true
+      file-size-threshold: 22MB
+      max-file-size: 100MB
+      max-request-size: 100MB
