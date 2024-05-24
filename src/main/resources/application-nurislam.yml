@@ -1,0 +1,31 @@
+
+# Secret key 'gadgetarium' for JWT in App.
+app:
+  jwt:
+    secret: gadgetarium
+
+#  The DataBase. Connection to Postgresql
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/gadgetarium
+    username: postgres
+    password: rootroot
+  #   Hibernate/JPA settings.
+
+#      password: gadget12
+  #      url: jdbc:postgresql://gadgetarium.cl4wygyemreu.eu-north-1.rds.amazonaws.com:5432/simple_db
+  jpa:
+      hibernate:
+        ddl-auto: update
+
+#flyway:
+#    baseline-on-migrate: true
+#    enabled: true
+#    locations: "classpath:db.migration"
+#
+paypal:
+  client-id: AT1FdRng9wFvEgFpKFdCuan5ij3wYIrHK8kxTUg0k0J86IqbpBLKLDVGFJv4xambr2IJuKZySWULielu
+  client-secret: EMddaQFaydygHp4EykEB9u6yncT4wcAPNfhD8PgARkyVLKltvYECN_WAbsP5CGKjAEs-pVZflUZa1fNf
+  base-url: https://developer.paypal.com/dashboard/applications/live
+
