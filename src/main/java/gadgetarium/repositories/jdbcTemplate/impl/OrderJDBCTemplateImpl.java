@@ -92,8 +92,8 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                            concat(u.last_name, ' ', u.first_name) as fullName,
                            o.number,
                            o.created_at,
-                           count(g.id) as totalGadgets,
-                           sum(s.current_price) as totalPrice,
+                           count(s.id) as totalGadgets,
+                           o.total_price,
                            o.type_order,
                            o.status
                     from orders o
@@ -113,7 +113,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             rs.getLong("number"),
                             rs.getDate("created_at").toLocalDate(),
                             rs.getInt("totalGadgets"),
-                            rs.getBigDecimal("totalPrice"),
+                            rs.getBigDecimal("total_price"),
                             rs.getBoolean("type_order"),
                             rs.getString("status")
                     );
@@ -134,13 +134,14 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
     public OrderResponseFindById findOrderById(Long orderId) {
         return jdbcTemplate.queryForObject("""
                     select o.id,
+                            s.price,
                            concat(u.first_name, ' ', u.last_name) as fullName,
                            o.number,
-                           concat(b.brand_name, ' ', s.name_of_gadget) as gadgetName,
-                           g.memory,
+                           concat(b.brand_name, ' ', g.name_of_gadget) as gadgetName,
+                           s.memory,
                            s.main_colour,
-                           count(g.id) as countOfGadget,
-                           sum(s.price) as price,
+                           count(s.id) as countOfGadget,
+                           o.total_price,
                            d.percent
                     from orders o
                     join users u on u.id = o.user_id
@@ -151,16 +152,15 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                     left outer join discounts d on s.id = d.sub_gadget_id
                     where o.id = ?
                     group by o.id, concat(u.first_name, ' ', u.last_name),
-                    o.number, concat(b.brand_name, ' ', s.name_of_gadget),
-                    g.memory, s.main_colour, d.percent
+                    o.number, concat(b.brand_name, ' ', g.name_of_gadget),
+                    s.memory, s.main_colour, d.percent, o.total_price
                     """,
                 new Object[]{orderId},
                 (rs, rowNum) -> {
-                    BigDecimal price = rs.getBigDecimal("price");
+                    BigDecimal price = rs.getBigDecimal("total_price");
                     int percent = rs.getInt("percent");
 
                     BigDecimal discount = price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100)));
-                    BigDecimal discountedPrice = price.subtract(discount);
 
                     return new OrderResponseFindById(
                             rs.getLong("id"),
@@ -170,10 +170,10 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             rs.getString("memory"),
                             rs.getString("main_colour"),
                             rs.getInt("countOfGadget"),
-                            price,
+                            rs.getBigDecimal("price"),
                             percent,
                             discount,
-                            discountedPrice
+                            price
                     );
                 }
         );

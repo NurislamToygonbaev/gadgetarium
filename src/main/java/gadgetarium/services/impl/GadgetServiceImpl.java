@@ -9,6 +9,8 @@ import gadgetarium.dto.response.*;
 import gadgetarium.entities.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.*;
+import gadgetarium.exceptions.AlreadyExistsException;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.*;
@@ -46,66 +48,74 @@ public class GadgetServiceImpl implements GadgetService {
     private final SubCategoryRepository subCategoryRepo;
     private final CharValueRepository charValueRepo;
     private final AmazonS3 s3Client;
-    private final UserRepository userRepo;
-    private final OrderRepository orderRepo;
 
     private static final String PHONE_URL_PREFIX = "https://nanoreview.net/ru/phone/";
     private static final String LAPTOP_URL_PREFIX = "https://nanoreview.net/ru/laptop/";
 
+    public static BigDecimal calculatePrice(SubGadget subGadget) {
+        BigDecimal currentPrice = subGadget.getPrice();
+        BigDecimal discountedPrice = currentPrice;
+
+        if (subGadget.getGadget().getDiscount() != null) {
+            int percent = subGadget.getGadget().getDiscount().getPercent();
+            BigDecimal discountAmount = currentPrice.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100));
+            discountedPrice = currentPrice.subtract(discountAmount);
+        }
+
+        return discountedPrice;
+    }
 
     @Override
     @Transactional
     public GadgetResponse getGadgetById(Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
-        if (!gadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
-            User user = null;
-            try {
-                user = currentUser.get();
-            } catch (Exception ignored) {
+        for (SubGadget subGadget : gadget.getSubGadgets()) {
+            if (!subGadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
+                User user = null;
+                try {
+                    user = currentUser.get();
+                } catch (Exception ignored) {
+                }
+                if (user != null) {
+                    user.addViewed(subGadget);
+                }
+
+                boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
+                boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
+
+                int percent = 0;
+                if (gadget.getDiscount() != null) {
+                    percent = gadget.getDiscount().getPercent();
+                }
+
+                BigDecimal discountedPrice = calculatePrice(subGadget);
+
+                return new GadgetResponse(
+                        subGadget.getGadget().getId(),
+                        subGadget.getId(),
+                        subGadget.getGadget().getBrand().getLogo(),
+                        subGadget.getImages(),
+                        subGadget.getGadget().getNameOfGadget(),
+                        subGadget.getQuantity(),
+                        subGadget.getArticle(),
+                        gadget.getRating(),
+                        percent,
+                        subGadget.getPrice(),
+                        discountedPrice,
+                        subGadget.getMainColour(),
+                        subGadget.getGadget().getReleaseDate(),
+                        subGadget.getGadget().getWarranty(),
+                        subGadget.getMemory().name(),
+                        subGadget.getRam().name(),
+                        subGadget.getCountSim(),
+                        subGadget.getUniFiled(),
+                        likes,
+                        basket
+                );
             }
-            if (user != null) {
-                user.addViewed(gadget.getSubGadget());
-            }
-            SubGadget subGadget = gadget.getSubGadget();
-
-            boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
-            boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
-
-            gadgetarium.entities.Discount discount = null;
-            int percent = 0;
-
-            if (subGadget != null) {
-                discount = subGadget.getDiscount();
-            }
-
-            if (discount != null) {
-                percent = discount.getPercent();
-            }
-
-            return new GadgetResponse(
-                    gadget.getId(),
-                    gadget.getBrand().getLogo(),
-                    gadget.getSubGadget().getImages(),
-                    gadget.getSubGadget().getNameOfGadget(),
-                    gadget.getSubGadget().getQuantity(),
-                    gadget.getArticle(),
-                    gadget.getSubGadget().getRating(),
-                    percent,
-                    gadget.getSubGadget().getPrice(),
-                    gadget.getSubGadget().getCurrentPrice(),
-                    gadget.getSubGadget().getMainColour(),
-                    gadget.getReleaseDate(),
-                    gadget.getWarranty(),
-                    gadget.getMemory().name(),
-                    gadget.getRam().name(),
-                    gadget.getSubGadget().getCountSim(),
-                    likes,
-                    basket
-            );
-        }else {
-            throw new NotFoundException("Not found!");
         }
+        throw new NotFoundException("Not found!");
     }
 
     @Override
@@ -119,28 +129,26 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public GadgetResponse getGadgetSelectColour(String colour, String nameOfGadget) {
-        List<SubGadget> gadgets = subGadgetRepo.findByNameOfGadget(nameOfGadget);
+    public GadgetResponse getGadgetSelectColour(Long gadgetId, String colour) {
+        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
-        if (gadgets.isEmpty()) {
-            throw new NotFoundException("Gadget with name: " + nameOfGadget + " not found!");
-        }
-
-        SubGadget gadget = null;
-
-        for (SubGadget foundGadget : gadgets) {
+        SubGadget subGadget = null;
+        for (SubGadget foundGadget : gadget.getSubGadgets()) {
             if (foundGadget.getMainColour().equalsIgnoreCase(colour)) {
-                gadget = foundGadget;
+                subGadget = foundGadget;
                 break;
             }
         }
-        if (gadget == null) {
+        if (subGadget == null) {
             throw new NotFoundException("Gadget with colour: " + colour + " not found!");
         }
 
-        int percent = gadget.getDiscount().getPercent();
-        BigDecimal price = gadget.getPrice();
-        BigDecimal currentPrice = checkCurrentPrice(price, percent);
+        int percent = 0;
+        if (gadget.getDiscount() != null) {
+            percent = gadget.getDiscount().getPercent();
+        }
+
+        BigDecimal discountedPrice = calculatePrice(subGadget);
 
         User user = null;
         try {
@@ -148,34 +156,31 @@ public class GadgetServiceImpl implements GadgetService {
         } catch (Exception ignored) {
         }
 
-        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(gadget, user);
-        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(gadget, user);
+        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
+        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
 
         return new GadgetResponse(
                 gadget.getId(),
-                gadget.getGadget().getBrand().getLogo(),
-                gadget.getImages(),
-                gadget.getNameOfGadget(),
-                gadget.getQuantity(),
-                gadget.getGadget().getArticle(),
+                subGadget.getId(),
+                subGadget.getGadget().getBrand().getLogo(),
+                subGadget.getImages(),
+                subGadget.getGadget().getNameOfGadget(),
+                subGadget.getQuantity(),
+                subGadget.getArticle(),
                 gadget.getRating(),
                 percent,
-                gadget.getPrice(),
-                currentPrice,
-                gadget.getMainColour(),
-                gadget.getGadget().getReleaseDate(),
-                gadget.getGadget().getWarranty(),
-                gadget.getGadget().getMemory().name(),
-                gadget.getGadget().getRam().name(),
-                gadget.getGadget().getSubGadget().getCountSim(),
+                subGadget.getPrice(),
+                discountedPrice,
+                subGadget.getMainColour(),
+                subGadget.getGadget().getReleaseDate(),
+                subGadget.getGadget().getWarranty(),
+                subGadget.getMemory().name(),
+                subGadget.getRam().name(),
+                subGadget.getCountSim(),
+                subGadget.getUniFiled(),
                 likes,
                 basket
-
         );
-    }
-
-    private BigDecimal checkCurrentPrice(BigDecimal price, int percent) {
-        return price.subtract(price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100))));
     }
 
     @Override
@@ -187,55 +192,79 @@ public class GadgetServiceImpl implements GadgetService {
         for (SubGadget subGadget : viewed) {
             responses.add(new ViewedProductsResponse(
                     subGadget.getId(),
-                    subGadget.getDiscount().getPercent(),
+                    subGadget.getGadget().getDiscount().getPercent(),
                     subGadget.getImages().getFirst(),
-                    subGadget.getNameOfGadget(),
-                    subGadget.getRating(),
+                    subGadget.getGadget().getNameOfGadget(),
+                    subGadget.getGadget().getRating(),
                     subGadget.getGadget().getFeedbacks().size(),
                     subGadget.getPrice(),
-                    subGadget.getCurrentPrice()
+                    calculatePrice(subGadget)
             ));
         }
 
         return responses;
     }
 
+    @Override
     @Transactional
     public HttpResponse addGadget(Long subCategoryId, Long brandId, AddProductRequest addProductRequest) {
+        boolean exist = gadgetRepo.existsByNameOfGadget(addProductRequest.nameOfGadget());
+        if (exist) throw new AlreadyExistsException("Gadget with name: "+addProductRequest.nameOfGadget()+" already have");
+
         SubCategory subCategory = subCategoryRepo.getSubCategoryById(subCategoryId);
         Brand brand = brandRepo.getBrandById(brandId);
+        Category category = categoryRepo.getCategoryBySubcategoryId(subCategoryId);
+
+        Gadget gadget = new Gadget();
+        gadget.setNameOfGadget(addProductRequest.nameOfGadget());
+        gadget.setReleaseDate(addProductRequest.dateOfIssue());
+        gadget.setWarranty(addProductRequest.warranty());
+        gadget.setBrand(brand);
+        gadget.setSubCategory(subCategory);
+
+        brand.addGadget(gadget);
+        subCategory.addGadget(gadget);
+        gadgetRepo.save(gadget);
 
         for (ProductsRequest productsRequest : addProductRequest.productsRequests()) {
-            Gadget gadget = new Gadget();
             SubGadget subGadget = new SubGadget();
-
-            gadget.setBrand(brand);
-            gadget.setSubGadget(subGadget);
-            subGadget.setGadget(gadget);
-            gadget.setSubCategory(subCategory);
-            subCategory.addGadget(gadget);
-
-            subGadget.setNameOfGadget(addProductRequest.nameOfGadget());
-            gadget.setReleaseDate(addProductRequest.dateOfIssue());
-            gadget.setWarranty(addProductRequest.warranty());
-
-            subGadget.setMainColour(productsRequest.mainColour());
-            gadget.setMemory(Memory.fromString(productsRequest.memory()));
-            gadget.setRam(Ram.fromString(productsRequest.ram()));
-            subGadget.setCountSim(productsRequest.countSim());
-            subGadget.setImages(productsRequest.images());
-
-            gadgetRepo.save(gadget);
-            gadget.setSubGadget(subGadget);
-            subGadget.setGadget(gadget);
             subGadgetRepo.save(subGadget);
+            subGadget.setGadget(gadget);
+            subGadget.setMainColour(productsRequest.mainColour());
+            subGadget.setMemory(Memory.fromString(productsRequest.memory()));
+            subGadget.getImages().addAll(productsRequest.images());
+
+            UUID uuid = UUID.randomUUID();
+            String hexUUID = uuid.toString().replace("-", "");
+            long article = Long.parseLong(hexUUID.substring(0, 12), 16);
+            subGadget.setArticle(article);
+
+            if (category.getCategoryName().toLowerCase().contains("phone") ||
+                category.getCategoryName().toLowerCase().contains("laptop")) {
+                subGadget.setRam(Ram.fromString(productsRequest.ram()));
+                subGadget.setCountSim(productsRequest.countSim());
+            } else if (category.getCategoryName().toLowerCase().contains("smart") ||
+                       category.getCategoryName().toLowerCase().contains("accessories")) {
+                subGadget.getUniFiled().add(productsRequest.materialBracelet());
+                subGadget.getUniFiled().add(productsRequest.dumas());
+                subGadget.getUniFiled().add(productsRequest.genderWatch());
+                subGadget.getUniFiled().add(productsRequest.materialBody());
+                subGadget.getUniFiled().add(productsRequest.shapeBody());
+                subGadget.getUniFiled().add(productsRequest.sizeWatch());
+                subGadget.getUniFiled().add(productsRequest.waterproof());
+                subGadget.getUniFiled().add(productsRequest.wireless());
+            }
+
+//            subGadgetRepo.save(subGadget);
         }
 
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
-                .message("success added")
+                .message("Успешно добавлено")
                 .build();
     }
+
+
 
     @Override
     public List<AddProductsResponse> getNewProducts() {
@@ -243,13 +272,13 @@ public class GadgetServiceImpl implements GadgetService {
         List<AddProductsResponse> addProductsResponses = new ArrayList<>();
 
         for (SubGadget subGadget : all) {
-            if (subGadget.getPrice() == null && subGadget.getQuantity() == 0) {
+            if (subGadget.getPrice() == null || subGadget.getQuantity() == 0) {
                 AddProductsResponse addProductsResponse = new AddProductsResponse(
                         subGadget.getId(),
                         subGadget.getGadget().getBrand().getBrandName(),
                         subGadget.getMainColour(),
-                        subGadget.getGadget().getMemory().name(),
-                        subGadget.getGadget().getRam().name(),
+                        subGadget.getMemory().name(),
+                        subGadget.getRam().name(),
                         subGadget.getCountSim(),
                         subGadget.getGadget().getReleaseDate()
                 );
@@ -262,29 +291,30 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public HttpResponse addPrice(ProductsIdsRequest productsIds) {
-        for (Long id : productsIds.ids()) {
-            Gadget gadget = gadgetRepo.getGadgetById(id);
-            gadget.getSubGadget().setPrice(productsIds.price());
-            gadget.getSubGadget().setQuantity(productsIds.quantity());
-
-            gadgetRepo.save(gadget);
+    public HttpResponse addPrice(List<Long> ids, BigDecimal price, int quantity) {
+        for (Long id : ids) {
+            SubGadget subGadget = subGadgetRepo.getByID(id);
+            if (subGadget.getPrice() == null && subGadget.getQuantity() <= 0){
+                subGadget.setPrice(price);
+                subGadget.setQuantity(quantity);
+                subGadgetRepo.save(subGadget);
+            }
         }
         return HttpResponse
                 .builder()
                 .status(HttpStatus.OK)
-                .message("Success price!")
+                .message("Success added price and quantity!")
                 .build();
     }
 
     @Override
     @Transactional
-    public HttpResponse setPriceOneProduct(ProductPriceRequest productPriceRequest) {
-        Gadget gadget = gadgetRepo.getGadgetById(productPriceRequest.id());
-        gadget.getSubGadget().setQuantity(productPriceRequest.quantity());
-        gadget.getSubGadget().setPrice(productPriceRequest.price());
-
-        gadgetRepo.save(gadget);
+    public HttpResponse setPriceOneProduct(Long id, BigDecimal price) {
+        SubGadget subGadget = subGadgetRepo.getByID(id);
+        if (subGadget.getPrice() == null){
+            subGadget.setPrice(price);
+            subGadgetRepo.save(subGadget);
+        }
         return HttpResponse
                 .builder()
                 .status(HttpStatus.OK)
@@ -293,56 +323,65 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    @Transactional
-    public HttpResponse addDocument(ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
-        for (Gadget gadget : gadgetRepo.findAll()) {
-            if (gadget.getPDFUrl() == null && gadget.getVideoUrl() == null && gadget.getDescription() == null) {
-                String apiUrl = buildApiUrl(gadget);
-                try {
-                    Document doc = Jsoup.connect(apiUrl).get();
-                    System.out.println("HTML страница получена: " + doc.title());
-
-                    Map<String, Map<String, String>> characteristics = extractDataFromTables(doc);
-
-                    UUID uuid = UUID.randomUUID();
-                    String hexUUID = uuid.toString().replace("-", "");
-                    long article = Long.parseLong(hexUUID.substring(0, 12), 16);
-
-                    gadget.setPDFUrl(productDocRequest.pdf());
-                    gadget.setVideoUrl(productDocRequest.videoUrl());
-                    gadget.setDescription(productDocRequest.description());
-                    gadget.setArticle(article);
-
-                    SubGadget subGadget = gadget.getSubGadget();
-
-
-                    for (Map.Entry<String, Map<String, String>> entry : characteristics.entrySet()) {
-                        String s = entry.getKey();
-                        Map<String, String> value = entry.getValue();
-
-                        CharValue charValue = new CharValue();
-                        charValueRepo.save(charValue);
-                        for (Map.Entry<String, String> charEntry : value.entrySet()) {
-                            charValue.addCharacteristic(charEntry.getKey(), charEntry.getValue());
-                        }
-
-                        subGadget.getCharName().put(charValue, s);
-                    }
-
-                    gadgetRepo.save(gadget);
-                    subGadgetRepo.save(subGadget);
-
-                } catch (IOException e) {
-                    throw new gadgetarium.exceptions.IOException(e.getMessage());
-                }
-            }
+    public HttpResponse setQuantityOneProduct(Long id, int quantity) {
+        SubGadget subGadget = subGadgetRepo.getByID(id);
+        if (subGadget.getQuantity() <= 0){
+            subGadget.setQuantity(quantity);
+            subGadgetRepo.save(subGadget);
         }
+
         return HttpResponse
                 .builder()
                 .status(HttpStatus.OK)
-                .message("Success set documents, descriptions!")
+                .message("Success set quantity!")
                 .build();
     }
+
+    @Override
+    @Transactional
+    public HttpResponse addDocument(ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
+        try {
+            Gadget gadget = gadgetRepo.findByPDFUrlIsNullAndVideoUrlIsNullAndDescriptionIsNull();
+            if (gadget == null){
+                throw new BadRequestException("no gadget to add document");
+            }
+
+            String apiUrl = buildApiUrl(gadget);
+            Document doc = Jsoup.connect(apiUrl).get();
+            System.out.println("HTML страница получена: " + doc.title());
+
+            Map<String, Map<String, String>> characteristics = extractDataFromTables(doc);
+
+            gadget.setPDFUrl(productDocRequest.pdf());
+            gadget.setVideoUrl(productDocRequest.videoUrl());
+            gadget.setDescription(productDocRequest.description());
+
+            for (Map.Entry<String, Map<String, String>> entry : characteristics.entrySet()) {
+                String characteristicKey = entry.getKey();
+                Map<String, String> characteristicValues = entry.getValue();
+
+                CharValue charValue = new CharValue();
+                charValueRepo.save(charValue);
+
+                for (Map.Entry<String, String> charEntry : characteristicValues.entrySet()) {
+                    charValue.addCharacteristic(charEntry.getKey(), charEntry.getValue());
+                }
+
+                gadget.getCharName().put(charValue, characteristicKey);
+            }
+
+            gadgetRepo.save(gadget);
+
+            return HttpResponse
+                    .builder()
+                    .status(HttpStatus.OK)
+                    .message("Документы и описания успешно добавлены!")
+                    .build();
+        } catch (IOException e) {
+            throw new gadgetarium.exceptions.IOException(e.getMessage());
+        }
+    }
+
 
     @Override
     public GadgetPaginationForMain mainPageDiscounts(int page, int size) {
@@ -373,15 +412,9 @@ public class GadgetServiceImpl implements GadgetService {
     public GadgetCharacteristicsResponse getCharacteristicsGadget(Long id) {
         try {
             Gadget gadget = gadgetRepo.getGadgetById(id);
-
-            SubGadget subGadget = gadget.getSubGadget();
-            if (subGadget == null) {
-                log.warn("SubGadget for Gadget with ID {} is null.", id);
-                return GadgetCharacteristicsResponse.builder().build();
-            }
-
             Map<String, Map<String, String>> mainCharacteristics = new HashMap<>();
-            Map<CharValue, String> charName = subGadget.getCharName();
+
+            Map<CharValue, String> charName = gadget.getCharName();
 
             for (Map.Entry<CharValue, String> entry : charName.entrySet()) {
                 CharValue charValue = entry.getKey();
@@ -397,6 +430,7 @@ public class GadgetServiceImpl implements GadgetService {
                     .id(gadget.getId())
                     .mainCharacteristics(mainCharacteristics)
                     .build();
+
         } catch (Exception e) {
             log.error("Error while retrieving gadget characteristics", e);
             return GadgetCharacteristicsResponse.builder().build();
@@ -436,20 +470,16 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     public GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id) {
-        Gadget gadget = gadgetRepo.getGadgetById(id);
-
-        if (gadget == null || gadget.getOrders() == null || gadget.getOrders().isEmpty()) {
-            throw new IllegalArgumentException("No gadget found or gadget has no orders.");
-        }
+        gadgetRepo.getGadgetById(id);
 
         return GadgetDeliveryPriceResponse.builder()
-                .deliveryPrice(gadget.getOrders().getFirst().getTotalPrice())
+                .deliveryPrice(BigDecimal.valueOf(200))
                 .build();
     }
 
 
     private String buildApiUrl(Gadget gadget) {
-        String modelName = gadget.getSubGadget().getNameOfGadget();
+        String modelName = gadget.getNameOfGadget();
         String brand = gadget.getBrand().getBrandName();
         String categoryName = gadget.getSubCategory().getCategory().getCategoryName();
 
@@ -493,7 +523,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Override
     public byte[] downloadFile(String key, Long gadgetId) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-        if (!gadget.getPDFUrl().contains(bucketName+key)){
+        if (!gadget.getPDFUrl().contains(bucketName + key)) {
             throw new NotFoundException("not found");
         }
         S3Object s3Object = s3Client.getObject(bucketName, key);
@@ -508,18 +538,35 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public HttpResponse updateGadget(Long gadgetID, GadgetNewDataRequest gadgetNewDataRequest, Ram ram, Memory memory) {
-        Gadget gadget = gadgetRepo.getGadgetById(gadgetID);
+    public HttpResponse updateGadget(Long subGadgetId, GadgetNewDataRequest request) {
+        SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
+        Gadget gadget = subGadget.getGadget();
 
-        gadget.setWarranty(gadgetNewDataRequest.warranty());
-        gadget.setReleaseDate(gadgetNewDataRequest.issueDate());
-        gadget.getSubGadget().setMainColour(gadgetNewDataRequest.colour());
-        gadget.setRam(ram);
-        gadget.setMemory(memory);
-        gadget.getSubGadget().setCountSim(gadgetNewDataRequest.countSim());
-        gadget.getSubGadget().setImages(gadgetNewDataRequest.images());
+        subGadget.setMainColour(request.colour());
+        subGadget.setMemory(request.memory());
+        subGadget.setImages(request.images());
 
-        gadgetRepo.save(gadget);
+        String categoryName = gadget.getSubCategory().getCategory().getCategoryName().toLowerCase();
+        if (categoryName.contains("phone") ||
+            categoryName.contains("laptop")) {
+
+            subGadget.setRam(request.ram());
+            subGadget.setCountSim(request.countSim());
+        } else if (categoryName.contains("smart") ||
+                   categoryName.contains("accessories")) {
+
+            subGadget.addUniField(request.materialBody());
+            subGadget.addUniField(request.dumas());
+            subGadget.addUniField(request.genderWatch());
+            subGadget.addUniField(request.shapeBody());
+            subGadget.addUniField(request.sizeWatch());
+            subGadget.addUniField(request.waterproof());
+            subGadget.addUniField(request.materialBracelet());
+            subGadget.addUniField(request.wireless());
+        }
+
+        subGadgetRepo.save(subGadget);
+
         return HttpResponse
                 .builder()
                 .status(HttpStatus.OK)
@@ -527,27 +574,28 @@ public class GadgetServiceImpl implements GadgetService {
                 .build();
     }
 
+
     @Override
     @Transactional
     public HttpResponse deleteGadget(Long gadgetID) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetID);
 
-        List<User> usersWithGadget = userRepo.findByBasketContainingKey(gadget.getSubGadget());
-        for (User user : usersWithGadget) {
-            user.getBasket().remove(gadget.getSubGadget());
-
-            user.getComparison().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
-            user.getViewed().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
-            user.getLikes().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
-            userRepo.save(user);
-        }
-
-        List<Order> orders = orderRepo.findByGadgetsContaining(gadget);
-        if (!orders.isEmpty()) {
-            gadget.setRemotenessStatus(RemotenessStatus.REMOTE);
-        } else {
-            gadgetRepo.delete(gadget);
-        }
+//        List<User> usersWithGadget = userRepo.findByBasketContainingKey(gadget.getSubGadget());
+//        for (User user : usersWithGadget) {
+//            user.getBasket().remove(gadget.getSubGadget());
+//
+//            user.getComparison().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
+//            user.getViewed().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
+//            user.getLikes().removeIf(gadgetRemove -> gadgetRemove.getId().equals(gadget.getSubGadget().getId()));
+//            userRepo.save(user);
+//        }
+//
+//        List<Order> orders = orderRepo.findByGadgetsContaining(gadget);
+//        if (!orders.isEmpty()) {
+//            gadget.setRemotenessStatus(RemotenessStatus.REMOTE);
+//        } else {
+//            gadgetRepo.delete(gadget);
+//        }
 
         return HttpResponse
                 .builder()

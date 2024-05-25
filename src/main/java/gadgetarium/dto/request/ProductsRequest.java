@@ -12,8 +12,15 @@ public record ProductsRequest(
         String mainColour,
         String memory,
         String ram,
-        @CountSimValidation
         int countSim,
-        List<String> images
+        List<String> images,
+        String materialBracelet,
+        String materialBody,
+        String sizeWatch,
+        String dumas,
+        String genderWatch,
+        String waterproof,
+        String wireless,
+        String shapeBody
 ) {
 }

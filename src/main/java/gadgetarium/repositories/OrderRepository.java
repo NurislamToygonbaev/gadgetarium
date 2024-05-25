@@ -52,5 +52,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                 new NotFoundException("Order with id: " + orderId + " not found"));
     }
 
-    List<Order> findByGadgetsContaining(Gadget gadget);
 }

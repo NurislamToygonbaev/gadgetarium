@@ -40,4 +40,9 @@ public class Brand {
     private void initialReview() {
         this.gadgets = new ArrayList<>();
     }
+
+    public void addGadget(Gadget gadget) {
+        if (this.gadgets == null) this.gadgets = new ArrayList<>();
+        this.gadgets.add(gadget);
+    }
 }

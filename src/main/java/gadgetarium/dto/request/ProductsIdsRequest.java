@@ -9,7 +9,6 @@ import java.util.List;
 
 @Builder
 public record ProductsIdsRequest(
-        List<Long> ids,
         @PriceValidation
         BigDecimal price,
         @QuantityValidation

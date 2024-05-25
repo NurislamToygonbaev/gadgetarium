@@ -45,19 +45,19 @@ public class Order {
     private Status status;
 
     @ManyToMany(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
-    private List<Gadget> gadgets;
+    private List<SubGadget> subGadgets;
 
     @ManyToOne(cascade = {DETACH})
     private User user;
 
-    private void addGadget(Gadget gadget) {
-        if (this.gadgets == null) this.gadgets = new ArrayList<>();
-        this.gadgets.add(gadget);
+    public void addGadget(SubGadget subGadget) {
+        if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
+        this.subGadgets.add(subGadget);
     }
 
     @PrePersist
     private void initialReview() {
-        this.gadgets = new ArrayList<>();
+        this.subGadgets = new ArrayList<>();
         this.createdAt = LocalDate.now();
     }
 }

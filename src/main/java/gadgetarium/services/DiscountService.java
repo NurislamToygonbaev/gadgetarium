@@ -10,5 +10,4 @@ import java.util.List;
 public interface DiscountService {
 
     DiscountResponse create(List<Long> subGadgetsId, DiscountRequest discountRequest);
-    public BigDecimal checkCurrentPrice(SubGadget subGadget);
 }

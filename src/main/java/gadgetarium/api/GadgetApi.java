@@ -13,6 +13,8 @@ import gadgetarium.enums.Ram;
 import gadgetarium.enums.Sort;
 import gadgetarium.exceptions.IOException;
 import gadgetarium.services.GadgetService;
+import gadgetarium.validation.price.PriceValidation;
+import gadgetarium.validation.quantity.QuantityValidation;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -67,10 +69,10 @@ public class GadgetApi {
     }
 
     @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "Авторизация: ВСЕ")
-    @GetMapping("/colour")
-    public GadgetResponse getGadgetByColour(@RequestParam String colour,
-                                            @RequestParam String nameOfGadget) {
-        return gadgetService.getGadgetSelectColour(colour, nameOfGadget);
+    @GetMapping("/{gadgetId}/colour")
+    public GadgetResponse getGadgetByColour(@PathVariable Long gadgetId,
+                                            @RequestParam String colour) {
+        return gadgetService.getGadgetSelectColour(gadgetId, colour);
     }
 
     @PreAuthorize("hasAuthority('USER')")
@@ -97,17 +99,28 @@ public class GadgetApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Установить цены на добавленные товары.", description = "Авторизация: АДМИНСТРАТОР")
-    @PostMapping("/set-all-price")
-    public HttpResponse addPrice(@RequestBody @Valid ProductsIdsRequest productsIds) {
-        return gadgetService.addPrice(productsIds);
+    @Operation(summary = "Установить цены и количество на добавленные товары.", description = "Авторизация: АДМИНСТРАТОР")
+    @PatchMapping("/set-all-price")
+    public HttpResponse addPrice(@RequestParam @PriceValidation BigDecimal price,
+                                 @RequestParam @QuantityValidation int quantity,
+                                 @RequestParam List<Long> ids) {
+        return gadgetService.addPrice(ids, price, quantity);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Установить цены по одному.", description = "Авторизация: АДМИНСТРАТОР")
-    @PostMapping("/set-price")
-    public HttpResponse addPrice(@RequestBody @Valid ProductPriceRequest productPriceRequest) {
-        return gadgetService.setPriceOneProduct(productPriceRequest);
+    @PatchMapping("/{id}/set-price")
+    public HttpResponse addPrice(@RequestParam @PriceValidation BigDecimal price,
+                                 @PathVariable Long id) {
+        return gadgetService.setPriceOneProduct(id, price);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Установить количество по одному.", description = "Авторизация: АДМИНСТРАТОР")
+    @PatchMapping("/{id}/set-quantity")
+    public HttpResponse addQuantity(@RequestParam @QuantityValidation int quantity,
+                                    @PathVariable Long id) {
+        return gadgetService.setQuantityOneProduct(id, quantity);
     }
 
     @Operation(summary = " Все категории", description = "Авторизация: ВСЕ")
@@ -124,8 +137,8 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Добавление документа на товары ", description = "Авторизация ADMIN")
-    @PostMapping("/set-document")
-    public HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException {
+    @PatchMapping("/set-document")
+    public HttpResponse addDocument(@RequestBody ProductDocRequest productDocRequest) throws IOException {
         return gadgetService.addDocument(productDocRequest);
     }
 
@@ -190,19 +203,17 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
-    @PutMapping("/{gadgetID}")
-    public HttpResponse updateGadget(@PathVariable Long gadgetID,
-                                     @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest,
-                                     @RequestParam Ram ram,
-                                     @RequestParam Memory memory){
-        return gadgetService.updateGadget(gadgetID, gadgetNewDataRequest, ram, memory);
+    @PutMapping("/{subGadgetId}")
+    public HttpResponse updateGadget(@PathVariable Long subGadgetId,
+                                     @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest) {
+        return gadgetService.updateGadget(subGadgetId, gadgetNewDataRequest);
     }
 
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Удаление гаджета по ID", description = "Авторизация ADMIN")
     @DeleteMapping("/{gadgetID}")
-    public HttpResponse deleteGadget(@PathVariable Long gadgetID){
+    public HttpResponse deleteGadget(@PathVariable Long gadgetID) {
         return gadgetService.deleteGadget(gadgetID);
     }
 }

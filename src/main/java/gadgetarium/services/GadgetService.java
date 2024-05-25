@@ -22,7 +22,7 @@ public interface GadgetService {
 
     PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size);
 
-    GadgetResponse getGadgetSelectColour(String colour, String nameOfGadget);
+    GadgetResponse getGadgetSelectColour(Long gadgetId, String colour);
 
     GadgetResponse getGadgetById(Long gadgetId);
 
@@ -31,9 +31,9 @@ public interface GadgetService {
 
     List<AddProductsResponse> getNewProducts();
 
-    HttpResponse addPrice(ProductsIdsRequest productsIds);
+    HttpResponse addPrice(List<Long> ids, BigDecimal price, int quantity);
 
-    HttpResponse setPriceOneProduct(ProductPriceRequest productPriceRequest);
+    HttpResponse setPriceOneProduct(Long id, BigDecimal price);
 
     HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException;
 
@@ -53,11 +53,13 @@ public interface GadgetService {
 
     byte[] downloadFile(String key, Long gadgetId);
 
-    HttpResponse updateGadget(Long gadgetID, GadgetNewDataRequest gadgetNewDataRequest, Ram ram, Memory memory);
+    HttpResponse updateGadget(Long subGadgetId, GadgetNewDataRequest gadgetNewDataRequest);
 
     HttpResponse deleteGadget(Long gadgetID);
 
     List<CatResponse> getCategories();
 
     List<CatResponse> getSubCategories(Long catId);
+
+    HttpResponse setQuantityOneProduct(Long id, int quantity);
 }

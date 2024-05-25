@@ -23,16 +23,16 @@ public class FavoritesApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Метод для добовления гаджетов в избранное или удалении", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/{subGadgetId}")
-    public HttpResponse addToFavorites(@PathVariable Long subGadgetId) {
-        return userService.addToFavorites(subGadgetId);
+    @PostMapping("/{gadgetId}")
+    public HttpResponse addToFavorites(@PathVariable Long gadgetId) {
+        return userService.addToFavorites(gadgetId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод добовляет несколько гаджетов в избранный")
     @PostMapping("/add-all")
-    public HttpResponse addAllGadgetsToFavorites(@RequestParam List<Long> subGadgetId){
-        return userService.addAllGadgetsToFavorites(subGadgetId);
+    public HttpResponse addAllGadgetsToFavorites(@RequestParam List<Long> gadgetIds){
+        return userService.addAllGadgetsToFavorites(gadgetIds);
     }
 
     @PreAuthorize("hasAuthority('USER')")

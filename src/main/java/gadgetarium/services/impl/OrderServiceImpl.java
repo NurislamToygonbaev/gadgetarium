@@ -14,6 +14,7 @@ import gadgetarium.enums.Status;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.OrderRepository;
+import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
 import gadgetarium.services.BasketService;
@@ -39,6 +40,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepo;
     private final OrderJDBCTemplate orderJDBCTemplate;
     private final GadgetRepository gadgetRepository;
+    private final SubGadgetRepository subGadgetRepo;
     private final CurrentUser currentUser;
     private final UserRepository userRepo;
     private final BasketService basketService;
@@ -125,7 +127,7 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public HttpResponse placingAnOrder(List<Long> gadgetIds, boolean orderType, PersonalDataRequest personalDataRequest) {
         User currentUserr = currentUser.get();
-        List<Gadget> gadgets = new ArrayList<>();
+//        List<SubGadget> gadgets = new ArrayList<>();
         Order order = new Order();
         long orderNumber = ThreadLocalRandom.current().nextLong(100000, 1000000);
 
@@ -134,21 +136,19 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal discountSumma = BigDecimal.ZERO;
 
         for (Long gadgetId : gadgetIds) {
-            Gadget gadgetById = gadgetRepository.getGadgetById(gadgetId);
-            if (gadgetById == null || gadgetById.getSubGadget() == null) {
-                continue;
-            }
-            gadgets.add(gadgetById);
-            BigDecimal price = gadgetById.getSubGadget().getPrice();
+            SubGadget subGadget = subGadgetRepo.getByID(gadgetId);
+//            gadgets.add(subGadget);
+            BigDecimal price = subGadget.getPrice();
             BigDecimal discount = BigDecimal.ZERO;
 
-            if (gadgetById.getSubGadget().getDiscount() != null) {
-                int percent = gadgetById.getSubGadget().getDiscount().getPercent();
+            if (subGadget.getGadget().getDiscount() != null) {
+                int percent = subGadget.getGadget().getDiscount().getPercent();
                 discount = price.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             }
 
             totalSumma = totalSumma.add(price);
             discountSumma = discountSumma.add(discount);
+            order.addGadget(subGadget);
         }
 
         totalPriceWithDiscount = totalSumma.subtract(discountSumma);
@@ -174,7 +174,7 @@ public class OrderServiceImpl implements OrderService {
         order.setStatus(Status.PENDING);
         order.setDiscountPrice(discountSumma);
         order.setNumber(orderNumber);
-        order.setGadgets(gadgets);
+
         order.setUser(currentUserr);
         currentUserr.getOrders().add(order);
         orderRepo.save(order);
@@ -200,7 +200,7 @@ public class OrderServiceImpl implements OrderService {
             User user = foundOrder.getUser();
             return OrderHistoryResponse.builder()
                     .number(foundOrder.getNumber())
-                    .privateGadgetResponse(mapGadgets(foundOrder.getGadgets()))
+                    .privateGadgetResponse(mapGadgets(foundOrder.getSubGadgets()))
                     .status(foundOrder.getStatus())
                     .clientFullName(user.getFirstName() + " " + user.getLastName())
                     .userName(user.getFirstName())
@@ -285,22 +285,24 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    private List<PrivateGadgetResponse> mapGadgets(List<Gadget> gadgets) {
+    private List<PrivateGadgetResponse> mapGadgets(List<SubGadget> gadgets) {
         List<PrivateGadgetResponse> gadgetResponses = new ArrayList<>();
 
-        for (Gadget gadget : gadgets) {
-            SubGadget subGadget = gadget.getSubGadget();
-            List<String> images = subGadget != null && !subGadget.getImages().isEmpty() ?
+        for (SubGadget subGadget : gadgets) {
+            if (subGadget == null) continue;
+            List<String> images = !subGadget.getImages().isEmpty() ?
                     Collections.singletonList(subGadget.getImages().getFirst()) :
                     Collections.emptyList();
+
+            
             PrivateGadgetResponse privateGadgetResponse = PrivateGadgetResponse.builder()
-                    .id(gadget.getId())
+                    .id(subGadget.getId())
                     .gadgetImage(images.isEmpty() ? null : Collections.singletonList(images.getFirst()))
-                    .nameOfGadget(subGadget != null ? subGadget.getNameOfGadget() : null)
-                    .subCategoryName(gadget.getSubCategory().getSubCategoryName())
-                    .rating(subGadget != null ? subGadget.getRating() : null)
+                    .nameOfGadget(subGadget.getGadget().getNameOfGadget())
+                    .subCategoryName(subGadget.getGadget().getSubCategory().getSubCategoryName())
+                    .rating(subGadget.getGadget().getRating())
                     .countRating(0)
-                    .currentPrice(subGadget != null ? subGadget.getCurrentPrice() : null)
+                    .currentPrice(subGadget.getPrice())
                     .build();
             gadgetResponses.add(privateGadgetResponse);
 

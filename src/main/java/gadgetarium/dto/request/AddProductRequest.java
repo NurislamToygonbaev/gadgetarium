@@ -9,11 +9,11 @@ import java.util.List;
 
 @Builder
 public record AddProductRequest(
-        List<ProductsRequest> productsRequests,
         String nameOfGadget,
         @IssueDateValidation
         LocalDate dateOfIssue,
         @WarrantyValidation
-        int warranty
-) {
+        int warranty,
+        List<ProductsRequest> productsRequests
+        ) {
 }

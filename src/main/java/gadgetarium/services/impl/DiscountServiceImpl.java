@@ -37,18 +37,16 @@ public class DiscountServiceImpl implements DiscountService {
         for (int i = 0; i < subGadgetsId.size(); i++) {
             SubGadget subGadget = subGadgetRepository.findById(subGadgetsId.get(i)).orElseThrow(() ->
                     new NotAcceptableStatusException("SubGadget by id not found!"));
-            if (subGadget.getDiscount() != null) {
+            if (subGadget.getGadget().getDiscount() != null) {
                 throw new BadRequestException("SubGadget with id " + subGadget.getId() + " already has discount!");
             }
             Discount buildDiscount = Discount.builder()
                     .percent(discountRequest.discountSize())
                     .startDate(discountRequest.startDay())
                     .endDate(discountRequest.endDay())
-                    .subGadget(subGadget)
+                    .gadget(subGadget.getGadget())
                     .build();
             discountRepo.save(buildDiscount);
-            subGadget.setCurrentPrice(subGadget.getPrice().subtract(subGadget.getPrice().multiply(BigDecimal.valueOf(discountRequest.discountSize())).divide(BigDecimal.valueOf(100))));
-
         }
         return DiscountResponse.builder()
                 .httpStatus(HttpStatus.OK)
@@ -56,17 +54,17 @@ public class DiscountServiceImpl implements DiscountService {
                 .build();
     }
 
-    @Transactional
-    @Override
-    public BigDecimal checkCurrentPrice(SubGadget subGadget) {
-        BigDecimal returnCurrentPrice = BigDecimal.ZERO;
-        if (subGadget.getDiscount() != null) {
-            if (subGadget.getDiscount().getEndDate().isBefore(LocalDate.now())) {
-                subGadget.setCurrentPrice(subGadget.getPrice());
-                discountRepo.delete(subGadget.getDiscount());
-                returnCurrentPrice =  subGadget.getCurrentPrice();
-            }
-        } else returnCurrentPrice =  subGadget.getCurrentPrice();
-        return returnCurrentPrice;
-    }
+//    @Transactional
+//    @Override
+//    public BigDecimal checkCurrentPrice(SubGadget subGadget) {
+//        BigDecimal returnCurrentPrice = BigDecimal.ZERO;
+//        if (subGadget.getDiscount() != null) {
+//            if (subGadget.getDiscount().getEndDate().isBefore(LocalDate.now())) {
+//                subGadget.setCurrentPrice(subGadget.getPrice());
+//                discountRepo.delete(subGadget.getDiscount());
+//                returnCurrentPrice =  subGadget.getCurrentPrice();
+//            }
+//        } else returnCurrentPrice =  subGadget.getCurrentPrice();
+//        return returnCurrentPrice;
+//    }
 }

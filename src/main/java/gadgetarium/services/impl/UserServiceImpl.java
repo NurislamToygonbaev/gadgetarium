@@ -20,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -131,8 +130,8 @@ public class UserServiceImpl implements UserService {
         if (differences) {
             return new UniqueFieldResponse(uniqueFields, uniqueCharacteristics);
         } else {
-            return new SubGadgetResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()), subGadget.getNameOfGadget(), subGadget.getPrice(), subGadget.getMainColour(),
-                    subGadget.getGadget().getBrand().getBrandName(), subGadget.getGadget().getMemory(), subGadget.getCharacteristics());
+            return new SubGadgetResponse(subGadget.getId(), Collections.singletonList(subGadget.getImages().getFirst()), subGadget.getGadget().getNameOfGadget(), subGadget.getPrice(), subGadget.getMainColour(),
+                    subGadget.getGadget().getBrand().getBrandName(), subGadget.getMemory(), subGadget.getGadget().getCharName());
         }
     }
 
@@ -140,28 +139,52 @@ public class UserServiceImpl implements UserService {
         uniqueFields.setId(subGadget.getId());
         uniqueFields.setImages(Collections.singletonList(other.getImages().getFirst()));
 
-        uniqueFields.setNameOfGadget(!subGadget.getNameOfGadget().equals(other.getNameOfGadget()) ? subGadget.getNameOfGadget() : null);
+        uniqueFields.setNameOfGadget(!subGadget.getGadget().getNameOfGadget().equals(other.getGadget().getNameOfGadget()) ? subGadget.getGadget().getNameOfGadget() : null);
         uniqueFields.setPrice(!subGadget.getPrice().equals(other.getPrice()) ? subGadget.getPrice() : null);
         uniqueFields.setMainColour(!subGadget.getMainColour().equals(other.getMainColour()) ? subGadget.getMainColour() : null);
         uniqueFields.setBrandName(!subGadget.getGadget().getBrand().getBrandName().equals(other.getGadget().getBrand().getBrandName()) ? subGadget.getGadget().getBrand().getBrandName() : null);
-        uniqueFields.setMemory(!subGadget.getGadget().getMemory().equals(other.getGadget().getMemory()) ? subGadget.getGadget().getMemory() : null);
+        uniqueFields.setMemory(!subGadget.getMemory().equals(other.getMemory()) ? subGadget.getMemory() : null);
     }
 
 
     private void populateUniqueCharacteristics(SubGadget subGadget, SubGadget other, Map<String, String> uniqueCharacteristics) {
-        Map<String, String> currentCharacteristics = subGadget.getCharacteristics();
-        Map<String, String> otherCharacteristics = other.getCharacteristics();
+        Map<CharValue, String> currentCharacteristics = subGadget.getGadget().getCharName();
+        Map<CharValue, String> otherCharacteristics = other.getGadget().getCharName();
 
-        for (Map.Entry<String, String> entry : currentCharacteristics.entrySet()) {
-            String characteristic = entry.getKey();
-            String currentValue = entry.getValue();
-            String otherValue = otherCharacteristics.get(characteristic);
+        for (Map.Entry<CharValue, String> entry : currentCharacteristics.entrySet()) {
+            CharValue currentCharValue = entry.getKey();
+            String currentCharacteristicName = entry.getValue();
+            CharValue otherCharValue = findMatchingCharValue(otherCharacteristics, currentCharacteristicName);
 
-            if (!Objects.equals(currentValue, otherValue)) {
-                uniqueCharacteristics.put(characteristic, currentValue);
+            if (otherCharValue == null) {
+                uniqueCharacteristics.put(currentCharacteristicName, currentCharValue.getValues().toString());
+                continue;
+            }
+
+            Map<String, String> currentValues = currentCharValue.getValues();
+            Map<String, String> otherValues = otherCharValue.getValues();
+
+            for (Map.Entry<String, String> charEntry : currentValues.entrySet()) {
+                String characteristic = charEntry.getKey();
+                String currentValue = charEntry.getValue();
+                String otherValue = otherValues.get(characteristic);
+
+                if (!Objects.equals(currentValue, otherValue)) {
+                    uniqueCharacteristics.put(currentCharacteristicName + " - " + characteristic, currentValue);
+                }
             }
         }
     }
+
+    private CharValue findMatchingCharValue(Map<CharValue, String> characteristics, String characteristicName) {
+        for (Map.Entry<CharValue, String> entry : characteristics.entrySet()) {
+            if (entry.getValue().equals(characteristicName)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
 
     @Override
     @Transactional
@@ -188,22 +211,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public HttpResponse addToFavorites(Long subGadgetId) {
+    public HttpResponse addToFavorites(Long gadgetId) {
         User user = currentUser.get();
         if (user == null) {
             return HttpResponse.builder().status(HttpStatus.UNAUTHORIZED).message("User not authenticated!").build();
         }
 
-        SubGadget subGadget = subGadgetRepository.getByID(subGadgetId);
+        SubGadget subGadget = subGadgetRepository.getByID(gadgetId);
 
         synchronized (user) {
             if (user.getLikes().contains(subGadget)) {
                 user.getLikes().remove(subGadget);
-                log.info("SubGadget '{}' successfully removed from favorites for User '{}'.", subGadget.getNameOfGadget(), user.getUsername());
+                log.info("SubGadget '{}' successfully removed from favorites for User '{}'.", subGadget.getGadget().getNameOfGadget(), user.getUsername());
                 return HttpResponse.builder().status(HttpStatus.OK).message("SubGadget removed from favorites!").build();
             }
             user.addLikes(subGadget);
-            log.info("SubGadget '{}' successfully added to favorites for User '{}'.", subGadget.getNameOfGadget(), user.getUsername());
+            log.info("SubGadget '{}' successfully added to favorites for User '{}'.", subGadget.getGadget().getNameOfGadget(), user.getUsername());
             return HttpResponse.builder().status(HttpStatus.OK).message("SubGadget added to favorites successfully!").build();
 
         }
@@ -297,12 +320,12 @@ public class UserServiceImpl implements UserService {
                 images.getFirst(),
                 category.getCategoryName(),
                 brand.getBrandName(),
-                gadget.getNameOfGadget(),
-                parentGadget.getMemory(),
+                parentGadget.getNameOfGadget(),
+                gadget.getMemory(),
                 gadget.getMainColour(),
-                gadget.getRating(),
+                parentGadget.getRating(),
                 gadget.getPrice(),
-                gadget.getCurrentPrice(),
+                GadgetServiceImpl.calculatePrice(gadget),
                 likes,
                 comparison,
                 basket
@@ -314,7 +337,7 @@ public class UserServiceImpl implements UserService {
         boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
         return new ListComparisonResponse(subGadget.getId(),
                 Collections.singletonList(subGadget.getImages().getFirst()),
-                subGadget.getNameOfGadget(), subGadget.getMainColour(),
-                subGadget.getGadget().getMemory(), subGadget.getPrice(), basket);
+                subGadget.getGadget().getNameOfGadget(), subGadget.getMainColour(),
+                subGadget.getMemory(), subGadget.getPrice(), basket);
     }
 }
