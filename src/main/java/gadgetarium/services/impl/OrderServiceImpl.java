@@ -1,23 +1,22 @@
 package gadgetarium.services.impl;
 
+import gadgetarium.config.jwt.JwtService;
 import gadgetarium.dto.request.ChangePasswordRequest;
 import gadgetarium.dto.request.CurrentUserProfileRequest;
 import gadgetarium.dto.request.PersonalDataRequest;
 import gadgetarium.dto.request.UserImageRequest;
 import gadgetarium.dto.response.*;
-import gadgetarium.entities.Gadget;
 import gadgetarium.entities.Order;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
+import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.NotFoundException;
-import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
-import gadgetarium.services.BasketService;
 import gadgetarium.services.OrderService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -39,12 +38,13 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepo;
     private final OrderJDBCTemplate orderJDBCTemplate;
-    private final GadgetRepository gadgetRepository;
+    private final JwtService jwtService;
     private final SubGadgetRepository subGadgetRepo;
     private final CurrentUser currentUser;
     private final UserRepository userRepo;
-    private final BasketService basketService;
     private final PasswordEncoder passwordEncoder;
+    private static final BigDecimal FREE_DELIVERY_THRESHOLD = BigDecimal.valueOf(10000);
+    private static final BigDecimal DELIVERY_CHARGE = BigDecimal.valueOf(200);
 
     @Override
     public OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
@@ -125,19 +125,27 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public HttpResponse placingAnOrder(List<Long> gadgetIds, boolean orderType, PersonalDataRequest personalDataRequest) {
-        User currentUserr = currentUser.get();
-//        List<SubGadget> gadgets = new ArrayList<>();
+    public HttpResponse placingAnOrder(List<Long> subGadgetId, boolean orderType, PersonalDataRequest personalDataRequest) {
+        if (subGadgetId == null || personalDataRequest == null) {
+            throw new IllegalArgumentException("SubGadget ID list and personal data request must not be null");
+        }
+
+        User user = currentUser.get();
+        String userEmail = personalDataRequest.email();
+
+        boolean emailExists = userRepo.existsByEmail(userEmail);
+        if (emailExists && !userEmail.equals(user.getEmail())) {
+            throw new AlreadyExistsException("User with email: " + userEmail + " already exists.");
+        }
+
         Order order = new Order();
         long orderNumber = ThreadLocalRandom.current().nextLong(100000, 1000000);
 
-        BigDecimal totalSumma = BigDecimal.ZERO;
-        BigDecimal totalPriceWithDiscount = BigDecimal.ZERO;
-        BigDecimal discountSumma = BigDecimal.ZERO;
+        BigDecimal totalSum = BigDecimal.ZERO;
+        BigDecimal totalDiscount = BigDecimal.ZERO;
 
-        for (Long gadgetId : gadgetIds) {
+        for (Long gadgetId : subGadgetId) {
             SubGadget subGadget = subGadgetRepo.getByID(gadgetId);
-//            gadgets.add(subGadget);
             BigDecimal price = subGadget.getPrice();
             BigDecimal discount = BigDecimal.ZERO;
 
@@ -146,37 +154,36 @@ public class OrderServiceImpl implements OrderService {
                 discount = price.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
             }
 
-            totalSumma = totalSumma.add(price);
-            discountSumma = discountSumma.add(discount);
+            totalSum = totalSum.add(price);
+            totalDiscount = totalDiscount.add(discount);
             order.addGadget(subGadget);
         }
 
-        totalPriceWithDiscount = totalSumma.subtract(discountSumma);
-        currentUserr.setFirstName(personalDataRequest.firstName());
-        currentUserr.setLastName(personalDataRequest.lastName());
-        currentUserr.setEmail(personalDataRequest.email());
-        currentUserr.setPhoneNumber(personalDataRequest.phoneNumber());
+        BigDecimal totalPriceWithDiscount = totalSum.subtract(totalDiscount);
+        user.setFirstName(personalDataRequest.firstName());
+        user.setLastName(personalDataRequest.lastName());
+        user.setEmail(userEmail);
+        user.setPhoneNumber(personalDataRequest.phoneNumber());
 
         if (orderType) {
             order.setTypeOrder(true);
             order.setTotalPrice(totalPriceWithDiscount);
         } else {
             order.setTypeOrder(false);
-            currentUserr.setAddress(personalDataRequest.deliveryAddress());
+            user.setAddress(personalDataRequest.deliveryAddress());
 
-            if (BigDecimal.valueOf(10000).compareTo(totalPriceWithDiscount) >= 0) {
-                order.setTotalPrice(totalPriceWithDiscount.add(BigDecimal.valueOf(200)));
-            } else {
-                order.setTotalPrice(totalPriceWithDiscount);
+            if (FREE_DELIVERY_THRESHOLD.compareTo(totalPriceWithDiscount) >= 0) {
+                totalPriceWithDiscount = totalPriceWithDiscount.add(DELIVERY_CHARGE);
             }
+            order.setTotalPrice(totalPriceWithDiscount);
         }
 
         order.setStatus(Status.PENDING);
-        order.setDiscountPrice(discountSumma);
+        order.setDiscountPrice(totalDiscount);
         order.setNumber(orderNumber);
 
-        order.setUser(currentUserr);
-        currentUserr.getOrders().add(order);
+        order.setUser(user);
+        user.getOrders().add(order);
         orderRepo.save(order);
 
         return HttpResponse
@@ -185,53 +192,61 @@ public class OrderServiceImpl implements OrderService {
                 .message("Order saved!")
                 .build();
     }
-        public List<AllOrderHistoryResponse> getAllOrdersHistory () {
-            return orderRepo.getAllHistory(currentUser.get().getId());
-        }
 
-        @Override
-        public OrderHistoryResponse getOrderHistoryById (Long orderId) throws NotFoundException {
-            Optional<Order> optionalOrder = currentUser.get().getOrders().stream()
-                    .filter(order -> Objects.equals(order.getId(), orderId))
-                    .findFirst();
 
-            Order foundOrder = optionalOrder.orElseThrow(() -> new NotFoundException("Order not found"));
+    @Override
+    public List<AllOrderHistoryResponse> getAllOrdersHistory() {
+        return orderRepo.getAllHistory(currentUser.get().getId());
+    }
 
-            User user = foundOrder.getUser();
-            return OrderHistoryResponse.builder()
-                    .number(foundOrder.getNumber())
-                    .privateGadgetResponse(mapGadgets(foundOrder.getSubGadgets()))
-                    .status(foundOrder.getStatus())
-                    .clientFullName(user.getFirstName() + " " + user.getLastName())
-                    .userName(user.getFirstName())
-                    .address(user.getAddress())
-                    .phoneNumber(user.getPhoneNumber())
-                    .email(user.getEmail())
-                    .discount(foundOrder.getDiscountPrice())
-                    .currentPrice(foundOrder.getTotalPrice())
-                    .createdAt(foundOrder.getCreatedAt())
-                    .payment(foundOrder.getPayment())
-                    .lastName(user.getLastName())
-                    .build();
-        }
+    @Override
+    public OrderHistoryResponse getOrderHistoryById(Long orderId) throws NotFoundException {
+        Optional<Order> optionalOrder = currentUser.get().getOrders().stream()
+                .filter(order -> Objects.equals(order.getId(), orderId))
+                .findFirst();
 
-        @Override
-        public PersonalDataResponse personalDataCustomer () {
-            User currentUserr = currentUser.get();
+        Order foundOrder = optionalOrder.orElseThrow(() -> new NotFoundException("Order not found"));
 
-            return new PersonalDataResponse(
-                    currentUserr.getFirstName(),
-                    currentUserr.getLastName(),
-                    currentUserr.getEmail(),
-                    currentUserr.getPhoneNumber(),
-                    currentUserr.getAddress()
-            );
-        }
+        User user = foundOrder.getUser();
+        return OrderHistoryResponse.builder()
+                .number(foundOrder.getNumber())
+                .privateGadgetResponse(mapGadgets(foundOrder.getSubGadgets()))
+                .status(foundOrder.getStatus())
+                .clientFullName(user.getFirstName() + " " + user.getLastName())
+                .userName(user.getFirstName())
+                .address(user.getAddress())
+                .phoneNumber(user.getPhoneNumber())
+                .email(user.getEmail())
+                .discount(foundOrder.getDiscountPrice())
+                .currentPrice(foundOrder.getTotalPrice())
+                .createdAt(foundOrder.getCreatedAt())
+                .payment(foundOrder.getPayment())
+                .lastName(user.getLastName())
+                .build();
+    }
+
+    @Override
+    public PersonalDataResponse personalDataCustomer() {
+        User currentUserr = currentUser.get();
+
+        return new PersonalDataResponse(
+                currentUserr.getFirstName(),
+                currentUserr.getLastName(),
+                currentUserr.getEmail(),
+                currentUserr.getPhoneNumber(),
+                currentUserr.getAddress()
+        );
+    }
 
 
     @Transactional
     public CurrentUserProfileResponse editProfile(CurrentUserProfileRequest currentUserProfileRequest) {
         User user = currentUser.get();
+        boolean email = userRepo.existsByEmail(currentUserProfileRequest.email());
+        if (email && !currentUserProfileRequest.email().equals(currentUser.get().getEmail())) {
+            throw new AlreadyExistsException("User with email: " + currentUserProfileRequest.email() + " already exists.");
+        }
+
         user.setFirstName(currentUserProfileRequest.userName());
         user.setLastName(currentUserProfileRequest.lastName());
         user.setEmail(currentUserProfileRequest.email());
@@ -243,6 +258,13 @@ public class OrderServiceImpl implements OrderService {
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .address(user.getAddress())
+                .role(user.getRole())
+                .id(user.getId())
+                .token(jwtService.createToken(user))
+                .httpResponse(HttpResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("successfully updated")
+                        .build())
                 .build();
     }
 
@@ -294,7 +316,7 @@ public class OrderServiceImpl implements OrderService {
                     Collections.singletonList(subGadget.getImages().getFirst()) :
                     Collections.emptyList();
 
-            
+
             PrivateGadgetResponse privateGadgetResponse = PrivateGadgetResponse.builder()
                     .id(subGadget.getId())
                     .gadgetImage(images.isEmpty() ? null : Collections.singletonList(images.getFirst()))

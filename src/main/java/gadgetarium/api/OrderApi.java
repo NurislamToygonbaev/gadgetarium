@@ -84,10 +84,10 @@ public class OrderApi {
     @PreAuthorize("hasAnyAuthority('USER')")
     @Operation(summary = "Оформление заказа.", description = "Авторизация: ПОЛЬЗВАТЕЛЬ")
     @PostMapping
-    public HttpResponse placingAnOrder(@RequestParam List<Long> gadgetIds,
+    public HttpResponse placingAnOrder(@RequestParam List<Long> subGadgetId,
                                        @RequestParam boolean deliveryType,
                                        @RequestBody @Valid PersonalDataRequest personalDataRequest){
-        return orderService.placingAnOrder(gadgetIds, deliveryType, personalDataRequest);
+        return orderService.placingAnOrder(subGadgetId, deliveryType, personalDataRequest);
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")

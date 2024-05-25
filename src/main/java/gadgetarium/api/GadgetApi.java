@@ -212,9 +212,9 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Удаление гаджета по ID", description = "Авторизация ADMIN")
-    @DeleteMapping("/{gadgetID}")
-    public HttpResponse deleteGadget(@PathVariable Long gadgetID) {
-        return gadgetService.deleteGadget(gadgetID);
+    @DeleteMapping("/{subGadgetId}")
+    public HttpResponse deleteGadget(@PathVariable Long subGadgetId) {
+        return gadgetService.deleteGadget(subGadgetId);
     }
 }
 

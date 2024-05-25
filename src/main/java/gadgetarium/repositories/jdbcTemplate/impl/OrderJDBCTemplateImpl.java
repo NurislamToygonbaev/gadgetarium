@@ -98,11 +98,12 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                            o.status
                     from orders o
                     join users u on o.user_id = u.id
-                    join orders_gadgets og on o.id = og.orders_id
-                    join gadgets g on og.gadgets_id = g.id
-                    join sub_gadgets s on s.gadget_id = g.id
+                    join orders_sub_gadgets og on o.id = og.orders_id
+                    join sub_gadgets s on s.id = og.sub_gadgets_id
+                    join gadgets g on s.gadget_id = g.id
                     """ + whereClause + """
-                    group by o.id, fullName, o.number, o.created_at, o.type_order, o.status
+                    group by o.id, fullName, o.number, o.created_at, o.type_order, o.status,
+                        totalGadgets, o.total_price
                     limit ? offset ?
                     """,
                 params.toArray(),
@@ -132,51 +133,49 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
 
     @Override
     public OrderResponseFindById findOrderById(Long orderId) {
-        return jdbcTemplate.queryForObject("""
-                    select o.id,
-                            s.price,
-                           concat(u.first_name, ' ', u.last_name) as fullName,
-                           o.number,
-                           concat(b.brand_name, ' ', g.name_of_gadget) as gadgetName,
-                           s.memory,
-                           s.main_colour,
-                           count(s.id) as countOfGadget,
-                           o.total_price,
-                           d.percent
-                    from orders o
-                    join users u on u.id = o.user_id
-                    join orders_gadgets og on o.id = og.orders_id
-                    join gadgets g on g.id = og.gadgets_id
-                    join brands b on b.id = g.brand_id
-                    join sub_gadgets s on g.id = s.gadget_id
-                    left outer join discounts d on s.id = d.sub_gadget_id
-                    where o.id = ?
-                    group by o.id, concat(u.first_name, ' ', u.last_name),
-                    o.number, concat(b.brand_name, ' ', g.name_of_gadget),
-                    s.memory, s.main_colour, d.percent, o.total_price
-                    """,
+        return jdbcTemplate.queryForObject(
+                "select o.id, " +
+                "       concat(u.last_name, ' ', u.first_name) as fullName, " +
+                "       o.number, " +
+                "       o.created_at, " +
+                "       count(s.id) as totalGadgets, " +
+                "       o.total_price, " +
+                "       o.type_order, " +
+                "       o.status " +
+                "from orders o " +
+                "join users u on o.user_id = u.id " +
+                "join orders_sub_gadgets og on o.id = og.orders_id " +
+                "join sub_gadgets s on s.id = og.sub_gadgets_id " +
+                "join gadgets g on s.gadget_id = g.id " +
+                "group by o.id, fullName, o.number, o.created_at, " +
+                "o.total_price, o.type_order, o.status ",
                 new Object[]{orderId},
                 (rs, rowNum) -> {
-                    BigDecimal price = rs.getBigDecimal("total_price");
+                    BigDecimal price = rs.getBigDecimal("price");
                     int percent = rs.getInt("percent");
+                    int countOfGadget = rs.getInt("totalgadgets");
 
-                    BigDecimal discount = price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100)));
+                    BigDecimal discount = price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100))).multiply(BigDecimal.valueOf(countOfGadget));
+
+                    BigDecimal totalPriceWithDiscount = price.multiply(BigDecimal.valueOf(countOfGadget)).subtract(discount);
 
                     return new OrderResponseFindById(
                             rs.getLong("id"),
-                            rs.getString("fullName"),
+                            rs.getString("fullname"),
                             rs.getLong("number"),
                             rs.getString("gadgetName"),
                             rs.getString("memory"),
                             rs.getString("main_colour"),
-                            rs.getInt("countOfGadget"),
-                            rs.getBigDecimal("price"),
+                            countOfGadget,
+                            rs.getBigDecimal("total_price"),
                             percent,
                             discount,
-                            price
+                            totalPriceWithDiscount
                     );
                 }
         );
     }
+
+
 
 }

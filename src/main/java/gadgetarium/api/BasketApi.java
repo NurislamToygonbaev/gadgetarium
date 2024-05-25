@@ -40,10 +40,10 @@ public class BasketApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Добавить в корзину", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/{gadgetId}")
-    public HttpResponse addToBasket(@PathVariable Long gadgetId,
+    @PostMapping("/{subGadgetId}")
+    public HttpResponse addToBasket(@PathVariable Long subGadgetId,
                                     @RequestParam(value = "quantity",required = false, defaultValue = "1") int quantity) {
-        return basketService.addToBasket(gadgetId, quantity);
+        return basketService.addToBasket(subGadgetId, quantity);
     }
 
     @PreAuthorize("hasAuthority('USER')")

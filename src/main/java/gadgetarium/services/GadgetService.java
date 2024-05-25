@@ -55,7 +55,7 @@ public interface GadgetService {
 
     HttpResponse updateGadget(Long subGadgetId, GadgetNewDataRequest gadgetNewDataRequest);
 
-    HttpResponse deleteGadget(Long gadgetID);
+    HttpResponse deleteGadget(Long subGadgetId);
 
     List<CatResponse> getCategories();
 

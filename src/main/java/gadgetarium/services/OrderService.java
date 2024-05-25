@@ -26,7 +26,7 @@ public interface OrderService {
 
     OrderInfoResponse findOrderInfo(Long orderId);
 
-    HttpResponse placingAnOrder(List<Long> gadgetIds, boolean deliveryType, PersonalDataRequest personalDataRequest);
+    HttpResponse placingAnOrder(List<Long> subGadgetId, boolean deliveryType, PersonalDataRequest personalDataRequest);
 
     PersonalDataResponse personalDataCustomer();
     List<AllOrderHistoryResponse> getAllOrdersHistory();

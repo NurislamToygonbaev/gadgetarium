@@ -55,22 +55,22 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         }
 
         List<PaginationGadget> list = jdbcTemplate.query("""
-                        select g.id,
+                        select sg.id,
                                array_agg(gi.images) as images,
-                               g.article,
+                               sg.article,
                                concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                               ga.release_date,
-                               g.quantity,
+                               g.release_date,
+                               sg.quantity,
                                d.percent,
-                               g.price
+                               sg.price
                         from gadgets g
                         join sub_gadgets sg on g.id = sg.gadget_id
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
-                        where g.remoteness_status ="""+"'"+status+"'"+"""
+                        where sg.remoteness_status ="""+"'"+status+"'"+"""
                         """ + where + """
-                        group by g.id, sg.article, g.name_of_gadget, g.release_date,
+                        group by sg.id, sg.article, g.name_of_gadget, g.release_date,
                                    b.brand_name,  sg.quantity, d.percent, sg.price, d.end_date
                         """ + orderBy + """
                         limit ? offset ?
@@ -158,42 +158,52 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
             }
         }
 
-        List<GadgetsResponse> gadgetsResponses = jdbcTemplate.query("""
-                        select g.id,
-                               array_agg(gi.images) as images,
-                               concat(sc.sub_category_name, ' ', g.name_of_gadget) as nameOfGadget,
-                               sg.memory,
-                               sg.main_colour,
-                               g.rating,
-                               count(f.id) as countOf,
-                               sg.quantity,
-                               d.percent,
-                               sg.price,
-                               count(o.id) as totalOrders,
-                               g.release_date
-                        from gadgets g
-                        join sub_gadgets sg on g.id = sg.gadget_id
-                        join sub_gadget_images gi on sg.id = gi.sub_gadget_id
-                        join brands b on g.brand_id = b.id
-                        join sub_categories sc on g.sub_category_id = sc.id
-                        join categories c on sc.category_id = c.id
-                        left outer join discounts d on g.id = d.gadget_id
-                        left join orders_sub_gadgets og on sg.id = og.sub_gadgets_id
-                        left join orders o on o.id = og.orders_id
-                        left outer join feedbacks f on g.id = f.gadget_id
-                        where c.id ="""+"'"+catId+"'"+ """ 
-                        and  sg.remoteness_status ="""+"'"+status+"'"+ """ 
-                        """ + where + """
-                         group by g.id, g.name_of_gadget, sc.sub_category_name,  sg.quantity, d.percent, sg.price,
-                                   sg.memory, sg.main_colour, g.rating, g.release_date, d.percent
-                        """ + orderBy + """
-                         limit ? offset ?
-                        """,
+        List<GadgetsResponse> gadgetsResponses = jdbcTemplate.query(
+                "select " +
+                "g.id, " +
+                "array_agg(gi.images) as images, " +
+                "concat(sc.sub_category_name, ' ', g.name_of_gadget) as nameofgadget, " +
+                "sg.memory, " +
+                "sg.main_colour, " +
+                "g.rating, " +
+                "count(f.id) as countof, " +
+                "sg.quantity, " +
+                "d.percent, " +
+                "sg.price, " +
+                "count(o.id) as totalorders, " +
+                "g.release_date, " +
+                "sg.id as subGadgetId " +
+                "from " +
+                "gadgets g " +
+                "join ( " +
+                "select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price " +
+                "from " +
+                "sub_gadgets sg " +
+                "where " +
+                "sg.remoteness_status ='" + status + "' " +
+                "order by " +
+                "sg.gadget_id, sg.id " +
+                ") sg on g.id = sg.gadget_id " +
+                "left join sub_gadget_images gi on sg.id = gi.sub_gadget_id " +
+                "join brands b on g.brand_id = b.id " +
+                "join sub_categories sc on g.sub_category_id = sc.id " +
+                "join categories c on sc.category_id = c.id " +
+                "left join discounts d on g.id = d.gadget_id " +
+                "left join orders_sub_gadgets og on sg.id = og.sub_gadgets_id " +
+                "left join orders o on o.id = og.orders_id " +
+                "left outer join feedbacks f on g.id = f.gadget_id " +
+                "where c.id ='" + catId + "' " +
+                where +
+                " group by " +
+                "g.id, g.name_of_gadget, sc.sub_category_name, sg.quantity, d.percent, sg.price, " +
+                "sg.memory, sg.main_colour, g.rating, g.release_date, d.percent, subGadgetId " +
+                orderBy +
+                " limit ? offset ? ",
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
-                    Long id = rs.getLong("id");
+                    Long id = rs.getLong("subGadgetId");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
                     User user = null;
                     try {
@@ -206,7 +216,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     boolean basket = checkBasket(subGadget, user);
 
                     return new GadgetsResponse(
-                            id,
+                            rs.getLong("id"),
                             imagesFirst,
                             rs.getInt("quantity"),
                             rs.getString("nameOfGadget"),
@@ -222,6 +232,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             basket
                     );
                 });
+
         return PaginationSHowMoreGadget.builder()
                 .sort(sort)
                 .discount(discount)
@@ -277,24 +288,30 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                sg.main_colour,
                                g.rating,
                                sg.memory,
-                               sg.price
+                               sg.price,
+                               sg.id as subGadgetId
                         from gadgets g
-                        join sub_gadgets sg on g.id = sg.gadget_id
-                        join sub_gadget_images gi on sg.id = gi.sub_gadget_id
+                        join (
+                        select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price
+                        from sub_gadgets sg
+                        where sg.remoteness_status ="""+"'"+status+"'"+"""
+                        order by sg.gadget_id, sg.id
+                        ) sg on g.id = sg.gadget_id
+                        left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
                         left outer join feedbacks f on f.gadget_id = g.id
-                        where d.percent is not null and sg.remoteness_status ="""+"'"+status+"'"+"""
+                        where d.percent is not null
                         group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
-                                sg.price, sg.memory, g.rating, sg.main_colour
+                                sg.price, sg.memory, g.rating, sg.main_colour, subGadgetId
                         limit ? offset ?
                         """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
+                    Long id = rs.getLong("subGadgetId");
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String image = imagesArray.length > 0 ? imagesArray[0] : null;
 
-                    Long id = rs.getLong("id");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
                     User user = null;
                     try {
@@ -307,7 +324,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     boolean basket = checkBasket(subGadget, user);
 
                     return new GadgetResponseMainPage(
-                            id,
+                            rs.getLong("id"),
                             rs.getInt("percent"),
                             image,
                             rs.getInt("quantity"),
@@ -350,12 +367,16 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                sg.price,
                                sg.id as subGadgetId
                         from gadgets g
-                        join sub_gadgets sg on g.id = sg.gadget_id
+                        join (
+                        select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price
+                        from sub_gadgets sg
+                        where sg.remoteness_status ="""+"'"+status+"'"+"""
+                        order by sg.gadget_id, sg.id
+                        ) sg on g.id = sg.gadget_id
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
                         left outer join feedbacks f on f.gadget_id = g.id
-                        where sg.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
                                 sg.price, sg.memory, g.rating, sg.main_colour, g.release_date,
                                 subGadgetId
@@ -420,16 +441,21 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                sg.main_colour,
                                g.rating,
                                sg.memory,
-                               sg.price
+                               sg.price,
+                               sg.id as subGadgetId
                         from gadgets g
-                        join sub_gadgets sg on g.id = sg.gadget_id
+                        join (
+                        select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price
+                        from sub_gadgets sg
+                        where sg.remoteness_status ="""+"'"+status+"'"+"""
+                        order by sg.gadget_id, sg.id
+                        ) sg on g.id = sg.gadget_id
                         join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
                         left outer join feedbacks f on f.gadget_id = g.id
-                        where sg.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
-                                sg.price, sg.memory, g.rating, sg.main_colour
+                                sg.price, sg.memory, g.rating, sg.main_colour, subGadgetId
                         having g.rating > 3.9 or count(f.id) > 10
                         limit ? offset ?
                         """,

@@ -46,14 +46,14 @@ public class PersonalAreaApi {
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Изменить фото профиля.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PutMapping("/add-image")
+    @PatchMapping("/add-image")
     public UserImageResponse addPhotoAndEdit(@RequestBody @Valid UserImageRequest userImageRequest ){
         return orderService.addPhotoAndEdit(userImageRequest);
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Сменить пароль.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/change-password")
+    @PatchMapping("/change-password")
     public HttpResponse changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
         return orderService.changePassword(changePasswordRequest);
     }

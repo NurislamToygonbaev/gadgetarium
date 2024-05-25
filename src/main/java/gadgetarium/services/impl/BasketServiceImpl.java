@@ -23,17 +23,17 @@ import java.util.Map;
 public class BasketServiceImpl implements BasketService {
 
     private final CurrentUser currentUser;
-    private final SubGadgetRepository gadgetRepo;
+    private final SubGadgetRepository subGadgetRepo;
 
     @Override
     @Transactional
-    public HttpResponse addToBasket(Long gadgetId, int quantity) {
+    public HttpResponse addToBasket(Long subGadgetId, int quantity) {
         if (quantity <= 0){
             throw new BadRequestException("can't be quantity -");
         }
-        SubGadget gadget = gadgetRepo.getByID(gadgetId);
+        SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
         User user = currentUser.get();
-        user.addToBasket(gadget, quantity);
+        user.addToBasket(subGadget, quantity);
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
                 .message("successfully added to basket.")
@@ -43,7 +43,7 @@ public class BasketServiceImpl implements BasketService {
     @Override
     @Transactional
     public HttpResponse removeFromBasket(Long gadgetId) {
-        SubGadget gadget = gadgetRepo.getByID(gadgetId);
+        SubGadget gadget = subGadgetRepo.getByID(gadgetId);
         User user = currentUser.get();
         user.removeFromBasket(gadget);
         return HttpResponse.builder()
@@ -55,7 +55,7 @@ public class BasketServiceImpl implements BasketService {
     @Override
     @Transactional
     public HttpResponse deleteFromBasket(Long gadgetId) {
-        SubGadget gadget = gadgetRepo.getByID(gadgetId);
+        SubGadget gadget = subGadgetRepo.getByID(gadgetId);
         User user = currentUser.get();
         if (!user.getBasket().containsKey(gadget)) {
             return HttpResponse.builder()
@@ -83,7 +83,7 @@ public class BasketServiceImpl implements BasketService {
             BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 
             GetAllBasketResponse all = new GetAllBasketResponse(
-                    subGadget.getId(), subGadget.getImages().getFirst(),
+                    subGadget.getId(), subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
                     subGadget.getGadget().getBrand().getBrandName() + " "
                     + subGadget.getGadget().getNameOfGadget(),
                     subGadget.getMemory().name(), subGadget.getMainColour(),
@@ -107,7 +107,7 @@ public class BasketServiceImpl implements BasketService {
         User user = currentUser.get();
 
         for (Long id : basketIdsRequest.ids()) {
-            SubGadget subGadget = gadgetRepo.getByID(id);
+            SubGadget subGadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(subGadget)) {
                 count++;
                 Integer quantity = user.getBasket().get(subGadget);
@@ -139,11 +139,11 @@ public class BasketServiceImpl implements BasketService {
         User user = currentUser.get();
         List<GadgetResponseInOrder> response = new ArrayList<>();
         for (Long id : basketIdsRequest.ids()) {
-            SubGadget subGadget = gadgetRepo.getByID(id);
+            SubGadget subGadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(subGadget)) {
                 Integer quantity = user.getBasket().get(subGadget);
                 GadgetResponseInOrder inOrder = new GadgetResponseInOrder(
-                        subGadget.getId(), subGadget.getImages().getFirst(),
+                        subGadget.getId(), subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
                         subGadget.getGadget().getBrand().getBrandName() + " " +
                         subGadget.getGadget().getNameOfGadget(), subGadget.getMemory().name(),
                         subGadget.getMainColour(), subGadget.getArticle(),
@@ -163,7 +163,7 @@ public class BasketServiceImpl implements BasketService {
     public HttpResponse deleteALlFromBasket(BasketIdsRequest basketIdsRequest) {
         User user = currentUser.get();
         for (Long id : basketIdsRequest.ids()) {
-            SubGadget gadget = gadgetRepo.getByID(id);
+            SubGadget gadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(gadget)) {
                 user.deleteFromBasket(gadget);
             }

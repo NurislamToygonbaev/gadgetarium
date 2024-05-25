@@ -40,7 +40,7 @@ public class FeedbackApi {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Редактировать ответ")
-    @PutMapping
+    @PatchMapping
     public HttpResponse editComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.editComment(responseAdmin, id);
     }
@@ -77,7 +77,7 @@ public class FeedbackApi {
 
     @PreAuthorize("hasAnyAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Обновление отзыва ")
-    @PutMapping("/update/{feedId}")
+    @PatchMapping("/update/{feedId}")
     public HttpResponse updateFeedback(@PathVariable Long feedId,
                                        @RequestParam String message,
                                        @RequestParam int rating) {

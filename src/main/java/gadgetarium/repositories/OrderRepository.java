@@ -5,6 +5,7 @@ import gadgetarium.dto.response.OrderResponseFindById;
 import gadgetarium.dto.response.PrivateGadgetResponse;
 import gadgetarium.entities.Gadget;
 import gadgetarium.entities.Order;
+import gadgetarium.entities.SubGadget;
 import gadgetarium.exceptions.NotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -51,5 +52,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
         return findById(orderId).orElseThrow(() ->
                 new NotFoundException("Order with id: " + orderId + " not found"));
     }
+
+    List<Order> findBySubGadgetsContains(SubGadget subGadget);
 
 }

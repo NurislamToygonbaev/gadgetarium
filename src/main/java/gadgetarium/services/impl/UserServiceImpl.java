@@ -98,7 +98,7 @@ public class UserServiceImpl implements UserService {
         User user = currentUser.get();
         List<SubGadget> comparison = user.getComparison();
         Map<String, Integer> categoryCounts = new HashMap<>();
-        String select = "smartphones";
+        String select = "phone";
         String s = selectCategory.categoryName().isEmpty() ? select : selectCategory.categoryName();
 
         List<SampleResponse> responses = comparison.stream().filter(subGadget -> subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(s)).map(subGadget -> {
@@ -211,13 +211,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public HttpResponse addToFavorites(Long gadgetId) {
+    public HttpResponse addToFavorites(Long subGadgetId) {
         User user = currentUser.get();
         if (user == null) {
             return HttpResponse.builder().status(HttpStatus.UNAUTHORIZED).message("User not authenticated!").build();
         }
 
-        SubGadget subGadget = subGadgetRepository.getByID(gadgetId);
+        SubGadget subGadget = subGadgetRepository.getByID(subGadgetId);
 
         synchronized (user) {
             if (user.getLikes().contains(subGadget)) {
@@ -317,7 +317,7 @@ public class UserServiceImpl implements UserService {
 
         return new AllFavoritesResponse(
                 gadget.getId(),
-                images.getFirst(),
+                images.isEmpty() ? null : images.getFirst(),
                 category.getCategoryName(),
                 brand.getBrandName(),
                 parentGadget.getNameOfGadget(),
@@ -334,9 +334,10 @@ public class UserServiceImpl implements UserService {
 
     private ListComparisonResponse convert(SubGadget subGadget) {
         User user = currentUser.get();
+        List<String> images = subGadget.getImages();
         boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
         return new ListComparisonResponse(subGadget.getId(),
-                Collections.singletonList(subGadget.getImages().getFirst()),
+                images.isEmpty() ? null : Collections.singletonList(images.getFirst()),
                 subGadget.getGadget().getNameOfGadget(), subGadget.getMainColour(),
                 subGadget.getMemory(), subGadget.getPrice(), basket);
     }

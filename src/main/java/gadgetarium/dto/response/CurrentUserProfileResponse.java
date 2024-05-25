@@ -1,5 +1,6 @@
 package gadgetarium.dto.response;
 
+import gadgetarium.enums.Role;
 import lombok.Builder;
 
 @Builder
@@ -8,5 +9,9 @@ public record CurrentUserProfileResponse(
         String lastName,
         String email,
         String phoneNumber,
-        String address
+        String address,
+        Role role,
+        Long id,
+        String token,
+        HttpResponse httpResponse
 ) {}

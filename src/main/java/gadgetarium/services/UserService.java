@@ -23,7 +23,7 @@ public interface UserService {
 
     HttpResponse deleteAllGadgets();
 
-    HttpResponse addToFavorites(Long gadgetId);
+    HttpResponse addToFavorites(Long subGadgetId);
 
     HttpResponse addAllGadgetsToFavorites(List<Long> subGadgetId);
 

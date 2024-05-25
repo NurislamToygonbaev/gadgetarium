@@ -20,5 +20,6 @@ public interface GadgetRepository extends JpaRepository<Gadget, Long> {
     @Query("select g from Gadget g where g.PDFUrl is null and g.videoUrl is null and g.description is null")
     Gadget findByPDFUrlIsNullAndVideoUrlIsNullAndDescriptionIsNull();
 
-    boolean existsByNameOfGadget(String s);
+    boolean existsByNameOfGadget(String name);
+    Gadget findByNameOfGadget(String name);
 }
