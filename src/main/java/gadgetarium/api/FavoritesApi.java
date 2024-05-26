@@ -23,7 +23,7 @@ public class FavoritesApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Метод для добовления гаджетов в избранное или удалении", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/{subGadgetId}")
+    @PatchMapping("/{subGadgetId}")
     public HttpResponse addToFavorites(@PathVariable Long subGadgetId) {
         return userService.addToFavorites(subGadgetId);
     }

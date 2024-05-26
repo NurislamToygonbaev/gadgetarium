@@ -24,7 +24,7 @@ public class ComparisonApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для добовления гаджетов в сравнении или удалении")
-    @PostMapping("/{subGadgetId}")
+    @PatchMapping("/{subGadgetId}")
     public HttpResponse addCompare(@PathVariable Long subGadgetId) {
         return userService.addCompare(subGadgetId);
     }
