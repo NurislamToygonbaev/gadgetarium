@@ -81,7 +81,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
 
-                    long id = rs.getLong("id");
+                    Long id = rs.getLong("id");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
                     BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 

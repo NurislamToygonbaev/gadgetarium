@@ -6,7 +6,7 @@ import com.google.firebase.FirebaseOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.FirebaseToken;
-import gadgetarium.config.jwt.JwtService;
+import gadgetarium.configs.jwt.JwtService;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.SignResponse;
 import gadgetarium.entities.User;

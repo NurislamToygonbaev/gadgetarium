@@ -1,6 +1,6 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.config.jwt.JwtService;
+import gadgetarium.configs.jwt.JwtService;
 import gadgetarium.dto.request.CategoryNameRequest;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;

@@ -1,8 +1,8 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.card.cvc.CvcValidation;
-import gadgetarium.validation.card.expiration.ExpirationDateValidation;
-import gadgetarium.validation.card.number.CardNumberValidation;
+import gadgetarium.validations.card.cvc.CvcValidation;
+import gadgetarium.validations.card.expiration.ExpirationDateValidation;
+import gadgetarium.validations.card.number.CardNumberValidation;
 import lombok.Data;
 
 import java.util.HashMap;

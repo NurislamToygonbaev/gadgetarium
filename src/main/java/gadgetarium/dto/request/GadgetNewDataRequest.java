@@ -2,13 +2,10 @@ package gadgetarium.dto.request;
 
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
-import gadgetarium.validation.countSim.CountSimValidation;
-import gadgetarium.validation.feedack.ImageValidation;
-import gadgetarium.validation.issueDate.IssueDateValidation;
-import gadgetarium.validation.warranty.WarrantyValidation;
+import gadgetarium.validations.countSim.CountSimValidation;
+import gadgetarium.validations.feedack.ImageValidation;
 import lombok.Builder;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Builder

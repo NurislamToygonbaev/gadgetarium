@@ -97,9 +97,9 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                            o.status
                     from orders o
                     join users u on o.user_id = u.id
-                    join orders_sub_gadgets og on o.id = og.orders_id
-                    join sub_gadgets s on s.id = og.sub_gadgets_id
-                    join gadgets g on s.gadget_id = g.id
+                    left join orders_sub_gadgets og on o.id = og.orders_id
+                    left join sub_gadgets s on s.id = og.sub_gadgets_id
+                    left join gadgets g on s.gadget_id = g.id
                     """ + whereClause + """
                     group by o.id, o.number, o.created_at, o.type_order, o.status,
                          o.total_price, u.last_name, u.first_name

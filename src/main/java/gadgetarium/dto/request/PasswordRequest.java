@@ -1,6 +1,6 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.password.PasswordValidation;
+import gadgetarium.validations.password.PasswordValidation;
 import lombok.Builder;
 
 @Builder

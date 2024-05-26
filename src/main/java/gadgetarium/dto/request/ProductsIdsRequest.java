@@ -1,11 +1,10 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.price.PriceValidation;
-import gadgetarium.validation.quantity.QuantityValidation;
+import gadgetarium.validations.price.PriceValidation;
+import gadgetarium.validations.quantity.QuantityValidation;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Builder
 public record ProductsIdsRequest(

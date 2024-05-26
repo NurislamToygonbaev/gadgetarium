@@ -1,6 +1,6 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.config.jwt.JwtService;
+import gadgetarium.configs.jwt.JwtService;
 import gadgetarium.dto.request.ChangePasswordRequest;
 import gadgetarium.dto.request.CurrentUserProfileRequest;
 import gadgetarium.dto.request.PersonalDataRequest;
@@ -10,7 +10,6 @@ import gadgetarium.entities.Order;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
-import gadgetarium.enums.RemotenessStatus;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.NotFoundException;

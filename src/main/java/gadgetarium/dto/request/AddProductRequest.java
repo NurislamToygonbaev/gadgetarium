@@ -1,7 +1,7 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.issueDate.IssueDateValidation;
-import gadgetarium.validation.warranty.WarrantyValidation;
+import gadgetarium.validations.issueDate.IssueDateValidation;
+import gadgetarium.validations.warranty.WarrantyValidation;
 import lombok.Builder;
 
 import java.time.LocalDate;
