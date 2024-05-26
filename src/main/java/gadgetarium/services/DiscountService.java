@@ -8,4 +8,5 @@ import java.util.List;
 public interface DiscountService {
 
     DiscountResponse create(List<Long> gadgetId, DiscountRequest discountRequest);
+    void checkDiscount();
 }

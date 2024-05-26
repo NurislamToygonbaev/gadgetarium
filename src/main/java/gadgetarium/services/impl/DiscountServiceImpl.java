@@ -14,6 +14,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.NotAcceptableStatusException;
 
@@ -57,19 +58,15 @@ public class DiscountServiceImpl implements DiscountService {
                 .build();
     }
 
+    @Override
+    @Scheduled(cron = "0 0 0 * * *")
+    public void checkDiscount(){
+        List<Discount> discounts = discountRepo.findAll();
+        for (Discount discount : discounts) {
+            if (discount.getEndDate().isAfter(LocalDate.now())){
+                discountRepo.delete(discount);
+            }
+        }
+    }
 
-
-//    @Transactional
-//    @Override
-//    public BigDecimal checkCurrentPrice(SubGadget subGadget) {
-//        BigDecimal returnCurrentPrice = BigDecimal.ZERO;
-//        if (subGadget.getDiscount() != null) {
-//            if (subGadget.getDiscount().getEndDate().isBefore(LocalDate.now())) {
-//                subGadget.setCurrentPrice(subGadget.getPrice());
-//                discountRepo.delete(subGadget.getDiscount());
-//                returnCurrentPrice =  subGadget.getCurrentPrice();
-//            }
-//        } else returnCurrentPrice =  subGadget.getCurrentPrice();
-//        return returnCurrentPrice;
-//    }
 }
