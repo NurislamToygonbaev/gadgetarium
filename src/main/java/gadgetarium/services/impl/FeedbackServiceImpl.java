@@ -103,8 +103,8 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public HttpResponse deleteReview(Long id) {
-
-        feedbackRepo.delete(feedbackRepo.getByIdd(id));
+        Feedback feedback = feedbackRepo.getByIdd(id);
+        feedbackRepo.delete(feedback);
         log.info("Review successfully deleted!");
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
@@ -118,10 +118,9 @@ public class FeedbackServiceImpl implements FeedbackService {
         Feedback feedback = feedbackRepo.getByIdd(id);
         feedback.setReviewType(ReviewType.READ);
         Long article = feedback.getGadget().getSubGadgets().stream()
-                .filter(subGadget -> subGadget.getId().equals(id))
-                .findFirst()
                 .map(SubGadget::getArticle)
-                .orElseThrow(() -> new NotFoundException("SubGadget with ID " + id + " not found"));
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(""));
 
         String image = feedback.getImages() != null && !feedback.getImages().isEmpty() ? feedback.getImages().getFirst() : null;
         return FeedbackResponse.builder()

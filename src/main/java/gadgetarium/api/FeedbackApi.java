@@ -54,7 +54,7 @@ public class FeedbackApi {
     }
 
     @PreAuthorize("hasAuthority({'ADMIN'})")
-    @Operation(description = "Авторизация: ВСЕ", summary = "Смотреть один отзыв ")
+    @Operation(description = "Авторизация: АДМИНИСТРАТОР", summary = "Смотреть один отзыв ")
     @GetMapping("/by-id/{id}")
     public FeedbackResponse getFeedbackById(@PathVariable Long id) {
         return feedbackService.getFeedbackById(id);

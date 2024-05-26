@@ -10,6 +10,7 @@ import gadgetarium.entities.Order;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
+import gadgetarium.enums.RemotenessStatus;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.NotFoundException;
@@ -85,8 +86,6 @@ public class OrderServiceImpl implements OrderService {
                 .orderPrice(orderPrice)
                 .orderCount(orderCount)
                 .build();
-
-
     }
 
     @Override
@@ -107,9 +106,51 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseFindById findOrderById(Long orderId) {
-        orderRepo.getOrderById(orderId);
-        return orderJDBCTemplate.findOrderById(orderId);
+        Order order = orderRepo.getOrderById(orderId);
+        BigDecimal price = order.getTotalPrice();
+        int countOfGadget = orderRepo.countOfGadgets(orderId);
+
+        List<Object[]> objects = orderRepo.getGadgetsFields(orderId);
+
+        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(countOfGadget));
+
+        BigDecimal totalDiscount = BigDecimal.ZERO;
+        List<String> gadgetNameList = new ArrayList<>();
+        List<String> memoryList = new ArrayList<>();
+        List<String> colourList = new ArrayList<>();
+        List<Integer> percentList = new ArrayList<>();
+
+        for (Object[] response : objects) {
+            gadgetNameList.add((String) response[0]);
+            memoryList.add((String) response[1]);
+            colourList.add((String) response[2]);
+
+            int percentValue = response[3] != null ? (Integer) response[3] : 0;
+            percentList.add(percentValue);
+
+            BigDecimal percent = BigDecimal.valueOf(percentValue);
+            BigDecimal gadgetPrice = price.multiply(percent.divide(BigDecimal.valueOf(100)));
+            BigDecimal gadgetDiscount = gadgetPrice.multiply(BigDecimal.valueOf(countOfGadget));
+            totalDiscount = totalDiscount.add(gadgetDiscount);
+        }
+        BigDecimal discountPrice = totalPrice.subtract(totalDiscount);
+
+        return OrderResponseFindById.builder()
+                .id(order.getId())
+                .fullName(order.getUser().getFirstName() + " " + order.getUser().getLastName())
+                .number(order.getNumber())
+                .nameOfGadget(gadgetNameList)
+                .memory(memoryList)
+                .colour(colourList)
+                .count(countOfGadget)
+                .price(price)
+                .percent(percentList)
+                .discountPrice(discountPrice)
+                .totalPrice(totalPrice)
+                .build();
     }
+
+
 
     @Override
     public OrderInfoResponse findOrderInfo(Long orderId) {
@@ -139,11 +180,13 @@ public class OrderServiceImpl implements OrderService {
         }
 
         Order order = new Order();
+        orderRepo.save(order);
         long orderNumber = ThreadLocalRandom.current().nextLong(100000, 1000000);
 
         BigDecimal totalSum = BigDecimal.ZERO;
         BigDecimal totalDiscount = BigDecimal.ZERO;
 
+        List<SubGadget> subGadgets = new ArrayList<>();
         for (Long gadgetId : subGadgetId) {
             SubGadget subGadget = subGadgetRepo.getByID(gadgetId);
             BigDecimal price = subGadget.getPrice();
@@ -156,7 +199,7 @@ public class OrderServiceImpl implements OrderService {
 
             totalSum = totalSum.add(price);
             totalDiscount = totalDiscount.add(discount);
-            order.addGadget(subGadget);
+            subGadgets.add(subGadget);
         }
 
         BigDecimal totalPriceWithDiscount = totalSum.subtract(totalDiscount);
@@ -177,14 +220,13 @@ public class OrderServiceImpl implements OrderService {
             }
             order.setTotalPrice(totalPriceWithDiscount);
         }
-
         order.setStatus(Status.PENDING);
         order.setDiscountPrice(totalDiscount);
         order.setNumber(orderNumber);
 
         order.setUser(user);
-        user.getOrders().add(order);
-        orderRepo.save(order);
+        user.addOrder(order);
+        order.getSubGadgets().addAll(subGadgets);
 
         return HttpResponse
                 .builder()

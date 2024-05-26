@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 
 @Builder
 public record GadgetResponseMainPage(
-        Long id,
+        Long gadgetId,
+        Long subGadgetId,
         int percent,
         String image,
         int quantity,

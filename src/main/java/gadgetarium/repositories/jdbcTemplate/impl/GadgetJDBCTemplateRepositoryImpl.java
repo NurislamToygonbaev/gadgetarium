@@ -217,6 +217,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
                     return new GadgetsResponse(
                             rs.getLong("id"),
+                            id,
                             imagesFirst,
                             rs.getInt("quantity"),
                             rs.getString("nameOfGadget"),
@@ -325,6 +326,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
                     return new GadgetResponseMainPage(
                             rs.getLong("id"),
+                            id,
                             rs.getInt("percent"),
                             image,
                             rs.getInt("quantity"),
@@ -402,6 +404,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
                     return new GadgetResponseMainPage(
                             rs.getLong("id"),
+                            id,
                             rs.getInt("percent"),
                             image,
                             rs.getInt("quantity"),
@@ -450,7 +453,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         where sg.remoteness_status ="""+"'"+status+"'"+"""
                         order by sg.gadget_id, sg.id
                         ) sg on g.id = sg.gadget_id
-                        join sub_gadget_images gi on sg.id = gi.sub_gadget_id
+                        left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
                         left outer join feedbacks f on f.gadget_id = g.id
@@ -477,6 +480,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
                     return new GadgetResponseMainPage(
                             rs.getLong("id"),
+                            subGadgetId,
                             rs.getInt("percent"),
                             image,
                             rs.getInt("quantity"),

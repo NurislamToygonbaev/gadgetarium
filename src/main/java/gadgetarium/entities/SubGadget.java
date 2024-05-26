@@ -54,7 +54,7 @@ public class SubGadget {
     @ManyToOne(cascade = {DETACH, MERGE, REFRESH})
     private Gadget gadget;
 
-    @ManyToMany(mappedBy = "subGadgets", cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "subGadgets", cascade = {DETACH, REFRESH}, fetch = FetchType.EAGER)
     private List<Order> orders;
 
     public void addImage(String image) {

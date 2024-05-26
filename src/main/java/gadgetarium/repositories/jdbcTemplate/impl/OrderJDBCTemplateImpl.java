@@ -83,7 +83,6 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
             }
         }
 
-
         params.add(limit);
         params.add(offset);
 
@@ -102,8 +101,8 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                     join sub_gadgets s on s.id = og.sub_gadgets_id
                     join gadgets g on s.gadget_id = g.id
                     """ + whereClause + """
-                    group by o.id, fullName, o.number, o.created_at, o.type_order, o.status,
-                        totalGadgets, o.total_price
+                    group by o.id, o.number, o.created_at, o.type_order, o.status,
+                         o.total_price, u.last_name, u.first_name
                     limit ? offset ?
                     """,
                 params.toArray(),
@@ -130,52 +129,5 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                 .orderResponses(orderResponses)
                 .build();
     }
-
-    @Override
-    public OrderResponseFindById findOrderById(Long orderId) {
-        return jdbcTemplate.queryForObject(
-                "select o.id, " +
-                "       concat(u.last_name, ' ', u.first_name) as fullName, " +
-                "       o.number, " +
-                "       o.created_at, " +
-                "       count(s.id) as totalGadgets, " +
-                "       o.total_price, " +
-                "       o.type_order, " +
-                "       o.status " +
-                "from orders o " +
-                "join users u on o.user_id = u.id " +
-                "join orders_sub_gadgets og on o.id = og.orders_id " +
-                "join sub_gadgets s on s.id = og.sub_gadgets_id " +
-                "join gadgets g on s.gadget_id = g.id " +
-                "group by o.id, fullName, o.number, o.created_at, " +
-                "o.total_price, o.type_order, o.status ",
-                new Object[]{orderId},
-                (rs, rowNum) -> {
-                    BigDecimal price = rs.getBigDecimal("price");
-                    int percent = rs.getInt("percent");
-                    int countOfGadget = rs.getInt("totalgadgets");
-
-                    BigDecimal discount = price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100))).multiply(BigDecimal.valueOf(countOfGadget));
-
-                    BigDecimal totalPriceWithDiscount = price.multiply(BigDecimal.valueOf(countOfGadget)).subtract(discount);
-
-                    return new OrderResponseFindById(
-                            rs.getLong("id"),
-                            rs.getString("fullname"),
-                            rs.getLong("number"),
-                            rs.getString("gadgetName"),
-                            rs.getString("memory"),
-                            rs.getString("main_colour"),
-                            countOfGadget,
-                            rs.getBigDecimal("total_price"),
-                            percent,
-                            discount,
-                            totalPriceWithDiscount
-                    );
-                }
-        );
-    }
-
-
 
 }

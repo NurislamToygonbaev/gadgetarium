@@ -14,9 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static jakarta.persistence.CascadeType.REFRESH;
-import static jakarta.persistence.CascadeType.MERGE;
-import static jakarta.persistence.CascadeType.DETACH;
+import static jakarta.persistence.CascadeType.*;
 
 @Getter
 @Setter
@@ -36,15 +34,14 @@ public class Order {
     private LocalDate createdAt;
     private BigDecimal totalPrice;
     private BigDecimal discountPrice;
-    private BigDecimal deliveryPrice;
-  
+
     @Enumerated(EnumType.STRING)
     private Payment payment;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToMany(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {DETACH, PERSIST, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<SubGadget> subGadgets;
 
     @ManyToOne(cascade = {DETACH})
