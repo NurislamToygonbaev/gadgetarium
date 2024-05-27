@@ -7,13 +7,10 @@ spring:
             - classpath:/configs/flyway-config.yml
             - classpath:/configs/payment-config.yml
 
-
-#The server always outputs a stack trace when an error occurs
 server:
     error:
         include-stacktrace: always
 
-#JWT
 app:
     jwt:
         secret: gadget-java-12
