@@ -62,4 +62,6 @@ public interface GadgetService {
     List<CatResponse> getSubCategories(Long catId);
 
     HttpResponse setQuantityOneProduct(Long id, int quantity);
+
+    List<String> getAllColours(Long gadgetId);
 }

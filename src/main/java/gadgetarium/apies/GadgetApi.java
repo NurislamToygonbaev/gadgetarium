@@ -216,6 +216,12 @@ public class GadgetApi {
     public HttpResponse deleteGadget(@PathVariable Long subGadgetId) {
         return gadgetService.deleteGadget(subGadgetId);
     }
+
+    @Operation(summary = "Цвета гаджета", description = "Авторизация ВСЕ")
+    @GetMapping("/{gadgetId}")
+    public List<String> getAllColours(@PathVariable Long gadgetId) {
+        return gadgetService.getAllColours(gadgetId);
+    }
 }
 
 

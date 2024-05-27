@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static jakarta.persistence.CascadeType.REMOVE;
@@ -43,6 +44,7 @@ public class Gadget {
     private String description;
     private String nameOfGadget;
     private double rating;
+    private LocalDate createdAt;
 
     @OneToMany(mappedBy = "gadget", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
     private List<SubGadget> subGadgets;
@@ -86,5 +88,11 @@ public class Gadget {
         this.feedbacks = new ArrayList<>();
         this.releaseDate = LocalDate.now();
         this.charName = new LinkedHashMap<>();
+        this.createdAt = LocalDate.now();
+    }
+
+    public String isNew() {
+        long daysBetween = ChronoUnit.DAYS.between(createdAt, LocalDate.now());
+        return daysBetween <= 30 ? "новый" : null;
     }
 }

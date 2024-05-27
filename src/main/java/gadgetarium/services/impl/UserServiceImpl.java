@@ -299,33 +299,41 @@ public class UserServiceImpl implements UserService {
 
     }
 
-    private AllFavoritesResponse convertToResponse(SubGadget gadget) {
-        if (gadget == null || gadget.getGadget() == null || gadget.getImages() == null ||
-            gadget.getGadget().getSubCategory() == null || gadget.getGadget().getBrand() == null) {
+    private AllFavoritesResponse convertToResponse(SubGadget subGadget) {
+        if (subGadget == null || subGadget.getGadget() == null || subGadget.getImages() == null ||
+            subGadget.getGadget().getSubCategory() == null || subGadget.getGadget().getBrand() == null) {
             return null;
         }
 
         User user = currentUser.get();
-        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(gadget, user);
-        boolean comparison = GadgetJDBCTemplateRepositoryImpl.checkComparison(gadget, user);
-        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(gadget, user);
+        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
+        boolean comparison = GadgetJDBCTemplateRepositoryImpl.checkComparison(subGadget, user);
+        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
 
-        Gadget parentGadget = gadget.getGadget();
-        List<String> images = gadget.getImages();
-        Category category = parentGadget.getSubCategory().getCategory();
-        Brand brand = parentGadget.getBrand();
+        Gadget gadget = subGadget.getGadget();
+        List<String> images = subGadget.getImages();
+        Category category = gadget.getSubCategory().getCategory();
+        Brand brand = gadget.getBrand();
+        int percent = 0;
+
+        if (gadget.getDiscount() != null){
+            percent = gadget.getDiscount().getPercent();
+        }
 
         return new AllFavoritesResponse(
-                gadget.getId(),
+                subGadget.getId(),
                 images.isEmpty() ? null : images.getFirst(),
                 category.getCategoryName(),
                 brand.getBrandName(),
-                parentGadget.getNameOfGadget(),
-                gadget.getMemory(),
-                gadget.getMainColour(),
-                parentGadget.getRating(),
-                gadget.getPrice(),
-                GadgetServiceImpl.calculatePrice(gadget),
+                gadget.getNameOfGadget(),
+                subGadget.getMemory(),
+                subGadget.getMainColour(),
+                gadget.getRating(),
+                percent,
+                gadget.isNew(),
+                gadget.getRating() > 3.9 ? "recommend" : null,
+                subGadget.getPrice(),
+                GadgetServiceImpl.calculatePrice(subGadget),
                 likes,
                 comparison,
                 basket

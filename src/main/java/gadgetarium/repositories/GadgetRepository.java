@@ -22,4 +22,7 @@ public interface GadgetRepository extends JpaRepository<Gadget, Long> {
 
     boolean existsByNameOfGadget(String name);
     Gadget findByNameOfGadget(String name);
+
+    @Query("select s.mainColour from SubGadget s where s.gadget.id =:gadgetId")
+    List<String> getColors(Long gadgetId);
 }

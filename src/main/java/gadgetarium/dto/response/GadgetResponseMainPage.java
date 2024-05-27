@@ -10,6 +10,8 @@ public record GadgetResponseMainPage(
         Long gadgetId,
         Long subGadgetId,
         int percent,
+        String newProduct,
+        String recommend,
         String image,
         int quantity,
         String nameOfGadget,

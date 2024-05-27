@@ -102,6 +102,8 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getArticle(),
                         gadget.getRating(),
                         percent,
+                        gadget.isNew(),
+                        gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
                         subGadget.getPrice(),
                         discountedPrice,
                         subGadget.getMainColour(),
@@ -170,6 +172,8 @@ public class GadgetServiceImpl implements GadgetService {
                 subGadget.getArticle(),
                 gadget.getRating(),
                 percent,
+                gadget.isNew(),
+                gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
                 subGadget.getPrice(),
                 discountedPrice,
                 subGadget.getMainColour(),
@@ -365,6 +369,12 @@ public class GadgetServiceImpl implements GadgetService {
                 .status(HttpStatus.OK)
                 .message("Success set quantity!")
                 .build();
+    }
+
+    @Override
+    public List<String> getAllColours(Long gadgetId) {
+        gadgetRepo.getGadgetById(gadgetId);
+        return gadgetRepo.getColors(gadgetId);
     }
 
     @Override

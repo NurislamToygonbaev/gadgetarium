@@ -21,6 +21,8 @@ public record GadgetResponse(
         Long articleNumber,
         double rating,
         int percent,
+        String newProduct,
+        String recommend,
         BigDecimal price,
         BigDecimal currentPrice,
         String mainColour,

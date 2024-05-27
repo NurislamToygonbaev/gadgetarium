@@ -6,9 +6,11 @@ import gadgetarium.dto.response.GadgetPaginationForMain;
 import gadgetarium.dto.response.GadgetResponseMainPage;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.*;
+import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.impl.CurrentUser;
@@ -19,6 +21,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +33,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     private final JdbcTemplate jdbcTemplate;
     private final CurrentUser currentUser;
     private final SubGadgetRepository subGadgetRepo;
+    private final GadgetRepository gadgetRepo;
 
     @Override
     public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
@@ -139,7 +143,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 if (sort.equals(Sort.RECOMMENDED)){
                     where += " and g.rating > 3.9 or (select count(*) from orders o where o.id = og.orders_id) > 10 ";
                 } else if (sort.equals(Sort.NEW_PRODUCTS)) {
-                    orderBy = " order by g.release_date desc ";
+                    orderBy = " order by g.created_at desc ";
                 } else if (sort.equals(Sort.PROMOTION)) {
                     if (discount != null){
                         if (discount.equals(Discount.ALL_DISCOUNTS)){
@@ -205,6 +209,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
                     Long id = rs.getLong("subGadgetId");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
+                    Long gadgetId = rs.getLong("id");
+                    Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
                     User user = null;
                     try {
                         user = currentUser.get();
@@ -228,6 +234,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             rs.getBigDecimal("price"),
                             price,
                             rs.getInt("percent"),
+                            gadget.isNew(),
+                            gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
                             likes,
                             comparison,
                             basket
@@ -309,11 +317,14 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
+                    Long gadgetId = rs.getLong("id");
+                    Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
                     Long id = rs.getLong("subGadgetId");
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String image = imagesArray.length > 0 ? imagesArray[0] : null;
 
                     SubGadget subGadget = subGadgetRepo.getByID(id);
+
                     User user = null;
                     try {
                         user = currentUser.get();
@@ -324,23 +335,25 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     boolean comparison = checkComparison(subGadget, user);
                     boolean basket = checkBasket(subGadget, user);
 
-                    return new GadgetResponseMainPage(
-                            rs.getLong("id"),
-                            id,
-                            rs.getInt("percent"),
-                            image,
-                            rs.getInt("quantity"),
-                            rs.getString("nameOfGadget"),
-                            rs.getString("memory"),
-                            rs.getString("main_colour"),
-                            rs.getDouble("rating"),
-                            rs.getInt("countOfFeedback"),
-                            rs.getBigDecimal("price"),
-                            price,
-                            likes,
-                            comparison,
-                            basket
-                    );
+                    return GadgetResponseMainPage.builder()
+                            .gadgetId(gadgetId)
+                            .subGadgetId(id)
+                            .percent(rs.getInt("percent"))
+                            .newProduct(gadget.isNew())
+                            .recommend(gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null)
+                            .image(image)
+                            .quantity(rs.getInt("quantity"))
+                            .nameOfGadget(rs.getString("nameOfGadget"))
+                            .memory(rs.getString("memory"))
+                            .colour(rs.getString("main_colour"))
+                            .rating(rs.getDouble("rating"))
+                            .count(rs.getInt("countOfFeedback"))
+                            .price(rs.getBigDecimal("price"))
+                            .currentPrice(price)
+                            .likes(likes)
+                            .comparison(comparison)
+                            .basket(basket)
+                            .build();
                 });
 
         return GadgetPaginationForMain.builder()
@@ -382,15 +395,16 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
                                 sg.price, sg.memory, g.rating, sg.main_colour, g.release_date,
                                 subGadgetId
-                        order by g.release_date desc
+                        order by g.created_at desc
                         limit ? offset ?
                         """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
+                    Long id = rs.getLong("subGadgetId");
+                    Long gadgetId = rs.getLong("id");
+                    Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String image = imagesArray.length > 0 ? imagesArray[0] : null;
-
-                    Long id = rs.getLong("subGadgetId");
                     SubGadget subGadget = subGadgetRepo.getByID(id);
                     User user = null;
                     try {
@@ -402,23 +416,25 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     boolean comparison = checkComparison(subGadget, user);
                     boolean basket = checkBasket(subGadget, user);
 
-                    return new GadgetResponseMainPage(
-                            rs.getLong("id"),
-                            id,
-                            rs.getInt("percent"),
-                            image,
-                            rs.getInt("quantity"),
-                            rs.getString("nameOfGadget"),
-                            rs.getString("memory"),
-                            rs.getString("main_colour"),
-                            rs.getDouble("rating"),
-                            rs.getInt("countOfFeedback"),
-                            rs.getBigDecimal("price"),
-                            price,
-                            likes,
-                            comparison,
-                            basket
-                    );
+                    return GadgetResponseMainPage.builder()
+                            .gadgetId(gadgetId)
+                            .subGadgetId(id)
+                            .percent(rs.getInt("percent"))
+                            .newProduct(gadget.isNew())
+                            .recommend(gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null)
+                            .image(image)
+                            .quantity(rs.getInt("quantity"))
+                            .nameOfGadget(rs.getString("nameOfGadget"))
+                            .memory(rs.getString("memory"))
+                            .colour(rs.getString("main_colour"))
+                            .rating(rs.getDouble("rating"))
+                            .count(rs.getInt("countOfFeedback"))
+                            .price(rs.getBigDecimal("price"))
+                            .currentPrice(price)
+                            .likes(likes)
+                            .comparison(comparison)
+                            .basket(basket)
+                            .build();
                 });
 
         return GadgetPaginationForMain.builder()
@@ -464,37 +480,41 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
+                    Long gadgetId = rs.getLong("id");
+                    Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
+                    Long id = rs.getLong("subGadgetId");
                     String[] imagesArray = (String[]) rs.getArray("images").getArray();
                     String image = imagesArray.length > 0 ? imagesArray[0] : null;
+                    SubGadget subGadget = subGadgetRepo.getByID(id);
                     User user = null;
                     try {
                         user = currentUser.get();
                     } catch (Exception ignored) {
                     }
-                    Long subGadgetId = rs.getLong("subGadgetId");
-                    SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
                     BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
                     boolean likes = checkLikes(subGadget, user);
                     boolean comparison = checkComparison(subGadget, user);
                     boolean basket = checkBasket(subGadget, user);
 
-                    return new GadgetResponseMainPage(
-                            rs.getLong("id"),
-                            subGadgetId,
-                            rs.getInt("percent"),
-                            image,
-                            rs.getInt("quantity"),
-                            rs.getString("nameOfGadget"),
-                            rs.getString("memory"),
-                            rs.getString("main_colour"),
-                            rs.getDouble("rating"),
-                            rs.getInt("countOfFeedback"),
-                            rs.getBigDecimal("price"),
-                            price,
-                            likes,
-                            comparison,
-                            basket
-                    );
+                    return GadgetResponseMainPage.builder()
+                            .gadgetId(gadgetId)
+                            .subGadgetId(id)
+                            .percent(rs.getInt("percent"))
+                            .newProduct(gadget.isNew())
+                            .recommend(gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null)
+                            .image(image)
+                            .quantity(rs.getInt("quantity"))
+                            .nameOfGadget(rs.getString("nameOfGadget"))
+                            .memory(rs.getString("memory"))
+                            .colour(rs.getString("main_colour"))
+                            .rating(rs.getDouble("rating"))
+                            .count(rs.getInt("countOfFeedback"))
+                            .price(rs.getBigDecimal("price"))
+                            .currentPrice(price)
+                            .likes(likes)
+                            .comparison(comparison)
+                            .basket(basket)
+                            .build();
                 });
 
         return GadgetPaginationForMain.builder()
