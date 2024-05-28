@@ -613,14 +613,14 @@ values (1, 1),
        (22, 23);
 
 
-insert into sub_gadget_uni_field(sub_gadget_id, uni_field)
-values (39, 'Bluetooth'),
-       (39, 'Круглая'),
-       (39, 'Кожа'),
-       (39, 'Нержавейщая сталь'),
-       (39, 'Унисекс'),
-       (39, 'да'),
-       (39, 'Прямоугольная');
+insert into sub_gadget_uni_filed(sub_gadget_id, uni_field)
+values (10, 'Bluetooth'),
+       (10, 'Круглая'),
+       (10, 'Кожа'),
+       (10, 'Нержавейщая сталь'),
+       (10, 'Унисекс'),
+       (10, 'да'),
+       (10, 'Прямоугольная');
 
 
 insert into sub_gadget_images(sub_gadget_id, images)
