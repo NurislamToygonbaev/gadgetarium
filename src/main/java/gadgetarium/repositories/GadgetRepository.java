@@ -16,11 +16,8 @@ public interface GadgetRepository extends JpaRepository<Gadget, Long> {
                 new NotFoundException("Gadget with id: "+gadgetId+" not found"));
     }
 
-
-    @Query("select g from Gadget g where g.PDFUrl is null and g.videoUrl is null and g.description is null")
-    Gadget findByPDFUrlIsNullAndVideoUrlIsNullAndDescriptionIsNull();
-
     boolean existsByNameOfGadget(String name);
+
     Gadget findByNameOfGadget(String name);
 
     @Query("select s.mainColour from SubGadget s where s.gadget.id =:gadgetId")

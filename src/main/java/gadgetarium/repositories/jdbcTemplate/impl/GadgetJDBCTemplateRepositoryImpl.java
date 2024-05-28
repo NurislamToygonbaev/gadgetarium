@@ -67,8 +67,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                sg.quantity,
                                d.percent,
                                sg.price
-                        from gadgets g
-                        join sub_gadgets sg on g.id = sg.gadget_id
+                        from sub_gadgets sg
+                        join gadgets g on g.id = sg.gadget_id
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
@@ -178,16 +178,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 "g.release_date, " +
                 "sg.id as subGadgetId " +
                 "from " +
-                "gadgets g " +
-                "join ( " +
-                "select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price " +
-                "from " +
                 "sub_gadgets sg " +
-                "where " +
-                "sg.remoteness_status ='" + status + "' " +
-                "order by " +
-                "sg.gadget_id, sg.id " +
-                ") sg on g.id = sg.gadget_id " +
+                "join gadgets g on g.id = sg.gadget_id " +
                 "left join sub_gadget_images gi on sg.id = gi.sub_gadget_id " +
                 "join brands b on g.brand_id = b.id " +
                 "join sub_categories sc on g.sub_category_id = sc.id " +
@@ -197,6 +189,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 "left join orders o on o.id = og.orders_id " +
                 "left outer join feedbacks f on g.id = f.gadget_id " +
                 "where c.id ='" + catId + "' " +
+                " and sg.remoteness_status ='" + status + "' " +
                 where +
                 " group by " +
                 "g.id, g.name_of_gadget, sc.sub_category_name, sg.quantity, d.percent, sg.price, " +
@@ -299,18 +292,14 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                sg.memory,
                                sg.price,
                                sg.id as subGadgetId
-                        from gadgets g
-                        join (
-                        select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price
                         from sub_gadgets sg
-                        where sg.remoteness_status ="""+"'"+status+"'"+"""
-                        order by sg.gadget_id, sg.id
-                        ) sg on g.id = sg.gadget_id
+                        join gadgets g on g.id = sg.gadget_id
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
                         left outer join feedbacks f on f.gadget_id = g.id
                         where d.percent is not null
+                        and sg.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
                                 sg.price, sg.memory, g.rating, sg.main_colour, subGadgetId
                         limit ? offset ?
@@ -381,17 +370,13 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                sg.memory,
                                sg.price,
                                sg.id as subGadgetId
-                        from gadgets g
-                        join (
-                        select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price
                         from sub_gadgets sg
-                        where sg.remoteness_status ="""+"'"+status+"'"+"""
-                        order by sg.gadget_id, sg.id
-                        ) sg on g.id = sg.gadget_id
+                        join gadgets g on g.id = sg.gadget_id
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
                         left outer join feedbacks f on f.gadget_id = g.id
+                        where sg.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
                                 sg.price, sg.memory, g.rating, sg.main_colour, g.release_date,
                                 subGadgetId
@@ -462,17 +447,13 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                                sg.memory,
                                sg.price,
                                sg.id as subGadgetId
-                        from gadgets g
-                        join (
-                        select distinct on (sg.gadget_id) sg.id, sg.gadget_id, sg.quantity, sg.main_colour, sg.memory, sg.price
                         from sub_gadgets sg
-                        where sg.remoteness_status ="""+"'"+status+"'"+"""
-                        order by sg.gadget_id, sg.id
-                        ) sg on g.id = sg.gadget_id
+                        join gadgets g on g.id = sg.gadget_id
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
                         left outer join feedbacks f on f.gadget_id = g.id
+                        where sg.remoteness_status ="""+"'"+status+"'"+"""
                         group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
                                 sg.price, sg.memory, g.rating, sg.main_colour, subGadgetId
                         having g.rating > 3.9 or count(f.id) > 10

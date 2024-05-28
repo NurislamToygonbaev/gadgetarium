@@ -33,7 +33,7 @@ public class Brand {
     @Column(length = 1000)
     private String logo;
 
-    @OneToMany(mappedBy = "brand")
+    @OneToMany(mappedBy = "brand", fetch = FetchType.LAZY, cascade = DETACH, orphanRemoval = true)
     private List<Gadget> gadgets;
 
     @PrePersist

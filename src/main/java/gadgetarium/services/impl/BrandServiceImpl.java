@@ -1,8 +1,8 @@
 package gadgetarium.services.impl;
 
-
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import gadgetarium.configs.s3.AmazonS3Config;
 import gadgetarium.dto.response.BrandResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.entities.Brand;
@@ -11,7 +11,6 @@ import gadgetarium.repositories.BrandRepository;
 import gadgetarium.services.BrandService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -30,18 +29,16 @@ public class BrandServiceImpl implements BrandService {
 
     private final BrandRepository brandRepo;
     private final AmazonS3 amazonS3;
-    @Value("${application.bucket.name}")
-    private String bucketName;
+    private final AmazonS3Config amazonS3Config;
 
-
-    public String getUrl(String key){
-        return amazonS3.getUrl(bucketName,key).toString();
+    public String getUrl(String key) {
+        return amazonS3.getUrl(amazonS3Config.getBucketName(), key).toString();
     }
 
-    private void checkBrandName(String name){
+    private void checkBrandName(String name) {
         boolean exists = brandRepo.existsByBrandName(name);
-        if (exists){
-            throw new AlreadyExistsException("Brand with name: "+name+" already exists");
+        if (exists) {
+            throw new AlreadyExistsException("Brand with name: " + name + " already exists");
         }
     }
 
@@ -56,18 +53,34 @@ public class BrandServiceImpl implements BrandService {
         checkBrandName(brandName);
         String key = UUID.randomUUID().toString();
         File fileObj = convertMultiPartFileToFile(file);
-        amazonS3.putObject(new PutObjectRequest(bucketName, key, fileObj));
-        String url = getUrl(key);
-        Brand brand = new Brand();
-        brand.setBrandName(brandName);
-        brand.setLogo(url);
-        brandRepo.save(brand);
-        log.info(getUrl(key));
-        fileObj.delete();
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("success saved")
-                .build();
+        if (fileObj == null) {
+            return HttpResponse.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("Error converting file")
+                    .build();
+        }
+
+        try {
+            amazonS3.putObject(new PutObjectRequest(amazonS3Config.getBucketName(), key, fileObj));
+            String url = getUrl(key);
+            Brand brand = new Brand();
+            brand.setBrandName(brandName);
+            brand.setLogo(url);
+            brandRepo.save(brand);
+            log.info("Brand saved successfully with URL: {}", url);
+            return HttpResponse.builder()
+                    .status(HttpStatus.OK)
+                    .message("Brand saved successfully")
+                    .build();
+        } catch (Exception e) {
+            log.error("Error occurred while saving brand", e);
+            return HttpResponse.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .message("Error occurred while saving brand")
+                    .build();
+        } finally {
+            fileObj.delete();
+        }
     }
 
     @Override
@@ -81,6 +94,7 @@ public class BrandServiceImpl implements BrandService {
             fos.write(file.getBytes());
         } catch (IOException e) {
             log.error("Error converting multipartFile to file", e);
+            return null;
         }
         return convertedFile;
     }

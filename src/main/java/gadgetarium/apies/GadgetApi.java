@@ -19,6 +19,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +37,7 @@ public class GadgetApi {
 
     private final GadgetService gadgetService;
 
+    @Cacheable("ALlGadgetAdminCache")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Все Гаджеты ", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping
@@ -46,6 +48,7 @@ public class GadgetApi {
         return gadgetService.getAll(sort, discount, page, size);
     }
 
+    @Cacheable("GadgetsCacheFilter")
     @Operation(summary = "Все гаджеты с фильтрацией", description = "Авторизация: ВСЕ")
     @GetMapping("/{catId}/filter")
     public PaginationSHowMoreGadget allGadgetsForEvery(@PathVariable Long catId,
@@ -123,12 +126,14 @@ public class GadgetApi {
         return gadgetService.setQuantityOneProduct(id, quantity);
     }
 
+    @Cacheable("AllCategoriesCache")
     @Operation(summary = " Все категории", description = "Авторизация: ВСЕ")
     @GetMapping("/categories")
     public List<CatResponse> getCategories() {
         return gadgetService.getCategories();
     }
 
+    @Cacheable("AllSubCategoriesCache")
     @Operation(summary = " Все подкатегории", description = "Авторизация ВСЕ")
     @GetMapping("/{catId}/sub-categories")
     public List<CatResponse> getSubCategories(@PathVariable Long catId) {
@@ -137,11 +142,13 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Добавление документа на товары ", description = "Авторизация ADMIN")
-    @PatchMapping("/set-document")
-    public HttpResponse addDocument(@RequestBody ProductDocRequest productDocRequest) throws IOException {
-        return gadgetService.addDocument(productDocRequest);
+    @PatchMapping("/set-document/{gadgetId}")
+    public HttpResponse addDocument(@PathVariable Long gadgetId,
+                                    @RequestBody ProductDocRequest productDocRequest) throws IOException {
+        return gadgetService.addDocument(gadgetId, productDocRequest);
     }
 
+    @Cacheable("DiscountGadgetCache")
     @Operation(summary = "Все Гаджеты по акции", description = "Авторизация: ВСЕ")
     @GetMapping("/discounts")
     public GadgetPaginationForMain mainPageDiscounts(@RequestParam(value = "page", defaultValue = "1") int page,
@@ -149,6 +156,7 @@ public class GadgetApi {
         return gadgetService.mainPageDiscounts(page, size);
     }
 
+    @Cacheable("NewGadgetCache")
     @Operation(summary = "Новинки", description = "Авторизация: ВСЕ")
     @GetMapping("/new")
     public GadgetPaginationForMain mainPageNews(@RequestParam(value = "page", defaultValue = "1") int page,
@@ -156,6 +164,7 @@ public class GadgetApi {
         return gadgetService.mainPageNews(page, size);
     }
 
+    @Cacheable("RecommendGadgetCache")
     @Operation(summary = "Рекомендуемые", description = "Авторизация: ВСЕ")
     @GetMapping("/recommend")
     public GadgetPaginationForMain mainPageRecommend(@RequestParam(value = "page", defaultValue = "1") int page,
@@ -187,20 +196,6 @@ public class GadgetApi {
         return gadgetService.getDeliveryPriceGadget(id);
     }
 
-    @Operation(summary = "Метод для скачивание PDF", description = "Авторизация: ВСЕ")
-    @GetMapping("/doc/{key}/{id}")
-    public ResponseEntity<ByteArrayResource> downloadPDF(@PathVariable String key,
-                                                         @PathVariable Long id) {
-        byte[] data = gadgetService.downloadFile(key, id);
-        ByteArrayResource resource = new ByteArrayResource(data);
-        return ResponseEntity
-                .ok()
-                .contentLength(data.length)
-                .header("Content-type", "application/octet-stream")
-                .header("Content-disposition", "attachment; filename=\"" + key + "\"")
-                .body(resource);
-    }
-
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
     @PutMapping("/{subGadgetId}")
@@ -208,7 +203,6 @@ public class GadgetApi {
                                      @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest) {
         return gadgetService.updateGadget(subGadgetId, gadgetNewDataRequest);
     }
-
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Удаление гаджета по ID", description = "Авторизация ADMIN")

@@ -41,19 +41,14 @@ public class Feedback {
     private ReviewType reviewType;
 
     @Size(max = 1000)
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
 
-    @ManyToOne(cascade = {DETACH})
+    @ManyToOne(cascade = {DETACH}, fetch = FetchType.LAZY)
     private Gadget gadget;
 
-    @ManyToOne(cascade = {DETACH})
+    @ManyToOne(cascade = {DETACH}, fetch = FetchType.LAZY)
     private User user;
-
-    public void addImage(String image) {
-        if (this.images == null) this.images = new ArrayList<>();
-        this.images.add(image);
-    }
 
     @PrePersist
     private void initialReview() {

@@ -12,6 +12,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +25,7 @@ public class FeedbackApi {
 
     private final FeedbackService feedbackService;
 
+    @Cacheable("")
     @PreAuthorize("hasAuthority({'ADMIN'})")
     @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Просмотр всех отзывов")
     @GetMapping

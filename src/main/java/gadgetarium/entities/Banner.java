@@ -28,13 +28,8 @@ public class Banner {
     private Long id;
 
     @Size(max = 1000)
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
-
-    public void addImages(String image) {
-        if (this.images == null) this.images = new ArrayList<>();
-        this.images.add(image);
-    }
 
     @PrePersist
     private void initialReview() {

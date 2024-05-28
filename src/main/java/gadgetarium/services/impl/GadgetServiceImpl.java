@@ -1,9 +1,7 @@
 package gadgetarium.services.impl;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.util.IOUtils;
+import gadgetarium.configs.s3.AmazonS3Config;
 import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.*;
@@ -23,7 +21,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +33,7 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GadgetServiceImpl implements GadgetService {
 
-    @Value("${application.bucket.name}")
-    private String bucketName;
+    private final AmazonS3Config amazonS3Config;
     private final GadgetRepository gadgetRepo;
     private final CategoryRepository categoryRepo;
     private final SubGadgetRepository subGadgetRepo;
@@ -379,9 +375,9 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public HttpResponse addDocument(ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
+    public HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
         try {
-            Gadget gadget = gadgetRepo.findByPDFUrlIsNullAndVideoUrlIsNullAndDescriptionIsNull();
+            Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
             if (gadget == null){
                 throw new BadRequestException("No gadget to add document.");
             }
@@ -562,22 +558,6 @@ public class GadgetServiceImpl implements GadgetService {
             }
         }
         return data;
-    }
-
-    @Override
-    public byte[] downloadFile(String key, Long gadgetId) {
-        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-        if (!gadget.getPDFUrl().contains(bucketName + key)) {
-            throw new NotFoundException("not found");
-        }
-        S3Object s3Object = s3Client.getObject(bucketName, key);
-        S3ObjectInputStream inputStream = s3Object.getObjectContent();
-        try {
-            return IOUtils.toByteArray(inputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new byte[0];
     }
 
     @Override

@@ -35,7 +35,7 @@ public interface GadgetService {
 
     HttpResponse setPriceOneProduct(Long id, BigDecimal price);
 
-    HttpResponse addDocument(ProductDocRequest productDocRequest) throws IOException;
+    HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws IOException;
 
     GadgetPaginationForMain mainPageDiscounts(int page, int size);
 
@@ -50,8 +50,6 @@ public interface GadgetService {
     List<GadgetReviewsResponse> getReviewsGadget(Long id);
 
     GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id);
-
-    byte[] downloadFile(String key, Long gadgetId);
 
     HttpResponse updateGadget(Long subGadgetId, GadgetNewDataRequest gadgetNewDataRequest);
 

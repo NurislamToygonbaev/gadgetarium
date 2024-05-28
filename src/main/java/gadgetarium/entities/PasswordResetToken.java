@@ -22,6 +22,6 @@ public class PasswordResetToken {
     private String token;
     private LocalDateTime expiryDate;
 
-    @ManyToOne(cascade = CascadeType.DETACH)
+    @ManyToOne(cascade = CascadeType.DETACH, fetch = FetchType.LAZY)
     private User user;
 }

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +23,7 @@ import java.util.List;
 public class PersonalAreaApi {
 
     private final OrderService orderService;
-
+    @Cacheable("HistoryOrdersCache")
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть весь истории заказов.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping
