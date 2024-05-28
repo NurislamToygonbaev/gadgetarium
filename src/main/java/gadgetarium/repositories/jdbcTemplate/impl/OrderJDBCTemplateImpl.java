@@ -83,7 +83,6 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
             }
         }
 
-
         params.add(limit);
         params.add(offset);
 
@@ -92,17 +91,18 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                            concat(u.last_name, ' ', u.first_name) as fullName,
                            o.number,
                            o.created_at,
-                           count(g.id) as totalGadgets,
-                           sum(s.current_price) as totalPrice,
+                           count(s.id) as totalGadgets,
+                           o.total_price,
                            o.type_order,
                            o.status
                     from orders o
                     join users u on o.user_id = u.id
-                    join orders_gadgets og on o.id = og.orders_id
-                    join gadgets g on og.gadgets_id = g.id
-                    join sub_gadgets s on s.gadget_id = g.id
+                    left join orders_sub_gadgets og on o.id = og.orders_id
+                    left join sub_gadgets s on s.id = og.sub_gadgets_id
+                    left join gadgets g on s.gadget_id = g.id
                     """ + whereClause + """
-                    group by o.id, fullName, o.number, o.created_at, o.type_order, o.status
+                    group by o.id, o.number, o.created_at, o.type_order, o.status,
+                         o.total_price, u.last_name, u.first_name
                     limit ? offset ?
                     """,
                 params.toArray(),
@@ -113,7 +113,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             rs.getLong("number"),
                             rs.getDate("created_at").toLocalDate(),
                             rs.getInt("totalGadgets"),
-                            rs.getBigDecimal("totalPrice"),
+                            rs.getBigDecimal("total_price"),
                             rs.getBoolean("type_order"),
                             rs.getString("status")
                     );
@@ -128,55 +128,6 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                 .size(size)
                 .orderResponses(orderResponses)
                 .build();
-    }
-
-    @Override
-    public OrderResponseFindById findOrderById(Long orderId) {
-        return jdbcTemplate.queryForObject("""
-                    select o.id,
-                           concat(u.first_name, ' ', u.last_name) as fullName,
-                           o.number,
-                           concat(b.brand_name, ' ', s.name_of_gadget) as gadgetName,
-                           g.memory,
-                           s.main_colour,
-                           count(g.id) as countOfGadget,
-                           sum(s.price) as price,
-                           d.percent
-                    from orders o
-                    join users u on u.id = o.user_id
-                    join orders_gadgets og on o.id = og.orders_id
-                    join gadgets g on g.id = og.gadgets_id
-                    join brands b on b.id = g.brand_id
-                    join sub_gadgets s on g.id = s.gadget_id
-                    left outer join discounts d on s.id = d.sub_gadget_id
-                    where o.id = ?
-                    group by o.id, concat(u.first_name, ' ', u.last_name),
-                    o.number, concat(b.brand_name, ' ', s.name_of_gadget),
-                    g.memory, s.main_colour, d.percent
-                    """,
-                new Object[]{orderId},
-                (rs, rowNum) -> {
-                    BigDecimal price = rs.getBigDecimal("price");
-                    int percent = rs.getInt("percent");
-
-                    BigDecimal discount = price.multiply(BigDecimal.valueOf(percent).divide(BigDecimal.valueOf(100)));
-                    BigDecimal discountedPrice = price.subtract(discount);
-
-                    return new OrderResponseFindById(
-                            rs.getLong("id"),
-                            rs.getString("fullName"),
-                            rs.getLong("number"),
-                            rs.getString("gadgetName"),
-                            rs.getString("memory"),
-                            rs.getString("main_colour"),
-                            rs.getInt("countOfGadget"),
-                            price,
-                            percent,
-                            discount,
-                            discountedPrice
-                    );
-                }
-        );
     }
 
 }

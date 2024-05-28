@@ -3,19 +3,21 @@ package gadgetarium.services.impl;
 import gadgetarium.dto.request.DiscountRequest;
 import gadgetarium.dto.response.DiscountResponse;
 import gadgetarium.entities.Discount;
+import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.DiscountRepository;
+import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.services.DiscountService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.NotAcceptableStatusException;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -25,48 +27,46 @@ import java.util.List;
 public class DiscountServiceImpl implements DiscountService {
 
     private final DiscountRepository discountRepo;
-    private final SubGadgetRepository subGadgetRepository;
+    private final GadgetRepository gadgetRepo;
 
-    @Transactional
     @Override
-    public DiscountResponse create(List<Long> subGadgetsId, DiscountRequest discountRequest) {
-        if (!discountRequest.endDay().isAfter(discountRequest.startDay()))
-            throw new BadRequestException("End day must be after than start day!");
-        if (discountRequest.startDay().isBefore(LocalDate.now()))
-            throw new BadRequestException("Start day must begin from this date or later!");
-        for (int i = 0; i < subGadgetsId.size(); i++) {
-            SubGadget subGadget = subGadgetRepository.findById(subGadgetsId.get(i)).orElseThrow(() ->
-                    new NotAcceptableStatusException("SubGadget by id not found!"));
-            if (subGadget.getDiscount() != null) {
-                throw new BadRequestException("SubGadget with id " + subGadget.getId() + " already has discount!");
+    @Transactional
+    public DiscountResponse create(List<Long> gadgetId, DiscountRequest discountRequest) {
+        if (!discountRequest.endDay().isAfter(discountRequest.startDay())) {
+            throw new BadRequestException("End day must be after the start day!");
+        }
+        if (discountRequest.startDay().isBefore(LocalDate.now())) {
+            throw new BadRequestException("Start day must begin from today or later!");
+        }
+        for (Long id : gadgetId) {
+            Gadget gadget = gadgetRepo.getGadgetById(id);
+            if (gadget.getDiscount() != null) {
+                throw new BadRequestException("Gadget with ID " + gadget.getId() + " already has a discount!");
             }
             Discount buildDiscount = Discount.builder()
                     .percent(discountRequest.discountSize())
                     .startDate(discountRequest.startDay())
                     .endDate(discountRequest.endDay())
-                    .subGadget(subGadget)
+                    .gadget(gadget)
                     .build();
             discountRepo.save(buildDiscount);
-            subGadget.setCurrentPrice(subGadget.getPrice().subtract(subGadget.getPrice().multiply(BigDecimal.valueOf(discountRequest.discountSize())).divide(BigDecimal.valueOf(100))));
-
+            gadget.setDiscount(buildDiscount);
         }
         return DiscountResponse.builder()
                 .httpStatus(HttpStatus.OK)
-                .message("Discount success added!")
+                .message("Discount successfully added!")
                 .build();
     }
 
-    @Transactional
     @Override
-    public BigDecimal checkCurrentPrice(SubGadget subGadget) {
-        BigDecimal returnCurrentPrice = BigDecimal.ZERO;
-        if (subGadget.getDiscount() != null) {
-            if (subGadget.getDiscount().getEndDate().isBefore(LocalDate.now())) {
-                subGadget.setCurrentPrice(subGadget.getPrice());
-                discountRepo.delete(subGadget.getDiscount());
-                returnCurrentPrice =  subGadget.getCurrentPrice();
+    @Scheduled(cron = "0 0 0 * * *")
+    public void checkDiscount(){
+        List<Discount> discounts = discountRepo.findAll();
+        for (Discount discount : discounts) {
+            if (discount.getEndDate().isAfter(LocalDate.now())){
+                discountRepo.delete(discount);
             }
-        } else returnCurrentPrice =  subGadget.getCurrentPrice();
-        return returnCurrentPrice;
+        }
     }
+
 }

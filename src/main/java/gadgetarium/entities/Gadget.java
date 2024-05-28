@@ -4,6 +4,7 @@ import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
 import gadgetarium.enums.RemotenessStatus;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +12,8 @@ import lombok.NoArgsConstructor;
 import lombok.Builder;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
 
 import static jakarta.persistence.CascadeType.REMOVE;
 import static jakarta.persistence.CascadeType.REFRESH;
@@ -35,31 +36,21 @@ public class Gadget {
     private Long id;
     private int warranty;
     private LocalDate releaseDate;
-    private Long article;
     @Column(length = 500)
     private String videoUrl;
     @Column(length = 500)
     private String PDFUrl;
     @Column(length = 1000)
     private String description;
+    private String nameOfGadget;
+    private double rating;
+    private LocalDate createdAt;
 
-    @Enumerated(EnumType.STRING)
-    private Memory memory;
-
-    @Enumerated(EnumType.STRING)
-    private Ram ram;
-
-    @Enumerated(EnumType.STRING)
-    private RemotenessStatus remotenessStatus;
-
-    @OneToOne(mappedBy = "gadget", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
-    private SubGadget subGadget;
+    @OneToMany(mappedBy = "gadget", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
+    private List<SubGadget> subGadgets;
 
     @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
     private List<Feedback> feedbacks;
-
-    @ManyToMany(mappedBy = "gadgets", cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
-    private List<Order> orders;
 
     @ManyToOne(cascade = {DETACH})
     private SubCategory subCategory;
@@ -67,20 +58,41 @@ public class Gadget {
     @ManyToOne(fetch = FetchType.EAGER)
     private Brand brand;
 
-    private void addFeedback(Feedback feedback) {
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Size(max = 3000)
+    private Map<CharValue,String> charName;
+
+    @OneToOne(mappedBy = "gadget", cascade = {REMOVE, REFRESH, MERGE})
+    private Discount discount;
+
+    public void addFeedback(Feedback feedback) {
         if (this.feedbacks == null) this.feedbacks = new ArrayList<>();
         this.feedbacks.add(feedback);
     }
 
-    private void addOrder(Order order) {
-        if (this.orders == null) this.orders = new ArrayList<>();
-        this.orders.add(order);
+    public void addSUbGadget(SubGadget subGadget) {
+        if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
+        this.subGadgets.add(subGadget);
+    }
+
+    public void addCharName(CharValue key, String value) {
+        if (this.charName == null) {
+            this.charName = new HashMap<>();
+        }
+        this.charName.put(key, value);
     }
 
     @PrePersist
     private void initialReview() {
+        this.subGadgets = new ArrayList<>();
         this.feedbacks = new ArrayList<>();
-        this.orders = new ArrayList<>();
-        this.remotenessStatus = RemotenessStatus.NOT_REMOTE;
+        this.releaseDate = LocalDate.now();
+        this.charName = new LinkedHashMap<>();
+        this.createdAt = LocalDate.now();
+    }
+
+    public String isNew() {
+        long daysBetween = ChronoUnit.DAYS.between(createdAt, LocalDate.now());
+        return daysBetween <= 30 ? "новый" : null;
     }
 }

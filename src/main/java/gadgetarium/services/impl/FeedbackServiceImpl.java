@@ -13,6 +13,7 @@ import gadgetarium.enums.Role;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.FeedbackRepository;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.services.FeedbackService;
@@ -102,8 +103,8 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     public HttpResponse deleteReview(Long id) {
-
-        feedbackRepo.delete(feedbackRepo.getByIdd(id));
+        Feedback feedback = feedbackRepo.getByIdd(id);
+        feedbackRepo.delete(feedback);
         log.info("Review successfully deleted!");
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
@@ -116,13 +117,18 @@ public class FeedbackServiceImpl implements FeedbackService {
     public FeedbackResponse getFeedbackById(Long id) {
         Feedback feedback = feedbackRepo.getByIdd(id);
         feedback.setReviewType(ReviewType.READ);
+        Long article = feedback.getGadget().getSubGadgets().stream()
+                .map(SubGadget::getArticle)
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException(""));
+
         String image = feedback.getImages() != null && !feedback.getImages().isEmpty() ? feedback.getImages().getFirst() : null;
         return FeedbackResponse.builder()
                 .id(feedback.getId())
                 .gadgetImage(image)
                 .subCategoryName(feedback.getGadget().getSubCategory().getSubCategoryName())
-                .nameOfGadget(feedback.getGadget().getSubGadget().getNameOfGadget())
-                .article(feedback.getGadget().getArticle())
+                .nameOfGadget(feedback.getGadget().getNameOfGadget())
+                .article(article)
                 .comment(feedback.getDescription())
                 .feedbackImages(feedback.getImages())
                 .dateAndTime(feedback.getDateAndTime())
@@ -143,12 +149,15 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private FeedbackResponse convertFeedbackToResponse(Feedback feedback) {
         Gadget gadget = feedback.getGadget();
-        SubGadget subGadget = getSafely(gadget::getSubGadget);
+        SubGadget subGadget = gadget.getSubGadgets().stream()
+                .filter(sg -> sg.getId().equals(gadget.getSubGadgets().getFirst().getId()))
+                .findFirst()
+                .orElseThrow(() -> new NotFoundException("subGadget not found"));
         User user = feedback.getUser();
 
         String firstImage = getSafely(() -> subGadget != null ? subGadget.getImages().getFirst() : null);
         String subCategoryName = getSafely(() -> gadget.getSubCategory().getSubCategoryName());
-        String gadgetName = getSafely(() -> subGadget != null ? subGadget.getNameOfGadget() : null);
+        String gadgetName = getSafely(() -> subGadget != null ? subGadget.getGadget().getNameOfGadget() : null);
         String userEmail = getSafely(user::getEmail);
         String adminResponse = feedback.getResponseAdmin();
 
@@ -164,7 +173,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 firstImage,
                 subCategoryName,
                 gadgetName,
-                getSafely(gadget::getArticle),
+                getSafely(gadget.getSubGadgets().getFirst()::getArticle),
                 feedback.getDescription(),
                 feedback.getImages(),
                 feedback.getDateAndTime(),
@@ -220,7 +229,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Transactional
     public HttpResponse leaveFeedback(Long gadgetId, FeedbackRequest feedbackRequest) {
         if (feedbackRequest.images().size() > 5) {
-            throw new BadRequestException("Cannot be length more 5");
+            throw new BadRequestException("Cannot have more than 5 images");
         }
 
         User currentUser = currentUserr.get();
@@ -229,29 +238,41 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedback.setRating(feedbackRequest.grade());
         feedback.setDescription(feedbackRequest.comment());
 
-        for (Order order : gadget.getOrders()) {
-            if (order.getUser().getId().equals(currentUser.getId()) && (order.getStatus().equals(Status.DELIVERED) || order.getStatus().equals(Status.RECEIVED))) {
-                currentUser.getFeedbacks().add(feedback);
-                feedback.setUser(currentUser);
-                gadget.getFeedbacks().add(feedback);
-                feedback.setGadget(gadget);
-                double rating = feedbackRating(gadgetId);
-                gadget.getSubGadget().setRating(rating);
-                feedbackRepo.save(feedback);
-                if (!feedbackRequest.images().isEmpty()) {
-                    feedback.setImages(feedbackRequest.images());
-                }
+        boolean hasPurchased = false;
 
-                return HttpResponse
-                        .builder()
-                        .status(HttpStatus.OK)
-                        .message("Review sent successfully!")
-                        .build();
+        for (SubGadget subGadget : gadget.getSubGadgets()) {
+            for (Order order : subGadget.getOrders()) {
+                if (order.getUser().getId().equals(currentUser.getId()) &&
+                    (order.getStatus().equals(Status.DELIVERED) || order.getStatus().equals(Status.RECEIVED))) {
+                    hasPurchased = true;
+                    break;
+                }
             }
+            if (hasPurchased) break;
         }
 
-        return HttpResponse
-                .builder()
+        if (hasPurchased) {
+            currentUser.getFeedbacks().add(feedback);
+            feedback.setUser(currentUser);
+            gadget.getFeedbacks().add(feedback);
+            feedback.setGadget(gadget);
+
+            if (!feedbackRequest.images().isEmpty()) {
+                feedback.setImages(feedbackRequest.images());
+            }
+
+            double rating = feedbackRating(gadgetId);
+            gadget.setRating(rating);
+            feedbackRepo.save(feedback);
+            gadgetRepo.save(gadget);
+
+            return HttpResponse.builder()
+                    .status(HttpStatus.OK)
+                    .message("Review sent successfully!")
+                    .build();
+        }
+
+        return HttpResponse.builder()
                 .status(HttpStatus.BAD_REQUEST)
                 .message("You haven't bought this gadget!")
                 .build();

@@ -1,10 +1,7 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.feedack.ImageValidation;
-import gadgetarium.validation.rating.RatingValidation;
-import gadgetarium.validation.string.StringValidation;
-import jakarta.persistence.ElementCollection;
-import jakarta.validation.constraints.NotBlank;
+import gadgetarium.validations.rating.RatingValidation;
+import gadgetarium.validations.string.StringValidation;
 import lombok.Builder;
 
 import java.util.List;

@@ -80,7 +80,7 @@ public class User implements UserDetails {
             int currentQuantity = this.basket.get(subGadget);
             int newQuantity = currentQuantity + quantity;
             if (newQuantity <= subGadget.getQuantity()) {
-                this.basket.put(subGadget, newQuantity);
+                this.basket.put(subGadget, quantity);
             } else {
                 throw new BadRequestException("You can't add more gadgets than there are in the database");
             }

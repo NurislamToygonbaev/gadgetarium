@@ -1,25 +1,30 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.countSim.CountSimValidation;
-import gadgetarium.validation.feedack.ImageValidation;
-import gadgetarium.validation.issueDate.IssueDateValidation;
-import gadgetarium.validation.warranty.WarrantyValidation;
+import gadgetarium.enums.Memory;
+import gadgetarium.enums.Ram;
+import gadgetarium.validations.countSim.CountSimValidation;
+import gadgetarium.validations.feedack.ImageValidation;
 import lombok.Builder;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Builder
 public record GadgetNewDataRequest(
-        @WarrantyValidation
-        int warranty,
-        String nameOfGadget,
-        @IssueDateValidation
-        LocalDate issueDate,
         String colour,
         @CountSimValidation
         int countSim,
+        Memory memory,
+        Ram ram,
         @ImageValidation
-        List<String> images
+        List<String> images,
+        String materialBracelet,
+        String materialBody,
+        String sizeWatch,
+        String dumas,
+        String genderWatch,
+        String waterproof,
+        String wireless,
+        String shapeBody
+
 ) {
 }

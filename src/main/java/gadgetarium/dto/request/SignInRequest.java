@@ -1,7 +1,7 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.email.EmailValidation;
-import gadgetarium.validation.password.PasswordValidation;
+import gadgetarium.validations.email.EmailValidation;
+import gadgetarium.validations.password.PasswordValidation;
 import jakarta.validation.constraints.Email;
 
 public record SignInRequest(

@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface BasketService {
 
-    HttpResponse addToBasket(Long gadgetId, int quantity);
+    HttpResponse addToBasket(Long subGadgetId, int quantity);
 
     HttpResponse removeFromBasket(Long gadgetId);
 

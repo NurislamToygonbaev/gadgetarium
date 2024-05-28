@@ -9,5 +9,4 @@ import java.time.LocalDate;
 public interface OrderJDBCTemplate {
     OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size);
 
-    OrderResponseFindById findOrderById(Long orderId);
 }

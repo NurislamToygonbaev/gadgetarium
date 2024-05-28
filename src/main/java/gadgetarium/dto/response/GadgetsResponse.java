@@ -7,7 +7,8 @@ import java.math.BigDecimal;
 
 @Builder
 public record GadgetsResponse(
-         Long id,
+         Long gadgetId,
+         Long subGadgetId,
          String image,
          int quantity,
          String brandNameOfGadget,
@@ -18,6 +19,8 @@ public record GadgetsResponse(
          BigDecimal price,
          BigDecimal currentPrice,
          int percent,
+         String newProduct,
+         String recommend,
          boolean likes,
          boolean compression,
          boolean basked

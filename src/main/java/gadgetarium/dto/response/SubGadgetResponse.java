@@ -1,5 +1,6 @@
 package gadgetarium.dto.response;
 
+import gadgetarium.entities.CharValue;
 import gadgetarium.enums.Memory;
 import lombok.Builder;
 
@@ -17,5 +18,6 @@ SubGadgetResponse(
         String mainColour,
         String brandName,
         Memory memory,
-        Map<String, String> characteristics
+        Map<CharValue, String> characteristics
+
 ) implements SampleResponse{}

@@ -35,5 +35,5 @@ public class Discount {
     private LocalDate endDate;
 
     @OneToOne(cascade = {DETACH})
-    private SubGadget subGadget;
+    private Gadget gadget;
 }

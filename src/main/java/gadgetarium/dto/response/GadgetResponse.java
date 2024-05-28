@@ -12,7 +12,8 @@ import java.util.Map;
 
 @Builder
 public record GadgetResponse(
-        Long id,
+        Long gadgetId,
+        Long subGadgetId,
         String brandLogo,
         List<String> images,
         String nameOfGadget,
@@ -20,6 +21,8 @@ public record GadgetResponse(
         Long articleNumber,
         double rating,
         int percent,
+        String newProduct,
+        String recommend,
         BigDecimal price,
         BigDecimal currentPrice,
         String mainColour,
@@ -28,6 +31,7 @@ public record GadgetResponse(
         String memory,
         String ram,
         int countSim,
+        List<String> uniField,
         boolean likes,
         boolean basket
         ) {

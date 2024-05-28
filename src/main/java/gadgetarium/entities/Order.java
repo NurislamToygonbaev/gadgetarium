@@ -14,9 +14,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-import static jakarta.persistence.CascadeType.REFRESH;
-import static jakarta.persistence.CascadeType.MERGE;
-import static jakarta.persistence.CascadeType.DETACH;
+import static jakarta.persistence.CascadeType.*;
 
 @Getter
 @Setter
@@ -36,28 +34,27 @@ public class Order {
     private LocalDate createdAt;
     private BigDecimal totalPrice;
     private BigDecimal discountPrice;
-    private BigDecimal deliveryPrice;
-  
+
     @Enumerated(EnumType.STRING)
     private Payment payment;
 
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToMany(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
-    private List<Gadget> gadgets;
+    @ManyToMany(cascade = {DETACH, PERSIST, MERGE, REFRESH}, fetch = FetchType.EAGER)
+    private List<SubGadget> subGadgets;
 
     @ManyToOne(cascade = {DETACH})
     private User user;
 
-    private void addGadget(Gadget gadget) {
-        if (this.gadgets == null) this.gadgets = new ArrayList<>();
-        this.gadgets.add(gadget);
+    public void addGadget(SubGadget subGadget) {
+        if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
+        this.subGadgets.add(subGadget);
     }
 
     @PrePersist
     private void initialReview() {
-        this.gadgets = new ArrayList<>();
+        this.subGadgets = new ArrayList<>();
         this.createdAt = LocalDate.now();
     }
 }

@@ -1,8 +1,8 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.email.EmailValidation;
-import gadgetarium.validation.password.PasswordValidation;
-import gadgetarium.validation.phoneNumber.PhoneNumberValidation;
+import gadgetarium.validations.email.EmailValidation;
+import gadgetarium.validations.password.PasswordValidation;
+import gadgetarium.validations.phoneNumber.PhoneNumberValidation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Builder;

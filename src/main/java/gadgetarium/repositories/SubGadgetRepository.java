@@ -12,6 +12,5 @@ public interface SubGadgetRepository extends JpaRepository<SubGadget, Long> {
       return findById(subGadgetId).orElseThrow(() ->
               new NotFoundException("SubGadget with id: " + subGadgetId + " not found!"));
    }
-    List<SubGadget> findByNameOfGadget(String name);
 
 }

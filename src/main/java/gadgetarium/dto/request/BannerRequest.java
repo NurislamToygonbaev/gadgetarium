@@ -1,6 +1,6 @@
 package gadgetarium.dto.request;
 
-import gadgetarium.validation.banner.BannerValidation;
+import gadgetarium.validations.banner.BannerValidation;
 import lombok.Builder;
 import java.util.List;
 
