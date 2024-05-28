@@ -613,14 +613,14 @@ values (1, 1),
        (22, 23);
 
 
-insert into sub_gadget_uni_field(sub_gadget_id, uni_field)
-values (39, 'Bluetooth'),
-       (39, 'Круглая'),
-       (39, 'Кожа'),
-       (39, 'Нержавейщая сталь'),
-       (39, 'Унисекс'),
-       (39, 'да'),
-       (39, 'Прямоугольная');
+-- insert into sub_gadget_uni_field(sub_gadget_id, uni_field)
+-- values (39, 'Bluetooth'),
+--        (39, 'Круглая'),
+--        (39, 'Кожа'),
+--        (39, 'Нержавейщая сталь'),
+--        (39, 'Унисекс'),
+--        (39, 'да'),
+--        (39, 'Прямоугольная');
 
 
 insert into sub_gadget_images(sub_gadget_id, images)
@@ -787,20 +787,20 @@ values (1, 'https://s3.amazonaws.com/yourbucket/feedback_images/image1.png'),
        (24, 'https://s3.amazonaws.com/yourbucket/feedback_images/image24.png');
 
 
-insert into gadget_char_name (char_name_key, gadget_id, char_name)
-values
-    (60, 1, ''),
-    (67, 1, 'Основная камера'),
-    (71, 1, 'Другое'),
-    (64, 1, 'Память'),
-    (65, 1, 'Программное обеспечение'),
-    (62, 1, 'Дизайн и корпус'),
-    (69, 1, 'Коммуникации'),
-    (70, 1, 'Звук'),
-    (61, 1, 'Экран'),
-    (63, 1, 'Производительность'),
-    (68, 1, 'Фронтальная камера'),
-    (66, 1, 'Батарея');
+-- insert into gadget_char_name (char_name_key, gadget_id, char_name)
+-- values
+--     (60, 1, ''),
+--     (67, 1, 'Основная камера'),
+--     (71, 1, 'Другое'),
+--     (64, 1, 'Память'),
+--     (65, 1, 'Программное обеспечение'),
+--     (62, 1, 'Дизайн и корпус'),
+--     (69, 1, 'Коммуникации'),
+--     (70, 1, 'Звук'),
+--     (61, 1, 'Экран'),
+--     (63, 1, 'Производительность'),
+--     (68, 1, 'Фронтальная камера'),
+--     (66, 1, 'Батарея');
 
 insert into char_values (id)
 values
