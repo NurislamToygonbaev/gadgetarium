@@ -1,4 +1,10 @@
 package gadgetarium.dto.request;
 
-public record PaymentExecutionRequest() {
+import lombok.Builder;
+
+@Builder
+public record PaymentExecutionRequest(
+        String paymentId,
+        String payerId
+) {
 }
