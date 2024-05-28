@@ -6,6 +6,7 @@ import gadgetarium.services.BrandService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,6 +32,7 @@ public class BrandApi {
         return brandService.saveBrand(file, brandName);
     }
 
+    @Cacheable("AllBrandsCache")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "все бренды", description = "авторизация: АДМИН")
     @GetMapping

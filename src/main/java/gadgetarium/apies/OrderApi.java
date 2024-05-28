@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -62,6 +63,7 @@ public class OrderApi {
         return orderService.changeStatusOfOrder(orderId, status);
     }
 
+    @CacheEvict(value = "InfoOrderById", key = "#orderId")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Удаление заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @DeleteMapping("/{orderId}")
@@ -69,6 +71,7 @@ public class OrderApi {
         return orderService.deleteOrder(orderId);
     }
 
+    @Cacheable("InfoOrderById")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "найти заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/by-id/{orderId}")

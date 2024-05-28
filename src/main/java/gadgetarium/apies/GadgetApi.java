@@ -19,6 +19,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.ResponseEntity;
@@ -65,12 +67,14 @@ public class GadgetApi {
         return gadgetService.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
     }
 
+    @Cacheable("GadgetGetByIdCache")
     @Operation(summary = "Получение гаджета по ID.", description = "Авторизация: ВСЕ")
     @GetMapping("/by-id/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId) {
         return gadgetService.getGadgetById(gadgetId);
     }
 
+    @Cacheable("GadgetByColorCache")
     @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "Авторизация: ВСЕ")
     @GetMapping("/{gadgetId}/colour")
     public GadgetResponse getGadgetByColour(@PathVariable Long gadgetId,
@@ -178,12 +182,14 @@ public class GadgetApi {
         return gadgetService.getDescriptionGadget(id);
     }
 
+    @Cacheable("GadgetCharacterCache")
     @Operation(summary = "Посмотреть характеристики гаджета", description = "Авторизация: ВСЕ")
     @GetMapping("/characteristics/{id}")
     public GadgetCharacteristicsResponse getCharacteristicsGadget(@PathVariable Long id) {
         return gadgetService.getCharacteristicsGadget(id);
     }
 
+    @Cacheable("GadgetFeedbacksCache")
     @Operation(summary = "Посмотреть отзывы гаджета", description = "Авторизация: ВСЕ")
     @GetMapping("/reviews/{id}")
     public List<GadgetReviewsResponse> getReviewsGadget(@PathVariable Long id) {
@@ -196,6 +202,7 @@ public class GadgetApi {
         return gadgetService.getDeliveryPriceGadget(id);
     }
 
+    @CachePut(value = "GadgetGetByIdCache", key = "#subGadgetId")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
     @PutMapping("/{subGadgetId}")
@@ -204,6 +211,7 @@ public class GadgetApi {
         return gadgetService.updateGadget(subGadgetId, gadgetNewDataRequest);
     }
 
+    @CacheEvict(value = "GadgetGetByIdCache", key = "#subGadgetId")
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Удаление гаджета по ID", description = "Авторизация ADMIN")
     @DeleteMapping("/{subGadgetId}")

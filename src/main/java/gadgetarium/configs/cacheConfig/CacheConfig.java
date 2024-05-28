@@ -21,9 +21,19 @@ public class CacheConfig {
                 "GadgetsViewedCache",
                 "AllCategoriesCache",
                 "AllSubCategoriesCache",
+                "GadgetGetByIdCache",
+                "GadgetByColorCache",
+                "GadgetCharacterCache",
+                "GadgetFeedbacksCache",
                 "InfoGraficCache",
                 "AllOrdersCache",
-                "HistoryOrdersCache"
+                "InfoOrderById",
+                "ViewALlFeedbackCache",
+                "GetFeedbackByIdCache",
+                "ComparisonCompareCache",
+                "AllBrandsCache",
+                "AllAmountInBasketCache",
+                "StatisticGadgetCache"
         );
     }
 }

@@ -23,7 +23,6 @@ import java.util.List;
 public class PersonalAreaApi {
 
     private final OrderService orderService;
-    @Cacheable("HistoryOrdersCache")
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть весь истории заказов.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping
