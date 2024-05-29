@@ -74,8 +74,8 @@ public class Gadget {
         this.createdAt = LocalDate.now();
     }
 
-    public String isNew() {
+    public boolean isNew() {
         long daysBetween = ChronoUnit.DAYS.between(createdAt, LocalDate.now());
-        return daysBetween <= 30 ? "новый" : null;
+        return daysBetween <= 30;
     }
 }

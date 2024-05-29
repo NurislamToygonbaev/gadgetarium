@@ -12,6 +12,7 @@ import gadgetarium.entities.User;
 import gadgetarium.enums.*;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubGadgetRepository;
+import gadgetarium.repositories.UserRepository;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.impl.CurrentUser;
 import gadgetarium.services.impl.GadgetServiceImpl;
@@ -21,6 +22,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
@@ -215,7 +218,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     boolean basket = checkBasket(subGadget, user);
 
                     return new GadgetsResponse(
-                            rs.getLong("id"),
+                            gadgetId,
                             id,
                             imagesFirst,
                             rs.getInt("quantity"),
@@ -228,7 +231,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             price,
                             rs.getInt("percent"),
                             gadget.isNew(),
-                            gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
+                            isRecommended(gadget),
                             likes,
                             comparison,
                             basket
@@ -276,74 +279,65 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
     @Override
     public GadgetPaginationForMain mainPageDiscounts(int page, int size) {
+        String additionalWhereClause = "d.percent is not null";
+        return getGadgetPaginationForMain(page, size, additionalWhereClause, null, null);
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageNews(int page, int size) {
+        String additionalOrderByClause = "g.created_at desc";
+        return getGadgetPaginationForMain(page, size, null, additionalOrderByClause, null);
+    }
+
+    @Override
+    public GadgetPaginationForMain mainPageRecommend(int page, int size) {
+        String havingClause = "g.rating > 3.9 or count(f.id) > 10";
+        return getGadgetPaginationForMain(page, size, null, null, havingClause);
+    }
+
+    private GadgetPaginationForMain getGadgetPaginationForMain(int page, int size, String additionalWhereClause, String additionalOrderByClause, String havingClause) {
         int offset = (page - 1) * size;
-        int limit = size;
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
-        List<GadgetResponseMainPage> responseMainPages = jdbcTemplate.query("""
-                        select g.id,
-                               array_agg(gi.images) as images,
-                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                               sg.quantity,
-                               d.percent,
-                               count(f.id) as countOfFeedback,
-                               sg.main_colour,
-                               g.rating,
-                               sg.memory,
-                               sg.price,
-                               sg.id as subGadgetId
-                        from sub_gadgets sg
-                        join gadgets g on g.id = sg.gadget_id
-                        left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
-                        join brands b on g.brand_id = b.id
-                        left outer join discounts d on g.id = d.gadget_id
-                        left outer join feedbacks f on f.gadget_id = g.id
-                        where d.percent is not null
-                        and sg.remoteness_status ="""+"'"+status+"'"+"""
-                        group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
-                                sg.price, sg.memory, g.rating, sg.main_colour, subGadgetId
-                        limit ? offset ?
-                        """,
-                new Object[]{limit, offset},
-                (rs, rowNum) -> {
-                    Long gadgetId = rs.getLong("id");
-                    Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-                    Long id = rs.getLong("subGadgetId");
-                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
-                    String image = imagesArray.length > 0 ? imagesArray[0] : null;
+        StringBuilder sqlBuilder = new StringBuilder("""
+            SELECT g.id,
+                   array_agg(gi.images) AS images,
+                   CONCAT(b.brand_name, ' ', g.name_of_gadget) AS nameOfGadget,
+                   sg.quantity,
+                   d.percent,
+                   COUNT(f.id) AS countOfFeedback,
+                   sg.main_colour,
+                   g.rating,
+                   sg.memory,
+                   sg.price,
+                   sg.id AS subGadgetId
+            FROM sub_gadgets sg
+            JOIN gadgets g ON g.id = sg.gadget_id
+            LEFT JOIN sub_gadget_images gi ON sg.id = gi.sub_gadget_id
+            JOIN brands b ON g.brand_id = b.id
+            LEFT OUTER JOIN discounts d ON g.id = d.gadget_id
+            LEFT OUTER JOIN feedbacks f ON f.gadget_id = g.id
+            WHERE sg.remoteness_status = ?
+            """);
 
-                    SubGadget subGadget = subGadgetRepo.getByID(id);
+        if (additionalWhereClause != null) {
+            sqlBuilder.append(" AND ").append(additionalWhereClause);
+        }
 
-                    User user = null;
-                    try {
-                        user = currentUser.get();
-                    } catch (Exception ignored) {
-                    }
-                    BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
-                    boolean likes = checkLikes(subGadget, user);
-                    boolean comparison = checkComparison(subGadget, user);
-                    boolean basket = checkBasket(subGadget, user);
+        sqlBuilder.append(" GROUP BY g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent, sg.price, sg.memory, g.rating, sg.main_colour, sg.id");
 
-                    return GadgetResponseMainPage.builder()
-                            .gadgetId(gadgetId)
-                            .subGadgetId(id)
-                            .percent(rs.getInt("percent"))
-                            .newProduct(gadget.isNew())
-                            .recommend(gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null)
-                            .image(image)
-                            .quantity(rs.getInt("quantity"))
-                            .nameOfGadget(rs.getString("nameOfGadget"))
-                            .memory(rs.getString("memory"))
-                            .colour(rs.getString("main_colour"))
-                            .rating(rs.getDouble("rating"))
-                            .count(rs.getInt("countOfFeedback"))
-                            .price(rs.getBigDecimal("price"))
-                            .currentPrice(price)
-                            .likes(likes)
-                            .comparison(comparison)
-                            .basket(basket)
-                            .build();
-                });
+        if (havingClause != null) {
+            sqlBuilder.append(" HAVING ").append(havingClause);
+        }
+
+        if (additionalOrderByClause != null) {
+            sqlBuilder.append(" ORDER BY ").append(additionalOrderByClause);
+        }
+
+        sqlBuilder.append(" LIMIT ? OFFSET ?");
+
+        List<GadgetResponseMainPage> responseMainPages = jdbcTemplate.query(sqlBuilder.toString(),
+                new Object[]{status, size, offset}, this::mapToGadgetResponseMainPage);
 
         return GadgetPaginationForMain.builder()
                 .page(page)
@@ -352,156 +346,47 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 .build();
     }
 
-    @Override
-    public GadgetPaginationForMain mainPageNews(int page, int size) {
-        int offset = (page - 1) * size;
-        int limit = size;
-        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
+    private GadgetResponseMainPage mapToGadgetResponseMainPage(ResultSet rs, int rowNum) throws SQLException {
+        Long gadgetId = rs.getLong("id");
+        String[] imagesArray = (String[]) rs.getArray("images").getArray();
+        String image = imagesArray.length > 0 ? imagesArray[0] : null;
+        Long subGadgetId = rs.getLong("subGadgetId");
 
-        List<GadgetResponseMainPage> newGadgets = jdbcTemplate.query("""
-                        select g.id,
-                               array_agg(gi.images) as images,
-                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                               sg.quantity,
-                               d.percent,
-                               count(f.id) as countOfFeedback,
-                               sg.main_colour,
-                               g.rating,
-                               sg.memory,
-                               sg.price,
-                               sg.id as subGadgetId
-                        from sub_gadgets sg
-                        join gadgets g on g.id = sg.gadget_id
-                        left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
-                        join brands b on g.brand_id = b.id
-                        left outer join discounts d on g.id = d.gadget_id
-                        left outer join feedbacks f on f.gadget_id = g.id
-                        where sg.remoteness_status ="""+"'"+status+"'"+"""
-                        group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
-                                sg.price, sg.memory, g.rating, sg.main_colour, g.release_date,
-                                subGadgetId
-                        order by g.created_at desc
-                        limit ? offset ?
-                        """,
-                new Object[]{limit, offset},
-                (rs, rowNum) -> {
-                    Long id = rs.getLong("subGadgetId");
-                    Long gadgetId = rs.getLong("id");
-                    Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
-                    String image = imagesArray.length > 0 ? imagesArray[0] : null;
-                    SubGadget subGadget = subGadgetRepo.getByID(id);
-                    User user = null;
-                    try {
-                        user = currentUser.get();
-                    } catch (Exception ignored) {
-                    }
-                    BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
-                    boolean likes = checkLikes(subGadget, user);
-                    boolean comparison = checkComparison(subGadget, user);
-                    boolean basket = checkBasket(subGadget, user);
+        SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
+        User user = getCurrentUser();
+        BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 
-                    return GadgetResponseMainPage.builder()
-                            .gadgetId(gadgetId)
-                            .subGadgetId(id)
-                            .percent(rs.getInt("percent"))
-                            .newProduct(gadget.isNew())
-                            .recommend(gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null)
-                            .image(image)
-                            .quantity(rs.getInt("quantity"))
-                            .nameOfGadget(rs.getString("nameOfGadget"))
-                            .memory(rs.getString("memory"))
-                            .colour(rs.getString("main_colour"))
-                            .rating(rs.getDouble("rating"))
-                            .count(rs.getInt("countOfFeedback"))
-                            .price(rs.getBigDecimal("price"))
-                            .currentPrice(price)
-                            .likes(likes)
-                            .comparison(comparison)
-                            .basket(basket)
-                            .build();
-                });
-
-        return GadgetPaginationForMain.builder()
-                .page(page)
-                .size(size)
-                .mainPages(newGadgets)
+        return GadgetResponseMainPage.builder()
+                .gadgetId(gadgetId)
+                .subGadgetId(subGadgetId)
+                .percent(rs.getInt("percent"))
+                .newProduct(subGadget.getGadget().isNew())
+                .recommend(isRecommended(subGadget.getGadget()))
+                .image(image)
+                .quantity(rs.getInt("quantity"))
+                .nameOfGadget(rs.getString("nameOfGadget"))
+                .memory(rs.getString("memory"))
+                .colour(rs.getString("main_colour"))
+                .rating(rs.getDouble("rating"))
+                .count(rs.getInt("countOfFeedback"))
+                .price(rs.getBigDecimal("price"))
+                .currentPrice(price)
+                .likes(checkLikes(subGadget, user))
+                .comparison(checkComparison(subGadget, user))
+                .basket(checkBasket(subGadget, user))
                 .build();
     }
 
-    @Override
-    public GadgetPaginationForMain mainPageRecommend(int page, int size) {
-        int offset = (page - 1) * size;
-        int limit = size;
-        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
-
-        List<GadgetResponseMainPage> newGadgets = jdbcTemplate.query("""
-                        select g.id,
-                               array_agg(gi.images) as images,
-                               concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                               sg.quantity,
-                               d.percent,
-                               count(f.id) as countOfFeedback,
-                               sg.main_colour,
-                               g.rating,
-                               sg.memory,
-                               sg.price,
-                               sg.id as subGadgetId
-                        from sub_gadgets sg
-                        join gadgets g on g.id = sg.gadget_id
-                        left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
-                        join brands b on g.brand_id = b.id
-                        left outer join discounts d on g.id = d.gadget_id
-                        left outer join feedbacks f on f.gadget_id = g.id
-                        where sg.remoteness_status ="""+"'"+status+"'"+"""
-                        group by g.id, g.name_of_gadget, b.brand_name, sg.quantity, d.percent,
-                                sg.price, sg.memory, g.rating, sg.main_colour, subGadgetId
-                        having g.rating > 3.9 or count(f.id) > 10
-                        limit ? offset ?
-                        """,
-                new Object[]{limit, offset},
-                (rs, rowNum) -> {
-                    Long gadgetId = rs.getLong("id");
-                    Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-                    Long id = rs.getLong("subGadgetId");
-                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
-                    String image = imagesArray.length > 0 ? imagesArray[0] : null;
-                    SubGadget subGadget = subGadgetRepo.getByID(id);
-                    User user = null;
-                    try {
-                        user = currentUser.get();
-                    } catch (Exception ignored) {
-                    }
-                    BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
-                    boolean likes = checkLikes(subGadget, user);
-                    boolean comparison = checkComparison(subGadget, user);
-                    boolean basket = checkBasket(subGadget, user);
-
-                    return GadgetResponseMainPage.builder()
-                            .gadgetId(gadgetId)
-                            .subGadgetId(id)
-                            .percent(rs.getInt("percent"))
-                            .newProduct(gadget.isNew())
-                            .recommend(gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null)
-                            .image(image)
-                            .quantity(rs.getInt("quantity"))
-                            .nameOfGadget(rs.getString("nameOfGadget"))
-                            .memory(rs.getString("memory"))
-                            .colour(rs.getString("main_colour"))
-                            .rating(rs.getDouble("rating"))
-                            .count(rs.getInt("countOfFeedback"))
-                            .price(rs.getBigDecimal("price"))
-                            .currentPrice(price)
-                            .likes(likes)
-                            .comparison(comparison)
-                            .basket(basket)
-                            .build();
-                });
-
-        return GadgetPaginationForMain.builder()
-                .page(page)
-                .size(size)
-                .mainPages(newGadgets)
-                .build();
+    private User getCurrentUser() {
+        try {
+            return currentUser.get();
+        } catch (Exception ignored){
+            return null;
+        }
     }
+
+    public static boolean isRecommended(Gadget gadget) {
+        return gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10;
+    }
+
 }

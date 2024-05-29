@@ -1,6 +1,5 @@
 package gadgetarium.apies;
 
-import gadgetarium.dto.request.BasketIdsRequest;
 import gadgetarium.dto.response.GetBasketAmounts;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.GetAllBasketResponse;
@@ -36,8 +35,8 @@ public class BasketApi {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Цены из корзины ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/all-amount-in-basket")
-    public GetBasketAmounts allAmounts(BasketIdsRequest basketIdsRequest) {
-        return basketService.allAmounts(basketIdsRequest);
+    public GetBasketAmounts allAmounts(@RequestParam List<Long> ids) {
+        return basketService.allAmounts(ids);
     }
 
     @PreAuthorize("hasAuthority('USER')")
@@ -66,14 +65,14 @@ public class BasketApi {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Удалить из корзины по выбранным гаджетом", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @DeleteMapping("/delete-all")
-    public HttpResponse deleteALlFromBasket(BasketIdsRequest basketIdsRequest) {
-        return basketService.deleteALlFromBasket(basketIdsRequest);
+    public HttpResponse deleteALlFromBasket(@RequestParam List<Long> ids) {
+        return basketService.deleteALlFromBasket(ids);
     }
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Сумма заказа с гаджетом", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/order-amounts")
-    public SumOrderWithGadgetResponse sumOrderWithGadgets(BasketIdsRequest basketIdsRequest) {
-        return basketService.sumOrderWithGadgets(basketIdsRequest);
+    public SumOrderWithGadgetResponse sumOrderWithGadgets(@RequestParam List<Long> ids) {
+        return basketService.sumOrderWithGadgets(ids);
     }
 }

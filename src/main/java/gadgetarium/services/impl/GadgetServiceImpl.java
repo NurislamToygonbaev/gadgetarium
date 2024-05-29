@@ -1,8 +1,9 @@
 package gadgetarium.services.impl;
 
-import com.amazonaws.services.s3.AmazonS3;
-import gadgetarium.configs.s3.AmazonS3Config;
-import gadgetarium.dto.request.*;
+import gadgetarium.dto.request.AddProductRequest;
+import gadgetarium.dto.request.GadgetNewDataRequest;
+import gadgetarium.dto.request.ProductDocRequest;
+import gadgetarium.dto.request.ProductsRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.*;
 import gadgetarium.enums.Discount;
@@ -33,7 +34,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GadgetServiceImpl implements GadgetService {
 
-    private final AmazonS3Config amazonS3Config;
     private final GadgetRepository gadgetRepo;
     private final CategoryRepository categoryRepo;
     private final SubGadgetRepository subGadgetRepo;
@@ -42,7 +42,6 @@ public class GadgetServiceImpl implements GadgetService {
     private final BrandRepository brandRepo;
     private final SubCategoryRepository subCategoryRepo;
     private final CharValueRepository charValueRepo;
-    private final AmazonS3 s3Client;
     private final UserRepository userRepo;
     private final OrderRepository orderRepo;
 
@@ -99,7 +98,7 @@ public class GadgetServiceImpl implements GadgetService {
                         gadget.getRating(),
                         percent,
                         gadget.isNew(),
-                        gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
+                        GadgetJDBCTemplateRepositoryImpl.isRecommended(gadget),
                         subGadget.getPrice(),
                         discountedPrice,
                         subGadget.getMainColour(),
@@ -169,7 +168,7 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getRating(),
                 percent,
                 gadget.isNew(),
-                gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
+                GadgetJDBCTemplateRepositoryImpl.isRecommended(gadget),
                 subGadget.getPrice(),
                 discountedPrice,
                 subGadget.getMainColour(),

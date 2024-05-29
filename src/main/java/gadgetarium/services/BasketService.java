@@ -1,6 +1,5 @@
 package gadgetarium.services;
 
-import gadgetarium.dto.request.BasketIdsRequest;
 import gadgetarium.dto.response.GetAllBasketResponse;
 import gadgetarium.dto.response.GetBasketAmounts;
 import gadgetarium.dto.response.HttpResponse;
@@ -18,9 +17,9 @@ public interface BasketService {
 
     List<GetAllBasketResponse> gelAllBasket();
 
-    GetBasketAmounts allAmounts(BasketIdsRequest basketIdsRequest);
+    GetBasketAmounts allAmounts(List<Long> ids);
 
-    SumOrderWithGadgetResponse sumOrderWithGadgets(BasketIdsRequest basketIdsRequest);
+    SumOrderWithGadgetResponse sumOrderWithGadgets(List<Long> ids);
 
-    HttpResponse deleteALlFromBasket(BasketIdsRequest basketIdsRequest);
+    HttpResponse deleteALlFromBasket(List<Long> ids);
 }
