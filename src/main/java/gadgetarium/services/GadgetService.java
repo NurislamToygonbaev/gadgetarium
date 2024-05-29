@@ -62,4 +62,6 @@ public interface GadgetService {
     HttpResponse setQuantityOneProduct(Long id, int quantity);
 
     List<String> getAllColours(Long gadgetId);
+
+    List<GadgetResponse> globalSearch(String request);
 }

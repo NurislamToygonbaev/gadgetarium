@@ -224,6 +224,12 @@ public class GadgetApi {
     public List<String> getAllColours(@PathVariable Long gadgetId) {
         return gadgetService.getAllColours(gadgetId);
     }
+
+    @Operation(summary = "Поиск всех гаджетов", description = "Авторизация: ВСЕ")
+    @GetMapping("/global-search")
+    public List<GadgetResponse> globalSearch(@RequestParam String request){
+        return gadgetService.globalSearch(request);
+    }
 }
 
 

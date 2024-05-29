@@ -373,6 +373,11 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
+    public List<GadgetResponse> globalSearch(String request) {
+        return gadgetJDBCTemplateRepo.globalSearch(request);
+    }
+
+    @Override
     @Transactional
     public HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
         try {
