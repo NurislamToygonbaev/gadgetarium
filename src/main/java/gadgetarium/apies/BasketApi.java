@@ -9,6 +9,8 @@ import gadgetarium.services.BasketService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,6 +32,7 @@ public class BasketApi {
         return basketService.gelAllBasket();
     }
 
+    @Cacheable("AllAmountInBasketCache")
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Цены из корзины ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/all-amount-in-basket")
@@ -59,6 +62,7 @@ public class BasketApi {
         return basketService.deleteFromBasket(gadgetId);
     }
 
+    @CacheEvict("AllAmountInBasketCache")
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Удалить из корзины по выбранным гаджетом", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @DeleteMapping("/delete-all")

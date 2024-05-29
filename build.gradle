@@ -58,6 +58,10 @@ dependencies {
     implementation 'com.braintreepayments.gateway:braintree-java:3.34.0'
     // cors
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
+    // jakarta servlet openSessionFactory
+    implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
+    // cache methods
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
 }
 
 tasks.named('test') {

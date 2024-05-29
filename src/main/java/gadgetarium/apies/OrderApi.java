@@ -9,6 +9,8 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,7 @@ public class OrderApi {
 
     private final OrderService orderService;
 
+    @Cacheable("InfoGraficCache")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Инфографика", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/info")
@@ -38,8 +41,9 @@ public class OrderApi {
         return orderService.getInfoForPeriod(forPeriod);
     }
 
+    @Cacheable("AllOrdersCache")
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Все гаджеты", description = "Авторизация: АДМИНСТРАТОР")
+    @Operation(summary = "Все Заказы", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping
     public OrderPagination getAllOrders(
                         @RequestParam(required = false) String keyword,
@@ -59,6 +63,7 @@ public class OrderApi {
         return orderService.changeStatusOfOrder(orderId, status);
     }
 
+    @CacheEvict(value = "InfoOrderById", key = "#orderId")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Удаление заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @DeleteMapping("/{orderId}")
@@ -66,6 +71,7 @@ public class OrderApi {
         return orderService.deleteOrder(orderId);
     }
 
+    @Cacheable("InfoOrderById")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "найти заказа по ID", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/by-id/{orderId}")

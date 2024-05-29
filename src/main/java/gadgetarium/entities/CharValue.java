@@ -22,7 +22,7 @@ public class CharValue {
     @SequenceGenerator(name = "values_seq", allocationSize = 1, initialValue = 60)
     private Long id;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @Size(max = 3000)
     private Map<String, String> values;
 

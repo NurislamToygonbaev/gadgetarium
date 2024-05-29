@@ -41,16 +41,11 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    @ManyToMany(cascade = {DETACH, PERSIST, MERGE, REFRESH}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {DETACH, PERSIST, MERGE, REFRESH}, fetch = FetchType.LAZY)
     private List<SubGadget> subGadgets;
 
-    @ManyToOne(cascade = {DETACH})
+    @ManyToOne(cascade = {DETACH}, fetch = FetchType.LAZY)
     private User user;
-
-    public void addGadget(SubGadget subGadget) {
-        if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
-        this.subGadgets.add(subGadget);
-    }
 
     @PrePersist
     private void initialReview() {
