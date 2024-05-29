@@ -331,7 +331,7 @@ public class UserServiceImpl implements UserService {
                 gadget.getRating(),
                 percent,
                 gadget.isNew(),
-                gadget.getRating() > 3.9 ? "recommend" : null,
+                GadgetJDBCTemplateRepositoryImpl.isRecommended(gadget),
                 subGadget.getPrice(),
                 GadgetServiceImpl.calculatePrice(subGadget),
                 likes,

@@ -19,8 +19,8 @@ public record GadgetsResponse(
          BigDecimal price,
          BigDecimal currentPrice,
          int percent,
-         String newProduct,
-         String recommend,
+         boolean newProduct,
+         boolean recommend,
          boolean likes,
          boolean compression,
          boolean basked
