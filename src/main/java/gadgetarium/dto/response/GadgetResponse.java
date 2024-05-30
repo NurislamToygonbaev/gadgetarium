@@ -33,6 +33,7 @@ public record GadgetResponse(
         int countSim,
         List<String> uniField,
         boolean likes,
-        boolean basket
+        boolean basket,
+        String pdfUrl
         ) {
         }

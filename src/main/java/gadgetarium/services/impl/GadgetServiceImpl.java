@@ -109,7 +109,8 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getCountSim(),
                         subGadget.getUniFiled(),
                         likes,
-                        basket
+                        basket,
+                        gadget.getPDFUrl()
                 );
             }
         }
@@ -179,7 +180,8 @@ public class GadgetServiceImpl implements GadgetService {
                 subGadget.getCountSim(),
                 subGadget.getUniFiled(),
                 likes,
-                basket
+                basket,
+                gadget.getPDFUrl()
         );
     }
 
