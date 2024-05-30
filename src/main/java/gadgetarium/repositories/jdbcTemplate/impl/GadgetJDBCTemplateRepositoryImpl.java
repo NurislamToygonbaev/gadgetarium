@@ -291,28 +291,22 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     }
 
     @Override
-    public List<GadgetResponse> globalSearch(String request) {
+    public List<GadgetsResponse> globalSearch(String request) {
         String searchPattern = "%" + request + "%";
 
         return jdbcTemplate.query("""
                 select g.id,
                        sg.id as subGadgetId,
-                       b.logo,
                        array_agg(gi.images) as images,
-                       concat(sc.sub_category_name, ' ', g.name_of_gadget) as nameOfGadget,
                        sg.quantity,
-                       sg.article,
+                       concat(sc.sub_category_name, ' ', g.name_of_gadget) as nameOfGadget,
+                       sg.memory,
+                       sg.main_colour as colour,
                        g.rating,
-                       d.percent,
+                       count(f.id) as countof,
                        sg.price,
                        sg.price - (sg.price * coalesce(d.percent, 0) / 100) as currentPrice,
-                       sg.main_colour as colour,
-                       g.release_date as release,
-                       g.warranty,
-                       sg.memory,
-                       sg.ram,
-                       sg.count_sim as countSim,
-                       array_agg(distinct su.uni_filed) as uniFiled,
+                       d.percent,
                        g.created_at > now() - interval '30 days' as newProduct,
                       (g.rating > 3.9 or (
                              select count(*) from feedbacks f where f.gadget_id = g.id
@@ -323,19 +317,18 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 left join brands b on g.brand_id = b.id
                 left join sub_categories sc on g.sub_category_id = sc.id 
                 left outer join discounts d on g.id = d.gadget_id
-                left join sub_gadget_uni_filed su on sg.id = su.sub_gadget_id
+                left join feedbacks f on g.id = f.gadget_id
                 where g.name_of_gadget ilike ? 
                    or sc.sub_category_name ilike ?
                    or b.brand_name ilike ?
-                group by g.id, sg.id, b.logo, sc.sub_category_name, g.name_of_gadget, sg.quantity, sg.article, g.rating, d.percent, sg.price,  sg.main_colour, g.release_date, g.warranty, sg.memory, sg.ram, sg.count_sim
+                group by g.id, sg.id, sc.sub_category_name, g.name_of_gadget, sg.quantity, g.rating, d.percent, sg.price,  sg.main_colour, sg.memory 
                 limit 20
                 """,
                 new Object[]{searchPattern, searchPattern, searchPattern},
                 (rs, rowNum) -> {
-                    List<String> imagesArray = Arrays.asList((String[]) rs.getArray("images").getArray());
-                    List<String> uniFieldArray = Arrays.asList((String[]) rs.getArray("uniFiled").getArray());
+                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
+                    String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
                     Long id = rs.getLong("id");
-                    LocalDate releaseDate = rs.getDate("release").toLocalDate();
                     SubGadget subGadget = subGadgetRepo.getByID(id);
                     User user = null;
                     try {
@@ -345,28 +338,23 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     BigDecimal price = rs.getBigDecimal("price");
                     int percent = rs.getInt("percent");
                     BigDecimal discountedPrice = price.subtract(price.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100)));
-                    return new GadgetResponse(
+                    return new GadgetsResponse(
                             id,
                             rs.getLong("subGadgetId"),
-                            rs.getString("logo"),
-                            imagesArray,
-                            rs.getString("nameOfGadget"),
+                            imagesFirst,
                             rs.getInt("quantity"),
-                            rs.getLong("article"),
+                            rs.getString("nameOfGadget"),
+                            rs.getString("memory"),
+                            rs.getString("colour"),
                             rs.getInt("rating"),
+                            rs.getInt("countOf"),
+                            price,
+                            discountedPrice,
                             percent,
                             rs.getBoolean("newProduct"),
                             rs.getBoolean("recommend"),
-                            price,
-                            discountedPrice,
-                            rs.getString("colour"),
-                            releaseDate,
-                            rs.getInt("warranty"),
-                            rs.getString("memory"),
-                            rs.getString("ram"),
-                            rs.getInt("countSim"),
-                            uniFieldArray,
                             checkLikes(subGadget, user),
+                            checkComparison(subGadget, user),
                             checkBasket(subGadget, user)
                     );
                 });

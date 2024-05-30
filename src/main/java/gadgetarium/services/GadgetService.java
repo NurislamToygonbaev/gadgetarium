@@ -63,5 +63,5 @@ public interface GadgetService {
 
     List<String> getAllColours(Long gadgetId);
 
-    List<GadgetResponse> globalSearch(String request);
+    List<GadgetsResponse> globalSearch(String request);
 }

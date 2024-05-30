@@ -227,7 +227,7 @@ public class GadgetApi {
 
     @Operation(summary = "Поиск всех гаджетов", description = "Авторизация: ВСЕ")
     @GetMapping("/global-search")
-    public List<GadgetResponse> globalSearch(@RequestParam String request){
+    public List<GadgetsResponse> globalSearch(@RequestParam String request){
         return gadgetService.globalSearch(request);
     }
 }

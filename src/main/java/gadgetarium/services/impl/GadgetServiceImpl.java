@@ -373,7 +373,7 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public List<GadgetResponse> globalSearch(String request) {
+    public List<GadgetsResponse> globalSearch(String request) {
         return gadgetJDBCTemplateRepo.globalSearch(request);
     }
 
