@@ -12,9 +12,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +24,6 @@ public class FeedbackApi {
 
     private final FeedbackService feedbackService;
 
-    @Cacheable("ViewALlFeedbackCache")
     @PreAuthorize("hasAuthority({'ADMIN'})")
     @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Просмотр всех отзывов")
     @GetMapping
@@ -49,7 +45,6 @@ public class FeedbackApi {
         return feedbackService.editComment(responseAdmin, id);
     }
 
-    @CacheEvict(value = "GetFeedbackByIdCache", key = "#id")
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Удалить отзыв")
     @DeleteMapping("/{id}")
@@ -58,7 +53,6 @@ public class FeedbackApi {
 
     }
 
-    @Cacheable("GetFeedbackByIdCache")
     @PreAuthorize("hasAuthority({'ADMIN'})")
     @Operation(description = "Авторизация: АДМИНИСТРАТОР", summary = "Смотреть один отзыв ")
     @GetMapping("/by-id/{id}")
@@ -66,7 +60,6 @@ public class FeedbackApi {
         return feedbackService.getFeedbackById(id);
 
     }
-    @Cacheable(value = "StatisticGadgetCache", key = "#gadgetId")
     @Operation(description = "Авторизация: ВСЕ", summary = "Статистика отзывов по гаджету.")
     @GetMapping("/statistics/{gadgetId}")
     public FeedbackStatisticsResponse reviewsStatistics(@PathVariable Long gadgetId) {
@@ -81,7 +74,6 @@ public class FeedbackApi {
         return feedbackService.leaveFeedback(gadgetId, feedbackRequest);
     }
 
-    @CachePut(value = "GetFeedbackByIdCache", key = "#feedId")
     @PreAuthorize("hasAnyAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Обновление отзыва ")
     @PatchMapping("/update/{feedId}")
@@ -91,7 +83,6 @@ public class FeedbackApi {
         return feedbackService.updateFeedback(feedId, message, rating);
     }
 
-    @CacheEvict(value = "GetFeedbackByIdCache", key = "#feedId")
     @PreAuthorize("hasAnyAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Удаление отзыва ")
     @DeleteMapping("/delete-feedback/{feedId}")
