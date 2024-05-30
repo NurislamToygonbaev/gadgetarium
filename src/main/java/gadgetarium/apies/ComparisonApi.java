@@ -8,9 +8,6 @@ import gadgetarium.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -39,7 +36,6 @@ public class ComparisonApi {
         return userService.seeComparison();
     }
 
-    @Cacheable("ComparisonCompareCache")
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для просмотра различий")
     @GetMapping("/compare")
@@ -55,7 +51,6 @@ public class ComparisonApi {
         return userService.deleteSubGadget(subGadgetId);
     }
 
-    @CacheEvict("ComparisonCompareCache")
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для удаление всех гаджетов в сравнении")
     @DeleteMapping("/clear")
