@@ -158,9 +158,9 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         }
                     }
                 } else if (sort.equals(Sort.HIGH_TO_LOW)) {
-                    orderBy = " order by g.price desc ";
+                    orderBy = " order by sg.price desc ";
                 } else if (sort.equals(Sort.LOW_TO_HIGH)) {
-                    orderBy = " order by g.price asc ";
+                    orderBy = " order by  sg.price asc ";
                 }
             }
         }
@@ -386,7 +386,10 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     }
 
     public static boolean isRecommended(Gadget gadget) {
-        return gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10;
+        return gadget.getRating() > 3.9 ||
+               gadget.getSubGadgets().stream()
+                       .anyMatch(subGadget -> subGadget.getOrders().size() > 10);
     }
+
 
 }
