@@ -613,16 +613,6 @@ values (1, 1),
        (22, 23);
 
 
--- insert into sub_gadget_uni_field(sub_gadget_id, uni_field)
--- values (39, 'Bluetooth'),
---        (39, 'Круглая'),
---        (39, 'Кожа'),
---        (39, 'Нержавейщая сталь'),
---        (39, 'Унисекс'),
---        (39, 'да'),
---        (39, 'Прямоугольная');
-
-
 insert into sub_gadget_images(sub_gadget_id, images)
 values (1, 'https://msk-apple.ru/image/cache/catalog/Add/13%20pro%20max/30059051bb-350x450.jpg'),
        (1, 'https://msk-apple.ru/image/cache/catalog/Add/13%20pro%20max/30059051bb1-350x450.jpg'),
@@ -678,6 +668,14 @@ values (1, 'https://msk-apple.ru/image/cache/catalog/Add/13%20pro%20max/30059051
        (48, 'path_to_image_47'),
        (49, 'path_to_image_48');
 
+insert into sub_gadget_uni_filed(sub_gadget_id, uni_filed)
+values (39, 'Bluetooth'),
+       (39, 'Круглая'),
+       (39, 'Кожа'),
+       (39, 'Нержавейщая сталь'),
+       (39, 'Унисекс'),
+       (39, 'да'),
+       (39, 'Прямоугольная');
 
 insert into discounts(end_date, percent, start_date, id, gadget_id)
 values ('2024-12-12', 20, '2024-04-01', 1, 1),
@@ -787,20 +785,21 @@ values (1, 'https://s3.amazonaws.com/yourbucket/feedback_images/image1.png'),
        (24, 'https://s3.amazonaws.com/yourbucket/feedback_images/image24.png');
 
 
--- insert into gadget_char_name (char_name_key, gadget_id, char_name)
--- values
---     (60, 1, ''),
---     (67, 1, 'Основная камера'),
---     (71, 1, 'Другое'),
---     (64, 1, 'Память'),
---     (65, 1, 'Программное обеспечение'),
---     (62, 1, 'Дизайн и корпус'),
---     (69, 1, 'Коммуникации'),
---     (70, 1, 'Звук'),
---     (61, 1, 'Экран'),
---     (63, 1, 'Производительность'),
---     (68, 1, 'Фронтальная камера'),
---     (66, 1, 'Батарея');
+insert into gadget_char_name (char_name_key, gadget_id, char_name)
+values
+    (60, 1, ''),
+    (61, 1, 'Основная камера'),
+    (62, 1, 'Другое'),
+    (63, 1, 'Память'),
+    (64, 1, 'Программное обеспечение'),
+    (65, 1, 'Дизайн и корпус'),
+    (66, 1, 'Коммуникации'),
+    (67, 1, 'Звук'),
+    (68, 1, 'Экран'),
+    (69, 1, 'Производительность'),
+    (70, 1, 'Фронтальная камера'),
+    (71, 1, 'Батарея');
+
 
 insert into char_values (id)
 values
