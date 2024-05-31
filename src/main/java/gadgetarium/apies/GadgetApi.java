@@ -204,6 +204,14 @@ public class GadgetApi {
         return gadgetService.getAllColours(gadgetId);
     }
 
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Детали товаров", description = "Авторизация ADMIN")
+    @GetMapping("/details")
+    public List<DetailsResponse> gadgetDetails(){
+        return gadgetService.gadgetDetails();
+    }
+
+
     @Operation(summary = "Поиск всех гаджетов", description = "Авторизация: ВСЕ")
     @GetMapping("/global-search")
     public List<GadgetsResponse> globalSearch(@RequestParam String request){

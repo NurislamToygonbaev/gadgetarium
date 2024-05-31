@@ -17,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -153,9 +154,9 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         }
                     }
                 } else if (sort.equals(Sort.HIGH_TO_LOW)) {
-                    orderBy = " order by g.price desc ";
+                    orderBy = " order by sg.price desc ";
                 } else if (sort.equals(Sort.LOW_TO_HIGH)) {
-                    orderBy = " order by g.price asc ";
+                    orderBy = " order by  sg.price asc ";
                 }
             }
         }
@@ -451,7 +452,53 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     }
 
     public static boolean isRecommended(Gadget gadget) {
-        return gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10;
+        return gadget.getRating() > 3.9 ||
+               gadget.getSubGadgets().stream()
+                       .anyMatch(subGadget -> subGadget.getOrders().size() > 10);
     }
 
+    @Override
+    public List<DetailsResponse> gadgetDetails() {
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
+
+        List<DetailsResponse> detailsResponses = jdbcTemplate.query("""
+                select  sg.id,
+                        array_agg(i.images) as images,
+                        g.name_of_gadget,
+                        sg.main_colour,
+                        sg.count_sim,
+                        sg.ram,
+                        sg.memory,
+                        sg.quantity,
+                        sg.price
+                from sub_gadgets sg
+                left join sub_gadget_images i on i.sub_gadget_id = sg.id
+                join gadgets g on sg.gadget_id = g.id
+                where sg.remoteness_status ="""+"'"+status+"'"+"""
+                group by sg.id, g.name_of_gadget, sg.main_colour, sg.count_sim, sg.ram, sg.memory, sg.quantity, sg.price                       
+                        """,
+                (rs, rowNum) -> {
+
+                    Array imagesArray = rs.getArray("images");
+                    String[] images = null;
+                    if (imagesArray != null) {
+                        images = (String[]) imagesArray.getArray();
+                    }
+                    String image = images != null && images.length > 0 ? images[0] : null;
+
+                    return DetailsResponse.builder()
+                            .id(rs.getLong(1))
+                            .image(image)
+                            .nameOfGadget(rs.getString(3))
+                            .colour(rs.getString(4))
+                            .countSim(rs.getInt(5))
+                            .ram(rs.getString(6))
+                            .memory(rs.getString(7))
+                            .quantity(rs.getInt(8))
+                            .price(rs.getBigDecimal(9))
+                            .build();
+                });
+
+        return detailsResponses;
+    }
 }
