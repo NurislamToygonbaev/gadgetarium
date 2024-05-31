@@ -1,5 +1,6 @@
 package gadgetarium.repositories.jdbcTemplate;
 
+import gadgetarium.dto.response.DetailsResponse;
 import gadgetarium.dto.response.GadgetPaginationForMain;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
@@ -22,4 +23,6 @@ public interface GadgetJDBCTemplateRepository {
     GadgetPaginationForMain mainPageNews(int page, int size);
 
     GadgetPaginationForMain mainPageRecommend(int page, int size);
+
+    List<DetailsResponse> gadgetDetails();
 }

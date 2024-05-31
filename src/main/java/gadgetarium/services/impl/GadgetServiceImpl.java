@@ -639,5 +639,8 @@ public class GadgetServiceImpl implements GadgetService {
         return subCategoryRepo.getSubCategories(catId);
     }
 
-
+    @Override
+    public List<DetailsResponse> gadgetDetails() {
+        return gadgetJDBCTemplateRepo.gadgetDetails();
+    }
 }
