@@ -309,9 +309,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                        sg.price - (sg.price * coalesce(d.percent, 0) / 100) as currentPrice,
                        d.percent,
                        g.created_at > now() - interval '30 days' as newProduct,
-                      (g.rating > 3.9 or (
-                             select count(*) from feedbacks f where f.gadget_id = g.id
-                       ) > 10) as recommend
+                      (g.rating > 3.9 or
+                       count(o.id) > 10) as recommend
                 from sub_gadgets sg
                 left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                 left join gadgets g on g.id = sg.gadget_id 
@@ -319,6 +318,8 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 left join sub_categories sc on g.sub_category_id = sc.id 
                 left outer join discounts d on g.id = d.gadget_id
                 left join feedbacks f on g.id = f.gadget_id
+                left join orders_sub_gadgets og on sg.id = og.sub_gadgets_id
+                left join orders o on o.id = og.orders_id
                 where g.name_of_gadget ilike ? 
                    or sc.sub_category_name ilike ?
                    or b.brand_name ilike ?
