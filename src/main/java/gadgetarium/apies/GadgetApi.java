@@ -203,6 +203,14 @@ public class GadgetApi {
     public List<String> getAllColours(@PathVariable Long gadgetId) {
         return gadgetService.getAllColours(gadgetId);
     }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Детали товаров", description = "Авторизация ADMIN")
+    @GetMapping("/details")
+    public List<DetailsResponse> gadgetDetails(){
+        return gadgetService.gadgetDetails();
+    }
+
 }
 
 
