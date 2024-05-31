@@ -15,7 +15,6 @@ import gadgetarium.repositories.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.GadgetService;
-import io.swagger.v3.oas.models.info.License;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -651,5 +650,9 @@ public class GadgetServiceImpl implements GadgetService {
         }
 
         return memories;
+    }
+
+    public List<DetailsResponse> gadgetDetails() {
+        return gadgetJDBCTemplateRepo.gadgetDetails();
     }
 }

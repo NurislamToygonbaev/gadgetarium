@@ -1,11 +1,6 @@
 package gadgetarium.repositories.jdbcTemplate.impl;
 
-import gadgetarium.dto.response.PaginationGadget;
-import gadgetarium.dto.response.GadgetsResponse;
-import gadgetarium.dto.response.GadgetPaginationForMain;
-import gadgetarium.dto.response.GadgetResponseMainPage;
-import gadgetarium.dto.response.PaginationSHowMoreGadget;
-import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.*;
 import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
@@ -22,6 +17,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -391,5 +387,48 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                        .anyMatch(subGadget -> subGadget.getOrders().size() > 10);
     }
 
+    @Override
+    public List<DetailsResponse> gadgetDetails() {
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
+        List<DetailsResponse> detailsResponses = jdbcTemplate.query("""
+                select  sg.id,
+                        array_agg(i.images) as images,
+                        g.name_of_gadget,
+                        sg.main_colour,
+                        sg.count_sim,
+                        sg.ram,
+                        sg.memory,
+                        sg.quantity,
+                        sg.price
+                from sub_gadgets sg
+                left join sub_gadget_images i on i.sub_gadget_id = sg.id
+                join gadgets g on sg.gadget_id = g.id
+                where sg.remoteness_status ="""+"'"+status+"'"+"""
+                group by sg.id, g.name_of_gadget, sg.main_colour, sg.count_sim, sg.ram, sg.memory, sg.quantity, sg.price                       
+                        """,
+                (rs, rowNum) -> {
+
+                    Array imagesArray = rs.getArray("images");
+                    String[] images = null;
+                    if (imagesArray != null) {
+                        images = (String[]) imagesArray.getArray();
+                    }
+                    String image = images != null && images.length > 0 ? images[0] : null;
+
+                    return DetailsResponse.builder()
+                            .id(rs.getLong(1))
+                            .image(image)
+                            .nameOfGadget(rs.getString(3))
+                            .colour(rs.getString(4))
+                            .countSim(rs.getInt(5))
+                            .ram(rs.getString(6))
+                            .memory(rs.getString(7))
+                            .quantity(rs.getInt(8))
+                            .price(rs.getBigDecimal(9))
+                            .build();
+                });
+
+        return detailsResponses;
+    }
 }

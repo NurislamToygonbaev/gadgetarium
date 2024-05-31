@@ -64,4 +64,5 @@ public interface GadgetService {
     List<String> getAllColours(Long gadgetId);
 
     List<Memory> getAllMemories(Long gadgetId);
+    List<DetailsResponse> gadgetDetails();
 }

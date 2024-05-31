@@ -211,6 +211,13 @@ public class GadgetApi {
     public List<Memory> getAllMemories(@PathVariable Long gadgetId){
         return gadgetService.getAllMemories(gadgetId);
     }
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Детали товаров", description = "Авторизация ADMIN")
+    @GetMapping("/details")
+    public List<DetailsResponse> gadgetDetails(){
+        return gadgetService.gadgetDetails();
+    }
+
 }
 
 
