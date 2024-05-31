@@ -31,14 +31,14 @@ public class DiscountServiceImpl implements DiscountService {
 
     @Override
     @Transactional
-    public DiscountResponse create(List<Long> gadgetId, DiscountRequest discountRequest) {
+    public DiscountResponse create(DiscountRequest discountRequest) {
         if (!discountRequest.endDay().isAfter(discountRequest.startDay())) {
             throw new BadRequestException("End day must be after the start day!");
         }
         if (discountRequest.startDay().isBefore(LocalDate.now())) {
             throw new BadRequestException("Start day must begin from today or later!");
         }
-        for (Long id : gadgetId) {
+        for (Long id : discountRequest.gadgetId()) {
             Gadget gadget = gadgetRepo.getGadgetById(id);
             if (gadget.getDiscount() != null) {
                 throw new BadRequestException("Gadget with ID " + gadget.getId() + " already has a discount!");
