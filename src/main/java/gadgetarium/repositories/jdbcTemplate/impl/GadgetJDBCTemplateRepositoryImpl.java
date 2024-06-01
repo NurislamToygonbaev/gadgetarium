@@ -291,6 +291,77 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         return getGadgetPaginationForMain(page, size, null, null, havingClause);
     }
 
+    @Override
+    public List<GadgetsResponse> globalSearch(String request) {
+        String searchPattern = "%" + request + "%";
+
+        return jdbcTemplate.query("""
+                select g.id,
+                       sg.id as subGadgetId,
+                       array_agg(gi.images) as images,
+                       sg.quantity,
+                       concat(sc.sub_category_name, ' ', g.name_of_gadget) as nameOfGadget,
+                       sg.memory,
+                       sg.main_colour as colour,
+                       g.rating,
+                       count(f.id) as countof,
+                       sg.price,
+                       sg.price - (sg.price * coalesce(d.percent, 0) / 100) as currentPrice,
+                       d.percent,
+                       g.created_at > now() - interval '30 days' as newProduct,
+                      (g.rating > 3.9 or
+                       count(o.id) > 10) as recommend
+                from sub_gadgets sg
+                left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
+                left join gadgets g on g.id = sg.gadget_id 
+                left join brands b on g.brand_id = b.id
+                left join sub_categories sc on g.sub_category_id = sc.id 
+                left outer join discounts d on g.id = d.gadget_id
+                left join feedbacks f on g.id = f.gadget_id
+                left join orders_sub_gadgets og on sg.id = og.sub_gadgets_id
+                left join orders o on o.id = og.orders_id
+                where g.name_of_gadget ilike ? 
+                   or sc.sub_category_name ilike ?
+                   or b.brand_name ilike ?
+                group by g.id, sg.id, sc.sub_category_name, g.name_of_gadget, sg.quantity, g.rating, d.percent, sg.price,  sg.main_colour, sg.memory 
+                limit 20
+                """,
+                new Object[]{searchPattern, searchPattern, searchPattern},
+                (rs, rowNum) -> {
+                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
+                    String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
+                    Long id = rs.getLong("id");
+                    SubGadget subGadget = subGadgetRepo.getByID(id);
+                    User user = null;
+                    try {
+                        user = currentUser.get();
+                    } catch (Exception ignored) {
+                    }
+                    BigDecimal price = rs.getBigDecimal("price");
+                    int percent = rs.getInt("percent");
+                    BigDecimal discountedPrice = price.subtract(price.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100)));
+                    return new GadgetsResponse(
+                            id,
+                            rs.getLong("subGadgetId"),
+                            imagesFirst,
+                            rs.getInt("quantity"),
+                            rs.getString("nameOfGadget"),
+                            rs.getString("memory"),
+                            rs.getString("colour"),
+                            rs.getInt("rating"),
+                            rs.getInt("countOf"),
+                            price,
+                            discountedPrice,
+                            percent,
+                            rs.getBoolean("newProduct"),
+                            rs.getBoolean("recommend"),
+                            checkLikes(subGadget, user),
+                            checkComparison(subGadget, user),
+                            checkBasket(subGadget, user)
+                    );
+                });
+    }
+
     private GadgetPaginationForMain getGadgetPaginationForMain(int page, int size, String additionalWhereClause, String additionalOrderByClause, String havingClause) {
         int offset = (page - 1) * size;
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);

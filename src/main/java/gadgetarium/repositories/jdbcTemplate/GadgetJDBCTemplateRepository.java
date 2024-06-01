@@ -4,6 +4,7 @@ import gadgetarium.dto.response.DetailsResponse;
 import gadgetarium.dto.response.GadgetPaginationForMain;
 import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
@@ -25,4 +26,6 @@ public interface GadgetJDBCTemplateRepository {
     GadgetPaginationForMain mainPageRecommend(int page, int size);
 
     List<DetailsResponse> gadgetDetails();
+
+    List<GadgetsResponse> globalSearch(String request);
 }
