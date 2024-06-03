@@ -63,7 +63,7 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public GadgetResponse getGadgetById(Long gadgetId) {
+    public GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         for (SubGadget subGadget : gadget.getSubGadgets()) {

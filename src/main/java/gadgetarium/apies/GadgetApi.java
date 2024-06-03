@@ -59,8 +59,10 @@ public class GadgetApi {
 
     @Operation(summary = "Получение гаджета по ID.", description = "Авторизация: ВСЕ")
     @GetMapping("/by-id/{gadgetId}")
-    public GadgetResponse getGadget(@PathVariable Long gadgetId) {
-        return gadgetService.getGadgetById(gadgetId);
+    public GadgetResponse getGadget(@PathVariable Long gadgetId,
+                                    @RequestParam(required = false) String color,
+                                    @RequestParam(required = false) Memory memory) {
+        return gadgetService.getGadgetById(gadgetId, color, memory);
     }
 
     @Operation(summary = "Полученный гаджет, выбор по цвету и памяти.", description = "Авторизация: ВСЕ")

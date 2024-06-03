@@ -24,7 +24,7 @@ public interface GadgetService {
 
     GadgetResponse getGadgetSelectColourMemory(Long gadgetId, String colour, Memory memory);
 
-    GadgetResponse getGadgetById(Long gadgetId);
+    GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory);
 
     List<ViewedProductsResponse> viewedProduct();
     HttpResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);
