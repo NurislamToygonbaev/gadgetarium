@@ -114,6 +114,7 @@ public class GadgetServiceImpl implements GadgetService {
                 );
             }
         }
+
         throw new NotFoundException("Not found!");
     }
 
