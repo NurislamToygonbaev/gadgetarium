@@ -149,36 +149,45 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     private FeedbackResponse convertFeedbackToResponse(Feedback feedback) {
         Gadget gadget = feedback.getGadget();
-        SubGadget subGadget = gadget.getSubGadgets().stream()
-                .filter(sg -> sg.getId().equals(gadget.getSubGadgets().getFirst().getId()))
-                .findFirst()
-                .orElseThrow(() -> new NotFoundException("subGadget not found"));
+        if (gadget == null) {
+            throw new NotFoundException("gadget not found!");
+        }
         User user = feedback.getUser();
 
-        String firstImage = getSafely(() -> subGadget != null ? subGadget.getImages().getFirst() : null);
-        String subCategoryName = getSafely(() -> gadget.getSubCategory().getSubCategoryName());
-        String gadgetName = getSafely(() -> subGadget != null ? subGadget.getGadget().getNameOfGadget() : null);
+        String firstImage = getSafely(() -> {
+            if (gadget.getSubGadgets() != null && !gadget.getSubGadgets().isEmpty()) {
+                return !gadget.getSubGadgets().getFirst().getImages().isEmpty() ? gadget.getSubGadgets().getFirst().getImages().getFirst() : null;
+            }
+            return null;
+        });
+
+        String subCategoryName = getSafely(() -> gadget.getSubCategory() != null ? gadget.getSubCategory().getSubCategoryName() : null);
+        String gadgetName = getSafely(gadget::getNameOfGadget);
         String userEmail = getSafely(user::getEmail);
         String adminResponse = feedback.getResponseAdmin();
 
         String firstName = getSafely(user::getFirstName);
         String lastName = getSafely(user::getLastName);
-        String fullName = (firstName != null && lastName != null)
+        String fullName = (firstName != null ? firstName : "") + (lastName != null ? " " + lastName : "");
 
-                ? firstName + " " + lastName
-                : (firstName != null ? firstName : "") + (lastName != null ? lastName : "");
+        Long article = getSafely(() -> {
+            if (gadget.getSubGadgets() != null && !gadget.getSubGadgets().isEmpty()) {
+                return gadget.getSubGadgets().get(0).getArticle();
+            }
+            return null;
+        });
 
         return new FeedbackResponse(
                 feedback.getId(),
                 firstImage,
                 subCategoryName,
                 gadgetName,
-                getSafely(gadget.getSubGadgets().getFirst()::getArticle),
+                article,
                 feedback.getDescription(),
                 feedback.getImages(),
                 feedback.getDateAndTime(),
                 feedback.getRating(),
-                fullName,
+                fullName.trim(),
                 userEmail,
                 adminResponse
         );

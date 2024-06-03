@@ -19,7 +19,7 @@ public class CharValue {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "values_seq")
-    @SequenceGenerator(name = "values_seq", allocationSize = 1, initialValue = 60)
+    @SequenceGenerator(name = "values_seq", allocationSize = 1, initialValue = 72)
     private Long id;
 
     @ElementCollection(fetch = FetchType.LAZY)
