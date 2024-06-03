@@ -73,7 +73,7 @@ public class GadgetServiceImpl implements GadgetService {
                     user = currentUser.get();
                 } catch (Exception ignored) {
                 }
-                if (user != null) {
+                if (user != null && !user.getViewed().contains(subGadget) ) {
                     user.addViewed(subGadget);
                 }
 
@@ -114,6 +114,7 @@ public class GadgetServiceImpl implements GadgetService {
                 );
             }
         }
+
         throw new NotFoundException("Not found!");
     }
 
