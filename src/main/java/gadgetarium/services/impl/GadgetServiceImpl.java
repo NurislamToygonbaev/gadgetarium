@@ -129,18 +129,18 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public GadgetResponse getGadgetSelectColour(Long gadgetId, String colour) {
+    public GadgetResponse getGadgetSelectColourMemory(Long gadgetId, String colour, Memory memory) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         SubGadget subGadget = null;
         for (SubGadget foundGadget : gadget.getSubGadgets()) {
-            if (foundGadget.getMainColour().equalsIgnoreCase(colour)) {
+            if (foundGadget.getMainColour().equalsIgnoreCase(colour) && foundGadget.getMemory().equals(memory)) {
                 subGadget = foundGadget;
                 break;
             }
         }
         if (subGadget == null) {
-            throw new NotFoundException("Gadget with colour: " + colour + " not found!");
+            throw new NotFoundException("Gadget with colour and memory: " + colour + ", " + memory + " not found!");
         }
 
         int percent = 0;
@@ -646,6 +646,18 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
+    public List<Memory> getAllMemories(Long gadgetId) {
+        Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
+
+        List<Memory> memories = new ArrayList<>();
+
+        for (SubGadget subGadget : gadgetById.getSubGadgets()) {
+            memories.add(subGadget.getMemory());
+        }
+
+        return memories;
+    }
+
     public List<DetailsResponse> gadgetDetails() {
         return gadgetJDBCTemplateRepo.gadgetDetails();
     }

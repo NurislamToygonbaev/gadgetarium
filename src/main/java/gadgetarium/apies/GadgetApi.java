@@ -63,11 +63,13 @@ public class GadgetApi {
         return gadgetService.getGadgetById(gadgetId);
     }
 
-    @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "Авторизация: ВСЕ")
+    @Operation(summary = "Полученный гаджет, выбор по цвету и памяти.", description = "Авторизация: ВСЕ")
     @GetMapping("/{gadgetId}/colour")
-    public GadgetResponse getGadgetByColour(@PathVariable Long gadgetId,
-                                            @RequestParam String colour) {
-        return gadgetService.getGadgetSelectColour(gadgetId, colour);
+    public GadgetResponse getGadgetByColourMemory(@PathVariable Long gadgetId,
+                                            @RequestParam String colour,
+                                            @RequestParam Memory memory
+                                            ) {
+        return gadgetService.getGadgetSelectColourMemory(gadgetId, colour, memory);
     }
 
     @PreAuthorize("hasAuthority('USER')")
@@ -204,6 +206,11 @@ public class GadgetApi {
         return gadgetService.getAllColours(gadgetId);
     }
 
+    @Operation(summary = "Памяти гаджета.", description = "Авторизация ВСЕ")
+    @GetMapping("/memories/{gadgetId}")
+    public List<Memory> getAllMemories(@PathVariable Long gadgetId){
+        return gadgetService.getAllMemories(gadgetId);
+    }
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Детали товаров", description = "Авторизация ADMIN")
     @GetMapping("/details")
