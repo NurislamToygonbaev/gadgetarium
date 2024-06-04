@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import gadgetarium.dto.request.PaymentExecutionRequest;
 import gadgetarium.dto.request.PaymentRequest;
 import gadgetarium.services.PaymentService;
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ public class PaymentApi {
 
     private final PaymentService paymentService;
 
+    @Operation(summary = "создание нового платежа", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/create-payment")
     public ResponseEntity<JsonNode> createPayment(@RequestBody PaymentRequest paymentRequest) {
         try {
@@ -37,6 +39,7 @@ public class PaymentApi {
         }
     }
 
+    @Operation(summary = "Выполнения платежа", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/execute-payment")
     public ResponseEntity<JsonNode> executePayment(@RequestBody PaymentExecutionRequest executionRequest) {
         try {
