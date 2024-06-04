@@ -19,11 +19,6 @@ public class PayPalConfig {
     private String baseUrl;
 
     @Bean
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
-    }
-
-    @Bean
     public ObjectMapper objectMapper(){
         return new ObjectMapper();
     }
