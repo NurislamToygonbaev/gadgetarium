@@ -14,4 +14,3 @@ server:
 app:
     jwt:
         secret: gadget-java-12
-

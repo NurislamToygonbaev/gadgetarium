@@ -56,7 +56,7 @@ public class User implements UserDetails {
     @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.LAZY)
     private List<SubGadget> comparison;
 
-    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.LAZY)
+    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> viewed;
 
     @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.LAZY)
