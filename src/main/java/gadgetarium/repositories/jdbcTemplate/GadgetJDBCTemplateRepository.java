@@ -28,4 +28,6 @@ public interface GadgetJDBCTemplateRepository {
     List<DetailsResponse> gadgetDetails();
 
     List<GadgetsResponse> globalSearch(String request);
+
+    GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity);
 }
