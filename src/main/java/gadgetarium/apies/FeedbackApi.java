@@ -33,14 +33,14 @@ public class FeedbackApi {
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Ответ админстротора на комментарий")
-    @PostMapping("/reply/{id}")
+    @PatchMapping("/reply/{id}")
     public HttpResponse replyToComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.replyToComment(responseAdmin, id);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(description = "Авторизация: АДМИНСТРАТОР", summary = "Редактировать ответ")
-    @PatchMapping
+    @PatchMapping("/{id}")
     public HttpResponse editComment(@Valid @RequestBody AdminRequest responseAdmin, @PathVariable Long id) {
         return feedbackService.editComment(responseAdmin, id);
     }
@@ -60,7 +60,6 @@ public class FeedbackApi {
         return feedbackService.getFeedbackById(id);
 
     }
-
     @Operation(description = "Авторизация: ВСЕ", summary = "Статистика отзывов по гаджету.")
     @GetMapping("/statistics/{gadgetId}")
     public FeedbackStatisticsResponse reviewsStatistics(@PathVariable Long gadgetId) {

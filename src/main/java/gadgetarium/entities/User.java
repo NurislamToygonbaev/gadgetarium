@@ -44,35 +44,30 @@ public class User implements UserDetails {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @OneToMany(mappedBy = "user", cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.LAZY)
     private List<Order> orders;
 
-    @OneToMany(mappedBy = "user", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "user", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.LAZY)
     private List<Feedback> feedbacks;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private Map<SubGadget, Integer> basket;
 
-    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.LAZY)
     private List<SubGadget> comparison;
 
     @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
     private List<SubGadget> viewed;
 
-    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.EAGER)
+    @ManyToMany(cascade = {REFRESH, MERGE}, fetch = FetchType.LAZY)
     private List<SubGadget> likes;
 
-    @OneToMany(mappedBy = "user", cascade = {REMOVE, REFRESH})
+    @OneToMany(mappedBy = "user", cascade = {REMOVE, REFRESH}, fetch = FetchType.LAZY)
     private List<PasswordResetToken> passwordResetTokens;
 
     public void addOrder(Order order) {
         if (this.orders == null) this.orders = new ArrayList<>();
         this.orders.add(order);
-    }
-
-    public void addFeedback(Feedback feedback) {
-        if (this.feedbacks == null) this.feedbacks = new ArrayList<>();
-        this.feedbacks.add(feedback);
     }
 
     public void addToBasket(SubGadget subGadget, int quantity) {

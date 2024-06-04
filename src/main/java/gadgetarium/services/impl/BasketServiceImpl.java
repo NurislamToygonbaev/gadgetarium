@@ -1,6 +1,5 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.request.BasketIdsRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
@@ -98,7 +97,7 @@ public class BasketServiceImpl implements BasketService {
 
     @Override
     @Transactional
-    public GetBasketAmounts allAmounts(BasketIdsRequest basketIdsRequest) {
+    public GetBasketAmounts allAmounts(List<Long> ids) {
         BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal totalPriceWithDiscount = BigDecimal.ZERO;
@@ -106,7 +105,7 @@ public class BasketServiceImpl implements BasketService {
 
         User user = currentUser.get();
 
-        for (Long id : basketIdsRequest.ids()) {
+        for (Long id : ids) {
             SubGadget subGadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(subGadget)) {
                 count++;
@@ -135,10 +134,10 @@ public class BasketServiceImpl implements BasketService {
 
     @Override
     @Transactional
-    public SumOrderWithGadgetResponse sumOrderWithGadgets(BasketIdsRequest basketIdsRequest) {
+    public SumOrderWithGadgetResponse sumOrderWithGadgets(List<Long> ids) {
         User user = currentUser.get();
         List<GadgetResponseInOrder> response = new ArrayList<>();
-        for (Long id : basketIdsRequest.ids()) {
+        for (Long id : ids) {
             SubGadget subGadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(subGadget)) {
                 Integer quantity = user.getBasket().get(subGadget);
@@ -153,16 +152,16 @@ public class BasketServiceImpl implements BasketService {
             }
         }
         return SumOrderWithGadgetResponse.builder()
-                .basketAmounts(allAmounts(basketIdsRequest))
+                .basketAmounts(allAmounts(ids))
                 .gadgetResponse(response)
                 .build();
     }
 
     @Override
     @Transactional
-    public HttpResponse deleteALlFromBasket(BasketIdsRequest basketIdsRequest) {
+    public HttpResponse deleteALlFromBasket(List<Long> ids) {
         User user = currentUser.get();
-        for (Long id : basketIdsRequest.ids()) {
+        for (Long id : ids) {
             SubGadget gadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(gadget)) {
                 user.deleteFromBasket(gadget);

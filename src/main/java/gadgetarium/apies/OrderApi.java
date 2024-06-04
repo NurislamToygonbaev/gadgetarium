@@ -39,7 +39,7 @@ public class OrderApi {
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Все гаджеты", description = "Авторизация: АДМИНСТРАТОР")
+    @Operation(summary = "Все Заказы", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping
     public OrderPagination getAllOrders(
                         @RequestParam(required = false) String keyword,

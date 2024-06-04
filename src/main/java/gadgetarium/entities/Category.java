@@ -29,13 +29,8 @@ public class Category {
     private Long id;
     private String categoryName;
 
-    @OneToMany(cascade = {REMOVE, MERGE, REFRESH}, mappedBy = "category")
+    @OneToMany(cascade = {REMOVE, MERGE, REFRESH}, mappedBy = "category", fetch = FetchType.LAZY, orphanRemoval = true)
     private List<SubCategory> subCategories;
-
-    public void addSubcategory(SubCategory subCategory) {
-        if (this.subCategories == null) this.subCategories = new ArrayList<>();
-        this.subCategories.add(subCategory);
-    }
 
     @PrePersist
     private void initialReview() {

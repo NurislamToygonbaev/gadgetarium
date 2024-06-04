@@ -1,10 +1,9 @@
 package gadgetarium.services.impl;
 
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.S3Object;
-import com.amazonaws.services.s3.model.S3ObjectInputStream;
-import com.amazonaws.util.IOUtils;
-import gadgetarium.dto.request.*;
+import gadgetarium.dto.request.AddProductRequest;
+import gadgetarium.dto.request.GadgetNewDataRequest;
+import gadgetarium.dto.request.ProductDocRequest;
+import gadgetarium.dto.request.ProductsRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.*;
 import gadgetarium.enums.Discount;
@@ -23,7 +22,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -36,8 +34,6 @@ import java.util.*;
 @RequiredArgsConstructor
 public class GadgetServiceImpl implements GadgetService {
 
-    @Value("${application.bucket.name}")
-    private String bucketName;
     private final GadgetRepository gadgetRepo;
     private final CategoryRepository categoryRepo;
     private final SubGadgetRepository subGadgetRepo;
@@ -46,7 +42,6 @@ public class GadgetServiceImpl implements GadgetService {
     private final BrandRepository brandRepo;
     private final SubCategoryRepository subCategoryRepo;
     private final CharValueRepository charValueRepo;
-    private final AmazonS3 s3Client;
     private final UserRepository userRepo;
     private final OrderRepository orderRepo;
 
@@ -78,7 +73,7 @@ public class GadgetServiceImpl implements GadgetService {
                     user = currentUser.get();
                 } catch (Exception ignored) {
                 }
-                if (user != null) {
+                if (user != null && !user.getViewed().contains(subGadget) ) {
                     user.addViewed(subGadget);
                 }
 
@@ -103,7 +98,7 @@ public class GadgetServiceImpl implements GadgetService {
                         gadget.getRating(),
                         percent,
                         gadget.isNew(),
-                        gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
+                        GadgetJDBCTemplateRepositoryImpl.isRecommended(gadget),
                         subGadget.getPrice(),
                         discountedPrice,
                         subGadget.getMainColour(),
@@ -114,10 +109,12 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getCountSim(),
                         subGadget.getUniFiled(),
                         likes,
-                        basket
+                        basket,
+                        gadget.getPDFUrl()
                 );
             }
         }
+
         throw new NotFoundException("Not found!");
     }
 
@@ -132,18 +129,18 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public GadgetResponse getGadgetSelectColour(Long gadgetId, String colour) {
+    public GadgetResponse getGadgetSelectColourMemory(Long gadgetId, String colour, Memory memory) {
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
         SubGadget subGadget = null;
         for (SubGadget foundGadget : gadget.getSubGadgets()) {
-            if (foundGadget.getMainColour().equalsIgnoreCase(colour)) {
+            if (foundGadget.getMainColour().equalsIgnoreCase(colour) && foundGadget.getMemory().equals(memory)) {
                 subGadget = foundGadget;
                 break;
             }
         }
         if (subGadget == null) {
-            throw new NotFoundException("Gadget with colour: " + colour + " not found!");
+            throw new NotFoundException("Gadget with colour and memory: " + colour + ", " + memory + " not found!");
         }
 
         int percent = 0;
@@ -173,7 +170,7 @@ public class GadgetServiceImpl implements GadgetService {
                 gadget.getRating(),
                 percent,
                 gadget.isNew(),
-                gadget.getRating() > 3.9 || gadget.getFeedbacks().size() > 10 ? "recommend" : null,
+                GadgetJDBCTemplateRepositoryImpl.isRecommended(gadget),
                 subGadget.getPrice(),
                 discountedPrice,
                 subGadget.getMainColour(),
@@ -184,7 +181,8 @@ public class GadgetServiceImpl implements GadgetService {
                 subGadget.getCountSim(),
                 subGadget.getUniFiled(),
                 likes,
-                basket
+                basket,
+                gadget.getPDFUrl()
         );
     }
 
@@ -378,10 +376,15 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
+    public List<GadgetsResponse> globalSearch(String request) {
+        return gadgetJDBCTemplateRepo.globalSearch(request);
+    }
+
+    @Override
     @Transactional
-    public HttpResponse addDocument(ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
+    public HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
         try {
-            Gadget gadget = gadgetRepo.findByPDFUrlIsNullAndVideoUrlIsNullAndDescriptionIsNull();
+            Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
             if (gadget == null){
                 throw new BadRequestException("No gadget to add document.");
             }
@@ -565,22 +568,6 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public byte[] downloadFile(String key, Long gadgetId) {
-        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-        if (!gadget.getPDFUrl().contains(bucketName + key)) {
-            throw new NotFoundException("not found");
-        }
-        S3Object s3Object = s3Client.getObject(bucketName, key);
-        S3ObjectInputStream inputStream = s3Object.getObjectContent();
-        try {
-            return IOUtils.toByteArray(inputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new byte[0];
-    }
-
-    @Override
     @Transactional
     public HttpResponse updateGadget(Long subGadgetId, GadgetNewDataRequest request) {
         SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
@@ -658,5 +645,20 @@ public class GadgetServiceImpl implements GadgetService {
         return subCategoryRepo.getSubCategories(catId);
     }
 
+    @Override
+    public List<Memory> getAllMemories(Long gadgetId) {
+        Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
 
+        List<Memory> memories = new ArrayList<>();
+
+        for (SubGadget subGadget : gadgetById.getSubGadgets()) {
+            memories.add(subGadget.getMemory());
+        }
+
+        return memories;
+    }
+
+    public List<DetailsResponse> gadgetDetails() {
+        return gadgetJDBCTemplateRepo.gadgetDetails();
+    }
 }

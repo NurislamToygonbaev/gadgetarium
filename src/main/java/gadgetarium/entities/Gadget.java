@@ -46,41 +46,24 @@ public class Gadget {
     private double rating;
     private LocalDate createdAt;
 
-    @OneToMany(mappedBy = "gadget", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "gadget", cascade = {MERGE, REFRESH, REMOVE},fetch = FetchType.EAGER)
     private List<SubGadget> subGadgets;
 
-    @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "gadget", cascade = {REMOVE, MERGE, REFRESH}, fetch = FetchType.LAZY)
     private List<Feedback> feedbacks;
 
-    @ManyToOne(cascade = {DETACH})
+    @ManyToOne(cascade = {DETACH}, fetch = FetchType.LAZY)
     private SubCategory subCategory;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     private Brand brand;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     @Size(max = 3000)
     private Map<CharValue,String> charName;
 
     @OneToOne(mappedBy = "gadget", cascade = {REMOVE, REFRESH, MERGE})
     private Discount discount;
-
-    public void addFeedback(Feedback feedback) {
-        if (this.feedbacks == null) this.feedbacks = new ArrayList<>();
-        this.feedbacks.add(feedback);
-    }
-
-    public void addSUbGadget(SubGadget subGadget) {
-        if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
-        this.subGadgets.add(subGadget);
-    }
-
-    public void addCharName(CharValue key, String value) {
-        if (this.charName == null) {
-            this.charName = new HashMap<>();
-        }
-        this.charName.put(key, value);
-    }
 
     @PrePersist
     private void initialReview() {
@@ -91,8 +74,8 @@ public class Gadget {
         this.createdAt = LocalDate.now();
     }
 
-    public String isNew() {
+    public boolean isNew() {
         long daysBetween = ChronoUnit.DAYS.between(createdAt, LocalDate.now());
-        return daysBetween <= 30 ? "новый" : null;
+        return daysBetween <= 30;
     }
 }

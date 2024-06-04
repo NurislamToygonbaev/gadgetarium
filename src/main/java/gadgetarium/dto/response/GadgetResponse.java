@@ -21,8 +21,8 @@ public record GadgetResponse(
         Long articleNumber,
         double rating,
         int percent,
-        String newProduct,
-        String recommend,
+        boolean newProduct,
+        boolean recommend,
         BigDecimal price,
         BigDecimal currentPrice,
         String mainColour,
@@ -33,6 +33,7 @@ public record GadgetResponse(
         int countSim,
         List<String> uniField,
         boolean likes,
-        boolean basket
+        boolean basket,
+        String pdfUrl
         ) {
         }

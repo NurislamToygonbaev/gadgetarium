@@ -29,10 +29,10 @@ public class SubCategory {
     private Long id;
     private String subCategoryName;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Category category;
 
-    @OneToMany(mappedBy = "subCategory", cascade = {MERGE, REFRESH, REMOVE}, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "subCategory", cascade = {MERGE, REFRESH, REMOVE}, orphanRemoval = true,fetch = FetchType.LAZY)
     private List<Gadget> gadgets;
 
     public void addGadget(Gadget gadget) {

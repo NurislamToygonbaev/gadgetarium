@@ -24,6 +24,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -46,6 +48,7 @@ public class SecurityConfig {
                                     "/swagger-ui/**",
                                     "/v3/api-docs/**",
                                     "/api/reset/**",
+                                    "/api/s3/**",
                                     "/api/**"
                             )
                             .permitAll()
@@ -56,6 +59,7 @@ public class SecurityConfig {
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider());
         http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(openEntityManagerInViewFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
@@ -94,5 +98,10 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public OpenEntityManagerInViewFilter openEntityManagerInViewFilter() {
+        return new OpenEntityManagerInViewFilter();
     }
 }

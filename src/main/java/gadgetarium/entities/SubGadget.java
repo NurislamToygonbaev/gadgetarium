@@ -45,33 +45,22 @@ public class SubGadget {
     private RemotenessStatus remotenessStatus;
 
     @Size(max = 1000)
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection(fetch = FetchType.LAZY)
     private List<String> uniFiled;
 
-    @ManyToOne(cascade = {DETACH, MERGE, REFRESH})
+    @ManyToOne(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.LAZY)
     private Gadget gadget;
 
-    @ManyToMany(mappedBy = "subGadgets", cascade = {DETACH, REFRESH}, fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "subGadgets", cascade = {DETACH, REFRESH}, fetch = FetchType.LAZY)
     private List<Order> orders;
-
-    public void addImage(String image) {
-        if (this.images == null) this.images = new ArrayList<>();
-        this.images.add(image);
-    }
 
     public void addUniField(String filed) {
         if (this.uniFiled == null) this.uniFiled = new ArrayList<>();
         this.uniFiled.add(filed);
     }
-
-    public void addOrder(Order order) {
-        if (this.orders == null) this.orders = new ArrayList<>();
-        this.orders.add(order);
-    }
-
 
     @PrePersist
     private void addNewInfo(){

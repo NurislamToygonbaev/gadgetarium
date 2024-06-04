@@ -1,11 +1,8 @@
 package gadgetarium.apies;
 
-import gadgetarium.dto.request.*;
-import gadgetarium.dto.response.AddProductsResponse;
-import gadgetarium.dto.response.GadgetResponse;
-import gadgetarium.dto.response.PaginationSHowMoreGadget;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.ResultPaginationGadget;
+import gadgetarium.dto.request.AddProductRequest;
+import gadgetarium.dto.request.GadgetNewDataRequest;
+import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.enums.Discount;
 import gadgetarium.enums.Memory;
@@ -19,8 +16,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -68,11 +63,13 @@ public class GadgetApi {
         return gadgetService.getGadgetById(gadgetId);
     }
 
-    @Operation(summary = "Полученный гаджет, выбор по цвету.", description = "Авторизация: ВСЕ")
+    @Operation(summary = "Полученный гаджет, выбор по цвету и памяти.", description = "Авторизация: ВСЕ")
     @GetMapping("/{gadgetId}/colour")
-    public GadgetResponse getGadgetByColour(@PathVariable Long gadgetId,
-                                            @RequestParam String colour) {
-        return gadgetService.getGadgetSelectColour(gadgetId, colour);
+    public GadgetResponse getGadgetByColourMemory(@PathVariable Long gadgetId,
+                                            @RequestParam String colour,
+                                            @RequestParam Memory memory
+                                            ) {
+        return gadgetService.getGadgetSelectColourMemory(gadgetId, colour, memory);
     }
 
     @PreAuthorize("hasAuthority('USER')")
@@ -137,9 +134,10 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Добавление документа на товары ", description = "Авторизация ADMIN")
-    @PatchMapping("/set-document")
-    public HttpResponse addDocument(@RequestBody ProductDocRequest productDocRequest) throws IOException {
-        return gadgetService.addDocument(productDocRequest);
+    @PatchMapping("/set-document/{gadgetId}")
+    public HttpResponse addDocument(@PathVariable Long gadgetId,
+                                    @RequestBody ProductDocRequest productDocRequest) throws IOException {
+        return gadgetService.addDocument(gadgetId, productDocRequest);
     }
 
     @Operation(summary = "Все Гаджеты по акции", description = "Авторизация: ВСЕ")
@@ -187,20 +185,6 @@ public class GadgetApi {
         return gadgetService.getDeliveryPriceGadget(id);
     }
 
-    @Operation(summary = "Метод для скачивание PDF", description = "Авторизация: ВСЕ")
-    @GetMapping("/doc/{key}/{id}")
-    public ResponseEntity<ByteArrayResource> downloadPDF(@PathVariable String key,
-                                                         @PathVariable Long id) {
-        byte[] data = gadgetService.downloadFile(key, id);
-        ByteArrayResource resource = new ByteArrayResource(data);
-        return ResponseEntity
-                .ok()
-                .contentLength(data.length)
-                .header("Content-type", "application/octet-stream")
-                .header("Content-disposition", "attachment; filename=\"" + key + "\"")
-                .body(resource);
-    }
-
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
     @PutMapping("/{subGadgetId}")
@@ -208,7 +192,6 @@ public class GadgetApi {
                                      @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest) {
         return gadgetService.updateGadget(subGadgetId, gadgetNewDataRequest);
     }
-
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Удаление гаджета по ID", description = "Авторизация ADMIN")
@@ -221,6 +204,25 @@ public class GadgetApi {
     @GetMapping("/{gadgetId}")
     public List<String> getAllColours(@PathVariable Long gadgetId) {
         return gadgetService.getAllColours(gadgetId);
+    }
+
+    @Operation(summary = "Памяти гаджета.", description = "Авторизация ВСЕ")
+    @GetMapping("/memories/{gadgetId}")
+    public List<Memory> getAllMemories(@PathVariable Long gadgetId){
+        return gadgetService.getAllMemories(gadgetId);
+    }
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Детали товаров", description = "Авторизация ADMIN")
+    @GetMapping("/details")
+    public List<DetailsResponse> gadgetDetails(){
+        return gadgetService.gadgetDetails();
+    }
+
+
+    @Operation(summary = "Поиск всех гаджетов", description = "Авторизация: ВСЕ")
+    @GetMapping("/global-search")
+    public List<GadgetsResponse> globalSearch(@RequestParam String request){
+        return gadgetService.globalSearch(request);
     }
 }
 
