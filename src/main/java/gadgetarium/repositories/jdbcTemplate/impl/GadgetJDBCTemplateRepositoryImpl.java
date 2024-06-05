@@ -578,6 +578,10 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 finalPrice = finalPrice.multiply(BigDecimal.valueOf(quantity));
             }
 
+            if (user != null && !user.getViewed().contains(subGadget)){
+                user.addViewed(subGadget);
+            }
+
             return GadgetResponse.builder()
                     .gadgetId(id)
                     .subGadgetId(subGadgetId)
