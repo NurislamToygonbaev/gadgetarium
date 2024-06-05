@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -26,7 +27,7 @@ public record GadgetResponse(
         BigDecimal price,
         BigDecimal currentPrice,
         String mainColour,
-        LocalDate releaseDate,
+        String releaseDate,
         int warranty,
         String memory,
         String ram,

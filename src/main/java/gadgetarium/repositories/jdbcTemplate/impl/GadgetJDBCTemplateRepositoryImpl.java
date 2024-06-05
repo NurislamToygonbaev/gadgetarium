@@ -93,7 +93,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                             imagesFirst,
                             rs.getLong("article"),
                             rs.getString("nameOfGadget"),
-                            rs.getDate("release_date").toLocalDate(),
+                            String.valueOf(rs.getDate("release_date")),
                             rs.getInt("quantity"),
                             rs.getBigDecimal("price"),
                             rs.getInt("percent"),
@@ -597,7 +597,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     .price(rs.getBigDecimal("price"))
                     .currentPrice(finalPrice)
                     .mainColour(rs.getString("main_colour"))
-                    .releaseDate(rs.getDate("release_date").toLocalDate())
+                    .releaseDate(String.valueOf(rs.getDate("release_date")))
                     .warranty(rs.getInt("warranty"))
                     .memory(rs.getString("memory"))
                     .ram(rs.getString("ram"))

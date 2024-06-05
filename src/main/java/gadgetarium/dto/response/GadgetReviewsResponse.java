@@ -8,7 +8,7 @@ public record GadgetReviewsResponse(
         Long id,
         String image,
         String fullName,
-        LocalDateTime dateTime,
+        String dateTime,
         double rating,
         String description,
         String responseAdmin
