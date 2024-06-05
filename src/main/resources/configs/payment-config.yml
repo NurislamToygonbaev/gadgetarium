@@ -1,4 +1,10 @@
-braintree:
-  merchantId: y36kxp644p7msfqb
-  publicKey: kk9tzrh6yrjd9k3k
-  privateKey: 23127d6951c9704ccd6a54cb404f0bbe
+#braintree:
+#  merchantId: y36kxp644p7msfqb
+#  publicKey: kk9tzrh6yrjd9k3k
+#  privateKey: 23127d6951c9704ccd6a54cb404f0bbe
+
+
+paypal:
+    client-id: y36kxp644p7msfqb
+    client-secret: kk9tzrh6yrjd9k3k
+    base-url: 23127d6951c9704ccd6a54cb404f0bbe
