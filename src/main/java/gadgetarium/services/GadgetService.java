@@ -22,9 +22,7 @@ public interface GadgetService {
 
     PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size);
 
-    GadgetResponse getGadgetSelectColourMemory(Long gadgetId, String colour, Memory memory);
-
-    GadgetResponse getGadgetById(Long gadgetId);
+    GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity);
 
     List<ViewedProductsResponse> viewedProduct();
     HttpResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);

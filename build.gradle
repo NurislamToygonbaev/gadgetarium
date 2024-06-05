@@ -55,7 +55,6 @@ dependencies {
     // for Migration Flyway
     implementation 'org.flywaydb:flyway-core'
     // Paypal for payment
-    implementation 'com.paypal.sdk:paypalhttp:1.7.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     // cors
     implementation 'javax.servlet:javax.servlet-api:4.0.1'

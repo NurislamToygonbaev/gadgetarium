@@ -10,10 +10,8 @@ import gadgetarium.enums.Discount;
 import gadgetarium.enums.*;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.BadRequestException;
-import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
-import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.GadgetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -63,59 +61,8 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public GadgetResponse getGadgetById(Long gadgetId) {
-        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-
-        for (SubGadget subGadget : gadget.getSubGadgets()) {
-            if (!subGadget.getRemotenessStatus().equals(RemotenessStatus.REMOTE)) {
-                User user = null;
-                try {
-                    user = currentUser.get();
-                } catch (Exception ignored) {
-                }
-                if (user != null && !user.getViewed().contains(subGadget) ) {
-                    user.addViewed(subGadget);
-                }
-
-                boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
-                boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
-
-                int percent = 0;
-                if (gadget.getDiscount() != null) {
-                    percent = gadget.getDiscount().getPercent();
-                }
-
-                BigDecimal discountedPrice = calculatePrice(subGadget);
-
-                return new GadgetResponse(
-                        subGadget.getGadget().getId(),
-                        subGadget.getId(),
-                        subGadget.getGadget().getBrand().getLogo(),
-                        subGadget.getImages(),
-                        subGadget.getGadget().getNameOfGadget(),
-                        subGadget.getQuantity(),
-                        subGadget.getArticle(),
-                        gadget.getRating(),
-                        percent,
-                        gadget.isNew(),
-                        GadgetJDBCTemplateRepositoryImpl.isRecommended(gadget),
-                        subGadget.getPrice(),
-                        discountedPrice,
-                        subGadget.getMainColour(),
-                        subGadget.getGadget().getReleaseDate(),
-                        subGadget.getGadget().getWarranty(),
-                        subGadget.getMemory().name(),
-                        subGadget.getRam().name(),
-                        subGadget.getCountSim(),
-                        subGadget.getUniFiled(),
-                        likes,
-                        basket,
-                        gadget.getPDFUrl()
-                );
-            }
-        }
-
-        throw new NotFoundException("Not found!");
+    public GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity) {
+       return gadgetJDBCTemplateRepo.getGadgetById(gadgetId, color, memory, quantity);
     }
 
     @Override
@@ -126,64 +73,6 @@ public class GadgetServiceImpl implements GadgetService {
     @Override
     public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
         return gadgetJDBCTemplateRepo.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
-    }
-
-    @Override
-    public GadgetResponse getGadgetSelectColourMemory(Long gadgetId, String colour, Memory memory) {
-        Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
-
-        SubGadget subGadget = null;
-        for (SubGadget foundGadget : gadget.getSubGadgets()) {
-            if (foundGadget.getMainColour().equalsIgnoreCase(colour) && foundGadget.getMemory().equals(memory)) {
-                subGadget = foundGadget;
-                break;
-            }
-        }
-        if (subGadget == null) {
-            throw new NotFoundException("Gadget with colour and memory: " + colour + ", " + memory + " not found!");
-        }
-
-        int percent = 0;
-        if (gadget.getDiscount() != null) {
-            percent = gadget.getDiscount().getPercent();
-        }
-
-        BigDecimal discountedPrice = calculatePrice(subGadget);
-
-        User user = null;
-        try {
-            user = currentUser.get();
-        } catch (Exception ignored) {
-        }
-
-        boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
-        boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
-
-        return new GadgetResponse(
-                gadget.getId(),
-                subGadget.getId(),
-                subGadget.getGadget().getBrand().getLogo(),
-                subGadget.getImages(),
-                subGadget.getGadget().getNameOfGadget(),
-                subGadget.getQuantity(),
-                subGadget.getArticle(),
-                gadget.getRating(),
-                percent,
-                gadget.isNew(),
-                GadgetJDBCTemplateRepositoryImpl.isRecommended(gadget),
-                subGadget.getPrice(),
-                discountedPrice,
-                subGadget.getMainColour(),
-                subGadget.getGadget().getReleaseDate(),
-                subGadget.getGadget().getWarranty(),
-                subGadget.getMemory().name(),
-                subGadget.getRam().name(),
-                subGadget.getCountSim(),
-                subGadget.getUniFiled(),
-                likes,
-                basket,
-                gadget.getPDFUrl()
-        );
     }
 
     @Override

@@ -5,24 +5,24 @@ import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.*;
+import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubGadgetRepository;
-import gadgetarium.repositories.UserRepository;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
 import gadgetarium.services.impl.CurrentUser;
 import gadgetarium.services.impl.GadgetServiceImpl;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Repository
@@ -502,4 +502,117 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
         return detailsResponses;
     }
+
+
+    @Override
+    @Transactional
+    public GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity) {
+        User user = getCurrentUser();
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("gadgetId", gadgetId);
+        params.put("status", status);
+
+        StringBuilder condition = new StringBuilder();
+        if (color != null) {
+            condition.append(" and sg.main_colour = :color");
+            params.put("color", color);
+        }
+        if (memory != null) {
+            condition.append(" and sg.memory = :memory");
+            params.put("memory", memory.name());
+        }
+
+        NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
+
+            List<GadgetResponse> response = namedParameterJdbcTemplate.query("""
+               select g.id as gadget_id,
+               sg.id as sub_gadget_id,
+               b.logo,
+               array_agg(i.images) as images,
+               g.name_of_gadget,
+               sg.quantity,
+               sg.article,
+               g.rating,
+               d.percent,
+               sg.price,
+               sg.main_colour,
+               g.release_date,
+               g.warranty,
+               sg.memory,
+               sg.ram,
+               sg.count_sim,
+               array_agg(su.uni_filed) as uniField,
+               g.pdfurl
+        from gadgets g
+        join sub_gadgets sg on sg.gadget_id = g.id
+        left join sub_gadget_images i on i.sub_gadget_id = sg.id
+        left join sub_gadget_uni_filed su on su.sub_gadget_id = sg.id
+        join brands b on b.id = g.brand_id
+        left outer join discounts d on d.gadget_id = g.id
+        where g.id = :gadgetId
+        and sg.remoteness_status = :status
+        """ + condition +"""
+         group by g.id, sg.id, b.logo, g.name_of_gadget,
+         sg.quantity, sg.article, g.rating, d.percent,
+          sg.price, sg.main_colour, g.release_date, g.warranty,
+          sg.memory, sg.ram, sg.count_sim, g.pdfurl
+        """, params, (rs, rowNum
+                ) -> {
+            Long id = rs.getLong("gadget_id");
+            Gadget gadget = gadgetRepo.getGadgetById(id);
+
+            Long subGadgetId = rs.getLong("sub_gadget_id");
+            SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
+
+            Array imagesArray = rs.getArray("images");
+            List<String> images = imagesArray != null ? Arrays.asList((String[]) imagesArray.getArray()) : Collections.emptyList();
+
+
+            Array uniField = rs.getArray("uniField");
+            List<String> fields = uniField != null ? Arrays.asList((String[]) uniField.getArray()) : Collections.emptyList();
+
+            BigDecimal finalPrice = GadgetServiceImpl.calculatePrice(subGadget);
+            if (quantity > 1) {
+                finalPrice = finalPrice.multiply(BigDecimal.valueOf(quantity));
+            }
+
+            if (user != null && !user.getViewed().contains(subGadget)){
+                user.addViewed(subGadget);
+            }
+
+            return GadgetResponse.builder()
+                    .gadgetId(id)
+                    .subGadgetId(subGadgetId)
+                    .brandLogo(rs.getString("logo"))
+                    .images(images)
+                    .nameOfGadget(rs.getString("name_of_gadget"))
+                    .quantity(rs.getInt("quantity"))
+                    .articleNumber(rs.getLong("article"))
+                    .rating(rs.getFloat("rating"))
+                    .percent(rs.getInt("percent"))
+                    .newProduct(gadget.isNew())
+                    .recommend(isRecommended(gadget))
+                    .price(rs.getBigDecimal("price"))
+                    .currentPrice(finalPrice)
+                    .mainColour(rs.getString("main_colour"))
+                    .releaseDate(rs.getDate("release_date").toLocalDate())
+                    .warranty(rs.getInt("warranty"))
+                    .memory(rs.getString("memory"))
+                    .ram(rs.getString("ram"))
+                    .countSim(rs.getInt("count_sim"))
+                    .uniField(fields)
+                    .likes(checkLikes(subGadget, user))
+                    .basket(checkBasket(subGadget, user))
+                    .pdfUrl(rs.getString("pdfurl"))
+                    .build();
+        });
+            if (response.isEmpty()) {
+                throw new NotFoundException("not found");
+            } else {
+                return response.getFirst();
+            }
+    }
+
 }

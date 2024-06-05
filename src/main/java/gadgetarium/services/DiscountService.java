@@ -8,5 +8,4 @@ import java.util.List;
 public interface DiscountService {
 
     DiscountResponse create(DiscountRequest discountRequest);
-    void checkDiscount();
 }
