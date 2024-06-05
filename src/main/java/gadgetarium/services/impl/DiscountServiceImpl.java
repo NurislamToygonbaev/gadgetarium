@@ -63,7 +63,7 @@ public class DiscountServiceImpl implements DiscountService {
     public void checkDiscount(){
         List<Discount> discounts = discountRepo.findAll();
         for (Discount discount : discounts) {
-            if (discount.getEndDate().isAfter(LocalDate.now())){
+            if (discount.getEndDate().isBefore(LocalDate.now())){
                 discountRepo.delete(discount);
             }
         }
