@@ -5,26 +5,14 @@ import gadgetarium.validations.password.PasswordValidation;
 import gadgetarium.validations.phoneNumber.PhoneNumberValidation;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
-@Builder
-@Getter
-@Setter
-public class SignUpRequest{
-
-        @NotBlank
-        private String firstName;
-        @NotBlank
-        private String lastName;
-        private String image;
-        @PhoneNumberValidation
-        private String phoneNumber;
-        @Email
-        @EmailValidation
-        private String email;
-        @PasswordValidation
-        private String password;
-        private String address;
-}
+public record SignUpRequest(
+        @NotBlank String firstName,
+        @NotBlank String lastName,
+        String image,
+        @PhoneNumberValidation String phoneNumber,
+        @Email @EmailValidation String email,
+        @PasswordValidation String password,
+        String address
+) {}

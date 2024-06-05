@@ -41,15 +41,15 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public SignResponse signUp(SignUpRequest signUpRequest) {
-        boolean existsByEmail = userRepo.existsByEmail(signUpRequest.getEmail());
+        boolean existsByEmail = userRepo.existsByEmail(signUpRequest.email());
         if (existsByEmail)
-            throw new AlreadyExistsException("User with email " + signUpRequest.getEmail() + " already exists.");
-        checkEmail(signUpRequest.getEmail());
-        User buildedUser = User.builder().firstName(signUpRequest.getFirstName())
-                .lastName(signUpRequest.getLastName()).image(signUpRequest.getImage())
-                .phoneNumber(signUpRequest.getPhoneNumber()).email(signUpRequest.getEmail())
-                .password(passwordEncoder.encode(signUpRequest.getPassword()))
-                .address(signUpRequest.getAddress()).role(Role.USER).build();
+            throw new AlreadyExistsException("User with email " + signUpRequest.email() + " already exists.");
+        checkEmail(signUpRequest.email());
+        User buildedUser = User.builder().firstName(signUpRequest.firstName())
+                .lastName(signUpRequest.lastName()).image(signUpRequest.image())
+                .phoneNumber(signUpRequest.phoneNumber()).email(signUpRequest.email())
+                .password(passwordEncoder.encode(signUpRequest.password()))
+                .address(signUpRequest.address()).role(Role.USER).build();
         userRepo.save(buildedUser);
         return SignResponse.builder().id(buildedUser.getId())
                 .role(buildedUser.getRole()).phoneNumber(buildedUser.getPhoneNumber())
