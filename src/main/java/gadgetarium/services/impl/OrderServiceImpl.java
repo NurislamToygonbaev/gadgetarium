@@ -260,7 +260,7 @@ public class OrderServiceImpl implements OrderService {
                 .email(user.getEmail())
                 .discount(foundOrder.getDiscountPrice())
                 .currentPrice(foundOrder.getTotalPrice())
-                .createdAt(foundOrder.getCreatedAt())
+                .createdAt(String.valueOf(foundOrder.getCreatedAt()))
                 .payment(foundOrder.getPayment())
                 .lastName(user.getLastName())
                 .build();

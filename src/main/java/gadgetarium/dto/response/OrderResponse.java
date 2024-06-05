@@ -10,7 +10,7 @@ public record OrderResponse(
         Long id,
         String fullName,
         Long article,
-        LocalDate date,
+        String date,
         int count,
         BigDecimal price,
         boolean typeOrder,

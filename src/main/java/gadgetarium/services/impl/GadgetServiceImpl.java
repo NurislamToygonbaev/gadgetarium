@@ -385,7 +385,7 @@ public class GadgetServiceImpl implements GadgetService {
                                 .id(feedback.getId())
                                 .image(feedback.getUser().getImage())
                                 .fullName(feedback.getUser().getFirstName() + " " + feedback.getUser().getLastName())
-                                .dateTime(feedback.getDateAndTime())
+                                .dateTime(String.valueOf(feedback.getDateAndTime()))
                                 .rating(feedback.getRating())
                                 .description(feedback.getDescription())
                                 .responseAdmin(feedback.getResponseAdmin())

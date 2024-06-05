@@ -9,7 +9,7 @@ import java.time.LocalDate;
 @Builder
 public record AllOrderHistoryResponse(
         Long id,
-        LocalDate createdAt,
+        String createdAt,
         Long number,
         Status status,
         BigDecimal deliveryPrice
