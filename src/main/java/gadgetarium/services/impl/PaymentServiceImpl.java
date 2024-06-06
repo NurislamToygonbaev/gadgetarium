@@ -3,9 +3,15 @@ package gadgetarium.services.impl;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import gadgetarium.configs.paypal.PayPalConfig;
+import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.OrderImageResponse;
+import gadgetarium.dto.response.OrderSuccessResponse;
 import gadgetarium.entities.Order;
+import gadgetarium.enums.Payment;
+import gadgetarium.enums.Status;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.services.PaymentService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
@@ -110,5 +116,37 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         throw new Exception("Failed to execute payment");
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse typeOrder(Long orderId, Payment payment) {
+        Order order = orderRepo.getOrderById(orderId);
+        order.setPayment(payment);
+        return HttpResponse.builder().status(HttpStatus.OK)
+                .message("success changed order with ID: "+order.getId()).build();
+    }
+
+    @Override
+    public OrderImageResponse orderImage(Long orderId) {
+        Order order = orderRepo.getOrderById(orderId);
+        return OrderImageResponse.builder()
+                .id(order.getId())
+                .price(order.getTotalPrice())
+                .delivery(order.getUser().getAddress())
+                .payment(order.getPayment())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public OrderSuccessResponse orderSuccess(Long orderId) {
+        Order order = orderRepo.getOrderById(orderId);
+        order.setStatus(Status.PENDING);
+        return OrderSuccessResponse.builder()
+                .number(order.getNumber())
+                .createAd(String.valueOf(order.getCreatedAt()))
+                .email(order.getUser().getEmail())
+                .build();
     }
 }
