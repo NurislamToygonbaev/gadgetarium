@@ -91,8 +91,16 @@ public class OrderApi {
 
     @PreAuthorize("hasAnyAuthority('USER')")
     @Operation(summary = "Возвращение дынные.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/personal")
+    @GetMapping("/data-return")
     public PersonalDataResponse personalData(){
         return orderService.personalDataCustomer();
     }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(summary = "очистить данных", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @DeleteMapping("/clear")
+    public HttpResponse clearOrders(){
+        return orderService.clearOrders();
+    }
+
 }

@@ -3,17 +3,18 @@ package gadgetarium.apies;
 import com.fasterxml.jackson.databind.JsonNode;
 import gadgetarium.dto.request.PaymentExecutionRequest;
 import gadgetarium.dto.request.PaymentRequest;
+import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.OrderImageResponse;
+import gadgetarium.dto.response.OrderSuccessResponse;
+import gadgetarium.enums.Payment;
 import gadgetarium.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/paypal/orders")
+@RequestMapping("/api/paypal")
 @RequiredArgsConstructor
 public class PaymentApi {
 
@@ -52,4 +53,24 @@ public class PaymentApi {
             return ResponseEntity.status(500).body(null);
         }
     }
+
+    @Operation(summary = "Выбор типа оплаты", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @PatchMapping("/{orderId}")
+    public HttpResponse typeOrder(@PathVariable Long orderId,
+                                  @RequestParam Payment payment){
+        return paymentService.typeOrder(orderId, payment);
+    }
+
+    @Operation(summary = "образ заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/order/{orderId}")
+    public OrderImageResponse orderImage(@PathVariable Long orderId){
+        return paymentService.orderImage(orderId);
+    }
+
+    @Operation(summary = "заявка оформлена", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/{orderId}")
+    public OrderSuccessResponse orderSuccess(@PathVariable Long orderId){
+        return paymentService.orderSuccess(orderId);
+    }
+
 }
