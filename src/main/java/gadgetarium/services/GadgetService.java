@@ -45,7 +45,7 @@ public interface GadgetService {
 
     GadgetCharacteristicsResponse getCharacteristicsGadget(Long id);
 
-    List<GadgetReviewsResponse> getReviewsGadget(Long id);
+    List<GadgetReviewsResponse> getReviewsGadget(Long id, int page, int size);
 
     GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id);
 

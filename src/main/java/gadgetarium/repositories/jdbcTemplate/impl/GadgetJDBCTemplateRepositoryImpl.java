@@ -615,4 +615,38 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
             }
     }
 
+    @Override
+    public List<GadgetReviewsResponse> getReviewsGadget(Long id, int page, int size) {
+        int offset = (page - 1) * size;
+        int limit = size;
+
+        return jdbcTemplate.query(
+                """
+                select f.id as feedbackId,
+                       u.image,
+                       concat(u.first_name, ' ', u.last_name) AS fullName,
+                       to_char(f.date_and_time, 'YYYY-MM-DD HH24:MI:SS') AS formattedTime,
+                       f.rating,
+                       f.description,
+                       f.response_admin
+                from feedbacks f
+                join users u on f.user_id = u.id
+                join gadgets g on f.gadget_id = g.id
+                where g.id = ?
+                group by f.id, u.image, u.first_name, u.last_name, f.date_and_time, f.rating, f.description, f.response_admin
+                limit ? offset ?
+                """,
+                new Object[]{id, limit, offset},
+                (rs, rowNum) -> GadgetReviewsResponse.builder()
+                        .id(rs.getLong("feedbackId"))
+                        .image(rs.getString("image"))
+                        .fullName(rs.getString("fullName"))
+                        .dateTime(rs.getString("formattedTime"))
+                        .rating(rs.getDouble("rating"))
+                        .description(rs.getString("description"))
+                        .responseAdmin(rs.getString("response_admin"))
+                        .build()
+        );
+    }
+
 }

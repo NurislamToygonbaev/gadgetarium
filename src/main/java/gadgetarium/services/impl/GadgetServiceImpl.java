@@ -374,40 +374,13 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public List<GadgetReviewsResponse> getReviewsGadget(Long id) {
-        List<GadgetReviewsResponse> reviewsResponses = new ArrayList<>();
-        try {
-            Gadget gadget = gadgetRepo.getGadgetById(id);
-            if (gadget != null && gadget.getFeedbacks() != null) {
-                for (Feedback feedback : gadget.getFeedbacks()) {
-                    if (feedback != null && feedback.getUser() != null) {
-                        GadgetReviewsResponse reviewsResponse = GadgetReviewsResponse.builder()
-                                .id(feedback.getId())
-                                .image(feedback.getUser().getImage())
-                                .fullName(feedback.getUser().getFirstName() + " " + feedback.getUser().getLastName())
-                                .dateTime(String.valueOf(feedback.getDateAndTime()))
-                                .rating(feedback.getRating())
-                                .description(feedback.getDescription())
-                                .responseAdmin(feedback.getResponseAdmin())
-                                .build();
-                        reviewsResponses.add(reviewsResponse);
-                    } else {
-                        log.warn("Null feedback or user for Gadget with ID: {}", id);
-                    }
-                }
-            } else {
-                log.warn("Gadget or its feedbacks are null for ID: {}", id);
-            }
-        } catch (Exception e) {
-            log.error("Error while retrieving gadget reviews for ID: {}", id, e);
-        }
-        return reviewsResponses;
+    public List<GadgetReviewsResponse> getReviewsGadget(Long id, int page, int size) {
+        return gadgetJDBCTemplateRepo.getReviewsGadget(id, page, size);
     }
 
     @Override
     public GadgetDeliveryPriceResponse getDeliveryPriceGadget(Long id) {
         gadgetRepo.getGadgetById(id);
-
         return GadgetDeliveryPriceResponse.builder()
                 .deliveryPrice(BigDecimal.valueOf(200))
                 .build();

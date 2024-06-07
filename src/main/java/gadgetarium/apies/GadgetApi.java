@@ -169,8 +169,10 @@ public class GadgetApi {
 
     @Operation(summary = "Посмотреть отзывы гаджета", description = "Авторизация: ВСЕ")
     @GetMapping("/reviews/{id}")
-    public List<GadgetReviewsResponse> getReviewsGadget(@PathVariable Long id) {
-        return gadgetService.getReviewsGadget(id);
+    public List<GadgetReviewsResponse> getReviewsGadget(@PathVariable Long id,
+                                                        @RequestParam(value = "page", defaultValue = "1") int page,
+                                                        @RequestParam(value = "size", defaultValue = "3") int size) {
+        return gadgetService.getReviewsGadget(id, page, size);
     }
 
     @Operation(summary = "Информация про доставка и оплата", description = "Авторизация: ВСЕ")
@@ -205,13 +207,13 @@ public class GadgetApi {
     public List<Memory> getAllMemories(@PathVariable Long gadgetId){
         return gadgetService.getAllMemories(gadgetId);
     }
+
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Детали товаров", description = "Авторизация ADMIN")
     @GetMapping("/details")
     public List<DetailsResponse> gadgetDetails(){
         return gadgetService.gadgetDetails();
     }
-
 
     @Operation(summary = "Поиск всех гаджетов", description = "Авторизация: ВСЕ")
     @GetMapping("/global-search")
