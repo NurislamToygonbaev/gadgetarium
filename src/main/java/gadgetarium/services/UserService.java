@@ -4,6 +4,7 @@ import gadgetarium.dto.request.CategoryNameRequest;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
 import gadgetarium.dto.response.*;
+import gadgetarium.enums.GadgetType;
 
 import java.util.List;
 
@@ -17,7 +18,7 @@ public interface UserService {
 
     List<ListComparisonResponse> seeComparison();
 
-    ComparedGadgetsResponse compare(CategoryNameRequest selectCategory, boolean isDifferences);
+    ComparedGadgetsResponse compare(GadgetType gadgetType, boolean isDifferences);
 
     HttpResponse deleteSubGadget(Long subId);
 

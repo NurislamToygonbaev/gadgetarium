@@ -4,6 +4,7 @@ import gadgetarium.dto.request.CategoryNameRequest;
 import gadgetarium.dto.response.ComparedGadgetsResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ListComparisonResponse;
+import gadgetarium.enums.GadgetType;
 import gadgetarium.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +40,9 @@ public class ComparisonApi {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для просмотра различий")
     @GetMapping("/compare")
-    public ComparedGadgetsResponse compare(CategoryNameRequest categoryName,
-                                           @RequestParam boolean isDifferences) {
-        return userService.compare(categoryName, isDifferences);
+    public ComparedGadgetsResponse compare(@RequestParam(defaultValue = "PHONE") GadgetType gadgetType,
+                                           @RequestParam(defaultValue = "false") boolean isDifferences) {
+        return userService.compare(gadgetType, isDifferences);
     }
 
     @PreAuthorize("hasAuthority('USER')")
