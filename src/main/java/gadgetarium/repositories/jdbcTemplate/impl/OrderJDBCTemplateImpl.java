@@ -111,7 +111,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             rs.getLong("id"),
                             rs.getString("fullName"),
                             rs.getLong("number"),
-                            rs.getDate("created_at").toLocalDate(),
+                            String.valueOf(rs.getDate("created_at")),
                             rs.getInt("totalGadgets"),
                             rs.getBigDecimal("total_price"),
                             rs.getBoolean("type_order"),

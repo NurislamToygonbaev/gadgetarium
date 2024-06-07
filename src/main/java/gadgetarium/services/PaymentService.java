@@ -1,19 +1,20 @@
 package gadgetarium.services;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.OrderNumber;
-import gadgetarium.dto.response.OrderOverViewResponse;
+import gadgetarium.dto.response.OrderImageResponse;
+import gadgetarium.dto.response.OrderSuccessResponse;
 import gadgetarium.enums.Payment;
-import org.springframework.http.ResponseEntity;
 
 public interface PaymentService {
-    ResponseEntity<String> validateCard(String nonce, String cardholderName, String customerId);
 
-    ResponseEntity<String> confirmPayment(String paymentMethodNonce, Long orderId, String customerId);
+    JsonNode createPayment(Long id, String currency, String paypal, String sale, String paymentDescription, String url, String url1) throws Exception;
 
-    HttpResponse paymentMethod(Payment payment, Long orderId);
+    JsonNode executePayment(String s, String s1) throws Exception;
 
-    OrderOverViewResponse orderView(Long orderId);
+    HttpResponse typeOrder(Long orderId, Payment payment);
 
-    OrderNumber orderNumberInfo(Long orderId);
+    OrderImageResponse orderImage(Long orderId);
+
+    OrderSuccessResponse orderSuccess(Long orderId);
 }

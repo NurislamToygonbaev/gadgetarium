@@ -12,7 +12,7 @@ public record PaginationGadget(
         String images,
         Long article,
         String nameOfGadget,
-        LocalDate releaseDate,
+        String releaseDate,
         int quantity,
         BigDecimal price,
         int percent,

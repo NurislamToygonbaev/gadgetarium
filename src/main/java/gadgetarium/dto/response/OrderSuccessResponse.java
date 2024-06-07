@@ -2,12 +2,10 @@ package gadgetarium.dto.response;
 
 import lombok.Builder;
 
-import java.time.LocalDate;
-
 @Builder
-public record OrderNumber(
+public record OrderSuccessResponse(
         Long number,
-        LocalDate date,
+        String createAd,
         String email
 ) {
 }

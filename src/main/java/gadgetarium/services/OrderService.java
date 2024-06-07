@@ -38,4 +38,6 @@ public interface OrderService {
     UserImageResponse addPhotoAndEdit(UserImageRequest userImageRequest);
 
     HttpResponse changePassword(ChangePasswordRequest changePasswordRequest);
+
+    HttpResponse clearOrders();
 }

@@ -1,10 +1,6 @@
 package gadgetarium.repositories;
 
 import gadgetarium.dto.response.AllOrderHistoryResponse;
-import gadgetarium.dto.response.FieldsGadgetResponse;
-import gadgetarium.dto.response.OrderResponseFindById;
-import gadgetarium.dto.response.PrivateGadgetResponse;
-import gadgetarium.entities.Gadget;
 import gadgetarium.entities.Order;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.exceptions.NotFoundException;
@@ -46,7 +42,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query(value = "select sum(o.total_price) from sub_gadgets s inner join gadgets g on s.gadget_id = g.id inner join orders_sub_gadgets og on og.sub_gadgets_id = s.id inner join orders o on o.id = og.orders_id where o.status ilike 'DELIVERED' and extract(year from o.created_at) = extract(year from current_date  - INTERVAL '1 year');", nativeQuery = true)
     BigDecimal forPreviousYear();
 
-    @Query("select new gadgetarium.dto.response.AllOrderHistoryResponse(o.id, o.createdAt, o.number, o.status, o.totalPrice) from Order o join o.user u where u.id = :userId")
+    @Query("select new gadgetarium.dto.response.AllOrderHistoryResponse(o.id, to_char(o.createdAt, 'YYYY-MM-DD'), o.number, o.status, o.totalPrice) from Order o join o.user u where u.id = :userId")
     List<AllOrderHistoryResponse> getAllHistory(Long userId);
 
     default Order getOrderById(Long orderId) {

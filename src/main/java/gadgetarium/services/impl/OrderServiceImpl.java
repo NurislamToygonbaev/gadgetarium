@@ -150,7 +150,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
 
-
     @Override
     public OrderInfoResponse findOrderInfo(Long orderId) {
         Order order = orderRepo.getOrderById(orderId);
@@ -219,7 +218,7 @@ public class OrderServiceImpl implements OrderService {
             }
             order.setTotalPrice(totalPriceWithDiscount);
         }
-        order.setStatus(Status.PENDING);
+
         order.setDiscountPrice(totalDiscount);
         order.setNumber(orderNumber);
 
@@ -230,7 +229,7 @@ public class OrderServiceImpl implements OrderService {
         return HttpResponse
                 .builder()
                 .status(HttpStatus.OK)
-                .message("Order saved!")
+                .message("Order saved with ID: " + order.getId())
                 .build();
     }
 
@@ -260,7 +259,7 @@ public class OrderServiceImpl implements OrderService {
                 .email(user.getEmail())
                 .discount(foundOrder.getDiscountPrice())
                 .currentPrice(foundOrder.getTotalPrice())
-                .createdAt(foundOrder.getCreatedAt())
+                .createdAt(String.valueOf(foundOrder.getCreatedAt()))
                 .payment(foundOrder.getPayment())
                 .lastName(user.getLastName())
                 .build();
@@ -371,5 +370,16 @@ public class OrderServiceImpl implements OrderService {
 
         }
         return gadgetResponses;
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse clearOrders() {
+        User user = currentUser.get();
+        orderRepo.deleteAll(user.getOrders());
+        return HttpResponse.builder()
+                .status(HttpStatus.OK)
+                .message("cleared")
+                .build();
     }
 }

@@ -6,7 +6,8 @@ import lombok.Builder;
 import java.math.BigDecimal;
 
 @Builder
-public record OrderOverViewResponse(
+public record OrderImageResponse(
+        Long id,
         BigDecimal price,
         String delivery,
         Payment payment

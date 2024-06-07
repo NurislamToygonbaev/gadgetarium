@@ -131,7 +131,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .article(article)
                 .comment(feedback.getDescription())
                 .feedbackImages(feedback.getImages())
-                .dateAndTime(feedback.getDateAndTime())
+                .dateAndTime(String.valueOf(feedback.getDateAndTime()))
                 .rating(feedback.getRating())
                 .fullNameUser(feedback.getUser().getFirstName() + " " + feedback.getUser().getLastName())
                 .emailUser(feedback.getUser().getEmail())
@@ -185,7 +185,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 article,
                 feedback.getDescription(),
                 feedback.getImages(),
-                feedback.getDateAndTime(),
+                String.valueOf(feedback.getDateAndTime()),
                 feedback.getRating(),
                 fullName.trim(),
                 userEmail,

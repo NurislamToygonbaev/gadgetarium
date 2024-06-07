@@ -20,7 +20,7 @@ public record OrderHistoryResponse(
         String email,
         BigDecimal discount,
         BigDecimal currentPrice,
-        LocalDate createdAt,
+        String createdAt,
         Payment payment,
         String lastName
 

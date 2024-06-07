@@ -14,7 +14,7 @@ public record FeedbackResponse(
         Long article,
         String comment,
         List<String> feedbackImages,
-        LocalDateTime dateAndTime,
+        String dateAndTime,
         int rating,
         String fullNameUser,
         String emailUser,

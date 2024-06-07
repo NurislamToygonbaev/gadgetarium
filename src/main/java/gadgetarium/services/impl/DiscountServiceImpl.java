@@ -58,15 +58,9 @@ public class DiscountServiceImpl implements DiscountService {
                 .build();
     }
 
-    @Override
     @Scheduled(cron = "0 0 0 * * *")
     public void checkDiscount(){
-        List<Discount> discounts = discountRepo.findAll();
-        for (Discount discount : discounts) {
-            if (discount.getEndDate().isAfter(LocalDate.now())){
-                discountRepo.delete(discount);
-            }
-        }
+        discountRepo.deleteByEndDateBefore(LocalDate.now());
     }
 
 }
