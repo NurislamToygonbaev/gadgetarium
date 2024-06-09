@@ -4,6 +4,7 @@ import gadgetarium.dto.request.CategoryNameRequest;
 import gadgetarium.dto.response.ComparedGadgetsResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ListComparisonResponse;
+import gadgetarium.dto.response.Responsee;
 import gadgetarium.enums.GadgetType;
 import gadgetarium.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -58,6 +59,5 @@ public class ComparisonApi {
     public HttpResponse deleteAllGadgets() {
         return userService.deleteAllGadgets();
     }
-
 
 }

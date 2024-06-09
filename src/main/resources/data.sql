@@ -169,7 +169,7 @@ values (1, 'Nurislam', 'Toygonbaev', 'nurislam@gmail.com', '+996701111111', 'hel
 insert into categories(id, category_name)
 values (1, 'phone'),
        (2, 'laptop'),
-       (3, 'Smart watches and bracelets'),
+       (3, 'watch'),
        (4, 'Accessories');
 
 insert into sub_categories(category_id, id, sub_category_name)
@@ -179,7 +179,7 @@ values
     (1, 2, 'Samsung'),
     (1, 3, 'Xiaomi'),
     (1, 4, 'Google'),
-    (1, 5, 'OnePlus'),
+    (3, 5, 'OnePlus'),
     (1, 6, 'Huawei'),
     (1, 7, 'Motorola'),
     (1, 8, 'LG'),
@@ -675,7 +675,14 @@ values (39, 'Bluetooth'),
        (39, 'Нержавейщая сталь'),
        (39, 'Унисекс'),
        (39, 'да'),
-       (39, 'Прямоугольная');
+       (39, 'Прямоугольная'),
+       (40, 'Bluetooth'),
+       (40, 'Круглая'),
+       (40, 'Кожа'),
+       (40, 'Нержавейщая сталь'),
+       (40, 'Унисекс'),
+       (40, 'да'),
+       (40, 'Прямоугольная');
 
 insert into discounts(end_date, percent, start_date, id, gadget_id)
 values ('2024-12-12', 20, '2024-04-01', 1, 1),

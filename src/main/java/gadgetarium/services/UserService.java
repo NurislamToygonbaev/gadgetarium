@@ -1,6 +1,5 @@
 package gadgetarium.services;
 
-import gadgetarium.dto.request.CategoryNameRequest;
 import gadgetarium.dto.request.SignInRequest;
 import gadgetarium.dto.request.SignUpRequest;
 import gadgetarium.dto.response.*;
