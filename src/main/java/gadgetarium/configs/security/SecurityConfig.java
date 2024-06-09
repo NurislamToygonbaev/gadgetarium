@@ -29,7 +29,7 @@ import org.springframework.orm.jpa.support.OpenEntityManagerInViewFilter;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-//@EnableMethodSecurity(securedEnabled = true)
+@EnableMethodSecurity(securedEnabled = true)
 @EnableScheduling
 public class SecurityConfig {
 
