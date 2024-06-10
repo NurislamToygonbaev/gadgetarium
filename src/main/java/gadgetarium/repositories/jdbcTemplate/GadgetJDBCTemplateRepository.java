@@ -30,4 +30,6 @@ public interface GadgetJDBCTemplateRepository {
     List<GadgetsResponse> globalSearch(String request);
 
     GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity);
+
+    List<GadgetReviewsResponse> getReviewsGadget(Long id, int page, int size);
 }
