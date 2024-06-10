@@ -8,5 +8,5 @@ import java.util.Map;
 @Builder
 public record UniqueFieldResponse(
         CompareFieldResponse compareFieldResponse,
-        Map<String, String> uniqueCharacteristics
+        List<Map<String, String>> uniqueCharacteristics
 )implements SampleResponse{}

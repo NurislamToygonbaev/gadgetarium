@@ -14,12 +14,11 @@ import java.util.Map;
 @Builder
 public class CompareFieldResponse {
     private Long id;
-    private List<String> images;
-    private String nameOfGadget;
-    private BigDecimal price;
-    private String mainColour;
+    private String image;
     private String brandName;
+    private String nameOfGadget;
     private Memory memory;
-    private Map<String, String> characteristics;
+    private String mainColour;
+    private BigDecimal price;
 }
 
