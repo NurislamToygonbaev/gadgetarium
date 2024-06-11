@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -108,7 +109,7 @@ public class GadgetServiceImpl implements GadgetService {
         } else {
             gadget = new Gadget();
             gadget.setNameOfGadget(addProductRequest.nameOfGadget());
-            gadget.setReleaseDate(addProductRequest.dateOfIssue());
+            gadget.setReleaseDate(LocalDate.parse(addProductRequest.dateOfIssue()));
             gadget.setWarranty(addProductRequest.warranty());
 
             SubCategory subCategory = subCategoryRepo.getSubCategoryById(subCategoryId);
