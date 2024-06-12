@@ -36,7 +36,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final FeedbackRepository feedbackRepo;
     private final GadgetRepository gadgetRepo;
     private final CurrentUser currentUserr;
-
+    private static final int MAX_IMAGES = 5;
     @Override
     public AllFeedbackResponse getAllFeedbacks(FeedbackType feedbackType) {
         List<Feedback> feedbacks1 = feedbackRepo.findAll();
@@ -237,7 +237,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Override
     @Transactional
     public HttpResponse leaveFeedback(Long gadgetId, FeedbackRequest feedbackRequest) {
-        if (feedbackRequest.images().size() > 5) {
+        if (feedbackRequest.images().size() > MAX_IMAGES) {
             throw new BadRequestException("Cannot have more than 5 images");
         }
 
@@ -289,36 +289,76 @@ public class FeedbackServiceImpl implements FeedbackService {
 
     @Override
     @Transactional
-    public HttpResponse updateFeedback(Long feedId, String message, int rating) {
-        Feedback feedback = feedbackRepo.getByIdd(feedId);
-        checkResponse(feedback);
-        feedback.setDescription(message);
-        feedback.setRating(rating);
-        feedbackRepo.save(feedback);
+    public HttpResponse deleteFeedback(Long feedId) {
+        User user = currentUserr.get();
+        Feedback feedback = findFeedbackById(user, feedId);
+
+        user.getFeedbacks().remove(feedback);
+        feedbackRepo.delete(feedback);
+
+        log.info("Feedback deleted successfully for id: " + feedId);
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
-                .message("success updated")
+                .message("Successfully deleted")
                 .build();
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse updateUserFeedback(Long feedId, FeedbackRequest feedbackRequest) {
+        User user = currentUserr.get();
+        Feedback feedback = findFeedbackById(user, feedId);
+
+        feedback.setRating(feedbackRequest.grade());
+        feedback.setDescription(feedbackRequest.comment());
+
+        List<String> images = feedbackRequest.images();
+        if (images == null) {
+            log.warn("Images list is null in feedback request");
+            throw new BadRequestException("Images list cannot be null");
+        }
+
+        if (images.size() > MAX_IMAGES) {
+            log.warn("Too many images in feedback request: " + images.size());
+            throw new BadRequestException("Cannot have more than " + MAX_IMAGES + " images");
+        }
+
+        feedback.setImages(images);
+
+        log.info("Feedback updated successfully for id: " + feedId);
+        feedbackRepo.save(feedback);
+
+        return HttpResponse.builder()
+                .status(HttpStatus.OK)
+                .message("Successfully updated")
+                .build();
+    }
+    private Feedback findFeedbackById(User user, Long feedId) {
+        if (user.getFeedbacks() == null) {
+            log.warn("Feedbacks not found for user: " + user.getId());
+            throw new NotFoundException("Feedbacks not found");
+        }
+
+        Optional<Feedback> optionalFeedback = user.getFeedbacks().stream()
+                .filter(feedback -> feedback.getId().equals(feedId))
+                .findFirst();
+
+        if (optionalFeedback.isEmpty()) {
+            log.warn("Feedback not found for id: " + feedId);
+            throw new NotFoundException("Feedback not found");
+        }
+
+        Feedback feedback = optionalFeedback.get();
+        checkResponse(feedback);
+
+        return feedback;
     }
 
     private void checkResponse(Feedback feedback) {
         if (feedback.getResponseAdmin() != null) {
-            throw new BadRequestException("can't update or delete the feedback");
+            log.warn("Attempt to update feedback with admin response: " + feedback.getId());
+            throw new BadRequestException("Can't update or delete the feedback");
         }
-    }
-
-    @Override
-    public HttpResponse deleteFeedback(Long feedId) {
-        Feedback feedback = feedbackRepo.getByIdd(feedId);
-        if (!currentUserr.get().getRole().equals(Role.ADMIN)) {
-            checkResponse(feedback);
-        }
-
-        feedbackRepo.delete(feedback);
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("success deleted")
-                .build();
     }
 
     private Map<Integer, Long> getRatingCounts(List<Feedback> feedbacks) {

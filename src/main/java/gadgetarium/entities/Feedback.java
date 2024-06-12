@@ -57,4 +57,9 @@ public class Feedback {
         this.images = new ArrayList<>();
         this.dateAndTime = LocalDateTime.now();
     }
+
+    @PreUpdate
+    private void updatedReview(){
+        this.dateAndTime = LocalDateTime.now();
+    }
 }
