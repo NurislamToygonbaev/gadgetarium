@@ -23,7 +23,7 @@ public interface FeedbackService {
 
     HttpResponse leaveFeedback(Long gadgetId, FeedbackRequest feedbackRequest);
 
-    HttpResponse updateFeedback(Long feedId, String message, int rating);
-
     HttpResponse deleteFeedback(Long feedId);
+
+    HttpResponse updateUserFeedback(Long feedId, FeedbackRequest feedbackRequest);
 }

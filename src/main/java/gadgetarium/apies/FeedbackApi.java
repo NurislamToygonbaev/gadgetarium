@@ -75,18 +75,17 @@ public class FeedbackApi {
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")
-    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Обновление отзыва ")
-    @PatchMapping("/update/{feedId}")
-    public HttpResponse updateFeedback(@PathVariable Long feedId,
-                                       @RequestParam String message,
-                                       @RequestParam int rating) {
-        return feedbackService.updateFeedback(feedId, message, rating);
-    }
-
-    @PreAuthorize("hasAnyAuthority('USER')")
-    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Удаление отзыва ")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Удаление своего отзыва ")
     @DeleteMapping("/delete-feedback/{feedId}")
     public HttpResponse deleteFeedback(@PathVariable Long feedId) {
         return feedbackService.deleteFeedback(feedId);
+    }
+
+    @PreAuthorize("hasAnyAuthority('USER')")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Обновление своего отзыва ")
+    @PatchMapping ("/edit/{feedId}")
+    public HttpResponse editFeedback(@PathVariable Long feedId,
+                                     @RequestBody FeedbackRequest feedbackRequest){
+        return feedbackService.updateUserFeedback(feedId, feedbackRequest);
     }
 }
