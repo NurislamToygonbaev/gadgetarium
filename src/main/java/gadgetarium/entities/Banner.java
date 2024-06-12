@@ -31,8 +31,4 @@ public class Banner {
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
 
-    @PrePersist
-    private void initialReview() {
-        this.images = new ArrayList<>();
-    }
 }
