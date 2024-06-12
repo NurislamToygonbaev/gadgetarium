@@ -60,6 +60,9 @@ dependencies {
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
     // jakarta servlet openSessionFactory
     implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
+    // java.time - JavaTimeModule
+    implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.17.1'
+
 }
 
 tasks.named('test') {
