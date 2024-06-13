@@ -128,10 +128,10 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Добавление документа на товары ", description = "Авторизация ADMIN")
-    @PatchMapping("/set-document/{gadgetId}")
-    public HttpResponse addDocument(@PathVariable Long gadgetId,
+    @PatchMapping("/set-document/{subGadgetId}")
+    public HttpResponse addDocument(@PathVariable Long subGadgetId,
                                     @RequestBody ProductDocRequest productDocRequest) throws IOException {
-        return gadgetService.addDocument(gadgetId, productDocRequest);
+        return gadgetService.addDocument(subGadgetId, productDocRequest);
     }
 
     @Operation(summary = "Все Гаджеты по акции", description = "Авторизация: ВСЕ")
@@ -202,10 +202,11 @@ public class GadgetApi {
         return gadgetService.getAllColours(gadgetId);
     }
 
-    @Operation(summary = "Памяти гаджета.", description = "Авторизация ВСЕ")
+    @Operation(summary = "Памяти гаджета with color", description = "Авторизация ВСЕ")
     @GetMapping("/memories/{gadgetId}")
-    public List<Memory> getAllMemories(@PathVariable Long gadgetId){
-        return gadgetService.getAllMemories(gadgetId);
+    public List<Memory> getAllMemories(@PathVariable Long gadgetId,
+                                       @RequestParam String color){
+        return gadgetService.getAllMemories(gadgetId, color);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")

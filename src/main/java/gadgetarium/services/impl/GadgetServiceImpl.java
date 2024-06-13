@@ -272,9 +272,10 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
+    public HttpResponse addDocument(Long subGadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
         try {
-            Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
+            SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
+            Gadget gadget = subGadget.getGadget();
             if (gadget == null){
                 throw new BadRequestException("No gadget to add document.");
             }
@@ -509,13 +510,15 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public List<Memory> getAllMemories(Long gadgetId) {
+    public List<Memory> getAllMemories(Long gadgetId, String color) {
         Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
 
         List<Memory> memories = new ArrayList<>();
 
         for (SubGadget subGadget : gadgetById.getSubGadgets()) {
-            memories.add(subGadget.getMemory());
+            if (subGadget.getMainColour().equalsIgnoreCase(color)){
+                memories.add(subGadget.getMemory());
+            }
         }
 
         return memories;
