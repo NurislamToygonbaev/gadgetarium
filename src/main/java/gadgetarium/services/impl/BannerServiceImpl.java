@@ -6,6 +6,7 @@ import gadgetarium.dto.response.GetAllBannerResponse;
 import gadgetarium.entities.Banner;
 import gadgetarium.repositories.BannerRepository;
 import gadgetarium.services.BannerService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -21,6 +22,7 @@ public class BannerServiceImpl implements BannerService {
     private final BannerRepository bannerRepo;
 
     @Override
+    @Transactional
     public BannerResponse create(BannerRequest bannerRequest) {
         Banner banner = new Banner();
         banner.setImages(bannerRequest.images());
