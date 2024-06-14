@@ -382,4 +382,17 @@ public class OrderServiceImpl implements OrderService {
                 .message("cleared")
                 .build();
     }
+
+    @Override
+    public UserProfileResponse findUserProfile() {
+        User user = currentUser.get();
+        return UserProfileResponse.builder()
+                .firsName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getAddress())
+                .image(user.getImage())
+                .build();
+    }
 }
