@@ -62,7 +62,10 @@ dependencies {
     implementation 'jakarta.servlet:jakarta.servlet-api:5.0.0'
     // java.time - JavaTimeModule
     implementation group: 'com.fasterxml.jackson.datatype', name: 'jackson-datatype-jsr310', version: '2.17.1'
-
+    //Для использование Logz io
+    implementation group: 'io.logz.logback', name: 'logzio-logback-appender', version: '1.0.0'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-logging
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '3.3.0'
 }
 
 tasks.named('test') {
