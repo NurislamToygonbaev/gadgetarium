@@ -11,7 +11,7 @@ import java.util.List;
 public record AddProductRequest(
         String nameOfGadget,
         @IssueDateValidation
-        String dateOfIssue,
+        LocalDate dateOfIssue,
         @WarrantyValidation
         int warranty,
         List<ProductsRequest> productsRequests

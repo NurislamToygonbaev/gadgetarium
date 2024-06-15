@@ -37,6 +37,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private final GadgetRepository gadgetRepo;
     private final CurrentUser currentUserr;
     private static final int MAX_IMAGES = 5;
+
     @Override
     public AllFeedbackResponse getAllFeedbacks(FeedbackType feedbackType) {
         List<Feedback> feedbacks1 = feedbackRepo.findAll();
@@ -116,11 +117,13 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Transactional
     public FeedbackResponse getFeedbackById(Long id) {
         Feedback feedback = feedbackRepo.getByIdd(id);
-        feedback.setReviewType(ReviewType.READ);
+        if (currentUserr.get().getRole().equals(Role.ADMIN)) {
+            feedback.setReviewType(ReviewType.READ);
+        }
         Long article = feedback.getGadget().getSubGadgets().stream()
                 .map(SubGadget::getArticle)
                 .findFirst()
-                .orElseThrow(() -> new NotFoundException(""));
+                .orElseThrow(() -> new NotFoundException("Not found feedback!"));
 
         String image = feedback.getImages() != null && !feedback.getImages().isEmpty() ? feedback.getImages().getFirst() : null;
         return FeedbackResponse.builder()
@@ -136,6 +139,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .fullNameUser(feedback.getUser().getFirstName() + " " + feedback.getUser().getLastName())
                 .emailUser(feedback.getUser().getEmail())
                 .responseAdmin(feedback.getResponseAdmin())
+                .reviewType(feedback.getReviewType().name())
                 .build();
     }
 
@@ -189,7 +193,8 @@ public class FeedbackServiceImpl implements FeedbackService {
                 feedback.getRating(),
                 fullName.trim(),
                 userEmail,
-                adminResponse
+                adminResponse,
+                feedback.getReviewType().name()
         );
     }
 
@@ -333,6 +338,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .message("Successfully updated")
                 .build();
     }
+
     private Feedback findFeedbackById(User user, Long feedId) {
         if (user.getFeedbacks() == null) {
             log.warn("Feedbacks not found for user: " + user.getId());

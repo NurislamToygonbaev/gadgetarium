@@ -18,6 +18,7 @@ public record FeedbackResponse(
         int rating,
         String fullNameUser,
         String emailUser,
-        String responseAdmin
+        String responseAdmin,
+        String reviewType
 ) {
 }

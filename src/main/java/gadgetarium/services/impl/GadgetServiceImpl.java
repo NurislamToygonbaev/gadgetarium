@@ -109,7 +109,7 @@ public class GadgetServiceImpl implements GadgetService {
         } else {
             gadget = new Gadget();
             gadget.setNameOfGadget(addProductRequest.nameOfGadget());
-            gadget.setReleaseDate(LocalDate.parse(addProductRequest.dateOfIssue()));
+            gadget.setReleaseDate(addProductRequest.dateOfIssue());
             gadget.setWarranty(addProductRequest.warranty());
 
             SubCategory subCategory = subCategoryRepo.getSubCategoryById(subCategoryId);
