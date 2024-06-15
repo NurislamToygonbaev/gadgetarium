@@ -40,4 +40,7 @@ public interface OrderService {
     HttpResponse changePassword(ChangePasswordRequest changePasswordRequest);
 
     HttpResponse clearOrders();
+
+    UserProfileResponse findUserProfile();
+
 }
