@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
-    @Query("select f from Feedback f where f.responseAdmin is null or f.responseAdmin = ''")
+    @Query("select f from Feedback f where f.reviewType = 'NOT_READ'")
     List<Feedback> findUnansweredFeedbacks();
 
-    @Query("select f from Feedback f where f.responseAdmin is not null and f.responseAdmin <> ''")
+    @Query("select f from Feedback f where f.reviewType = 'READ'")
     List<Feedback> findAnsweredFeedbacks();
 
     default Feedback getByIdd(Long id){

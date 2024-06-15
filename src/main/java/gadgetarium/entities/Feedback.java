@@ -60,6 +60,5 @@ public class Feedback {
 
     @PreUpdate
     private void updatedReview(){
-        this.dateAndTime = LocalDateTime.now();
-    }
+        this.dateAndTime = LocalDateTime.now();}
 }
