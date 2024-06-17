@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+    <appender name="LOGZIO" class="io.logz.logback.LogzioLogbackAppender">
+        <token>PPbnTkhwHoRxjGQuIMvkDnLKhilCDttb</token>
+        <logzioUrl>https://listener-uk.logz.io:8071</logzioUrl>
+        <type>spring-boot</type>
+        <addHostname>true</addHostname>
+        <debug>true</debug>
+    </appender>
+    <root level="INFO">
+        <appender-ref ref="LOGZIO" />
+    </root>
+</configuration>
