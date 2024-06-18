@@ -1,9 +1,9 @@
 package gadgetarium.dto.response;
 
-import gadgetarium.enums.Memory;
-import gadgetarium.enums.Ram;
+
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Builder
@@ -14,6 +14,8 @@ public record AddProductsResponse(
         String memory,
         String ram,
         int countSim,
-        LocalDate releaseDate
+        LocalDate releaseDate,
+        int quantity,
+        BigDecimal price
 ) {
 }

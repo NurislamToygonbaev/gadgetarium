@@ -202,7 +202,9 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getMemory().name(),
                         subGadget.getRam().name(),
                         subGadget.getCountSim(),
-                        subGadget.getGadget().getReleaseDate()
+                        subGadget.getGadget().getReleaseDate(),
+                        subGadget.getQuantity(),
+                        subGadget.getPrice()
                 );
                 addProductsResponses.add(addProductsResponse);
             }
@@ -220,13 +222,19 @@ public class GadgetServiceImpl implements GadgetService {
                 subGadget.setPrice(price);
                 subGadget.setQuantity(quantity);
                 subGadgetRepo.save(subGadget);
+                return HttpResponse
+                        .builder()
+                        .status(HttpStatus.OK)
+                        .message("Success added price and quantity! " + "price: "+price +", quantity: "+ quantity)
+                        .build();
             }
         }
         return HttpResponse
                 .builder()
-                .status(HttpStatus.OK)
-                .message("Success added price and quantity!")
+                .status(HttpStatus.BAD_REQUEST)
+                .message("price and quantity already exists!")
                 .build();
+
     }
 
     @Override
@@ -236,11 +244,16 @@ public class GadgetServiceImpl implements GadgetService {
         if (subGadget.getPrice() == null){
             subGadget.setPrice(price);
             subGadgetRepo.save(subGadget);
+            return HttpResponse
+                    .builder()
+                    .status(HttpStatus.OK)
+                    .message("Success added price and quantity! " + "price: "+price)
+                    .build();
         }
         return HttpResponse
                 .builder()
-                .status(HttpStatus.OK)
-                .message("Success set price!")
+                .status(HttpStatus.BAD_REQUEST)
+                .message("price already exists!")
                 .build();
     }
 
@@ -250,13 +263,18 @@ public class GadgetServiceImpl implements GadgetService {
         if (subGadget.getQuantity() <= 0){
             subGadget.setQuantity(quantity);
             subGadgetRepo.save(subGadget);
+            return HttpResponse
+                    .builder()
+                    .status(HttpStatus.OK)
+                    .message("Success added quantity! " + "quantity: "+ quantity)
+                    .build();
         }
-
         return HttpResponse
                 .builder()
-                .status(HttpStatus.OK)
-                .message("Success set quantity!")
+                .status(HttpStatus.BAD_REQUEST)
+                .message("quantity already exists!")
                 .build();
+
     }
 
     @Override
