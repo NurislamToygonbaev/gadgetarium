@@ -202,7 +202,9 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getMemory().name(),
                         subGadget.getRam().name(),
                         subGadget.getCountSim(),
-                        subGadget.getGadget().getReleaseDate()
+                        subGadget.getGadget().getReleaseDate(),
+                        subGadget.getQuantity(),
+                        subGadget.getPrice()
                 );
                 addProductsResponses.add(addProductsResponse);
             }
