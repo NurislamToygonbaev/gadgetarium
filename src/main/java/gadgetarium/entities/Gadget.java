@@ -78,4 +78,9 @@ public class Gadget {
         long daysBetween = ChronoUnit.DAYS.between(createdAt, LocalDate.now());
         return daysBetween <= 30;
     }
+
+    public void addSubGadget(SubGadget subGadget) {
+        if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
+        this.subGadgets.add(subGadget);
+    }
 }

@@ -44,7 +44,7 @@ public class SubGadget {
     @Enumerated(EnumType.STRING)
     private RemotenessStatus remotenessStatus;
 
-    @Size(max = 1000)
+    @Size(max = 2000)
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
 

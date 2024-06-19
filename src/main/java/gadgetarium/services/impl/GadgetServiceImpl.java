@@ -144,12 +144,15 @@ public class GadgetServiceImpl implements GadgetService {
         for (ProductsRequest productsRequest : addProductRequest.productsRequests()) {
             SubGadget subGadget = new SubGadget();
             subGadget.setGadget(gadget);
+            gadget.addSubGadget(subGadget);
             subGadget.setMainColour(productsRequest.mainColour());
             subGadget.setMemory(productsRequest.memory());
 
             if (subGadget.getImages() == null) {
                 subGadget.setImages(new ArrayList<>());
             }
+
+            subGadgetRepo.save(subGadget);
             subGadget.getImages().addAll(productsRequest.images());
 
             UUID uuid = UUID.randomUUID();
@@ -163,7 +166,7 @@ public class GadgetServiceImpl implements GadgetService {
                 category.getCategoryName().toLowerCase().contains("laptop")) {
                 subGadget.setCountSim(productsRequest.countSim());
                 subGadget.setRam(productsRequest.ram());
-            } else if (category.getCategoryName().toLowerCase().contains("smart") ||
+            } else if (category.getCategoryName().toLowerCase().contains("watch") ||
                        category.getCategoryName().toLowerCase().contains("accessories")) {
                 subGadget.getUniFiled().add(productsRequest.materialBracelet());
                 subGadget.getUniFiled().add(productsRequest.dumas());
@@ -175,7 +178,6 @@ public class GadgetServiceImpl implements GadgetService {
                 subGadget.getUniFiled().add(productsRequest.wireless());
             }
 
-            subGadgetRepo.save(subGadget);
         }
 
         return HttpResponse.builder()
@@ -183,6 +185,7 @@ public class GadgetServiceImpl implements GadgetService {
                 .message("Успешно добавлено")
                 .build();
     }
+
 
 
 
