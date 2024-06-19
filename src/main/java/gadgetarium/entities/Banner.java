@@ -27,7 +27,7 @@ public class Banner {
     @SequenceGenerator(name = "banner_seq", allocationSize = 1, initialValue = 60)
     private Long id;
 
-    @Size(max = 1000)
+    @Column(length = 1000)
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
 

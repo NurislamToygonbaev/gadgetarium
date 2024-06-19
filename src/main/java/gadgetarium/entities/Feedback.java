@@ -40,7 +40,7 @@ public class Feedback {
     @Enumerated(EnumType.STRING)
     private ReviewType reviewType;
 
-    @Size(max = 1000)
+    @Column(length = 1000)
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
 

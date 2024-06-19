@@ -128,10 +128,10 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Добавление документа на товары ", description = "Авторизация ADMIN")
-    @PatchMapping("/set-document/{subGadgetId}")
-    public HttpResponse addDocument(@PathVariable Long subGadgetId,
+    @PatchMapping("/set-document/{gadgetId}")
+    public HttpResponse addDocument(@PathVariable Long gadgetId,
                                     @RequestBody ProductDocRequest productDocRequest) throws IOException {
-        return gadgetService.addDocument(subGadgetId, productDocRequest);
+        return gadgetService.addDocument(gadgetId, productDocRequest);
     }
 
     @Operation(summary = "Все Гаджеты по акции", description = "Авторизация: ВСЕ")

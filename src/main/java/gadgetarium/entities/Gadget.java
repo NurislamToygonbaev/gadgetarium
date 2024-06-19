@@ -59,7 +59,7 @@ public class Gadget {
     private Brand brand;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @Size(max = 3000)
+    @Column(length = 3000)
     private Map<CharValue,String> charName;
 
     @OneToOne(mappedBy = "gadget", cascade = {REMOVE, REFRESH, MERGE})

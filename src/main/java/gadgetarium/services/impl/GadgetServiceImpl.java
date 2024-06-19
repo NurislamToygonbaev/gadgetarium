@@ -108,7 +108,7 @@ public class GadgetServiceImpl implements GadgetService {
             gadget = gadgetRepo.findByNameOfGadget(addProductRequest.nameOfGadget());
         } else {
             gadget = new Gadget();
-            gadget.setNameOfGadget(addProductRequest.nameOfGadget());
+            gadget.setNameOfGadget(addProductRequest.nameOfGadget().trim());
             gadget.setReleaseDate(addProductRequest.dateOfIssue());
             gadget.setWarranty(addProductRequest.warranty());
 
@@ -187,10 +187,6 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
 
-
-
-
-
     @Override
     public List<AddProductsResponse> getNewProducts() {
         List<SubGadget> all = subGadgetRepo.findAll();
@@ -199,6 +195,7 @@ public class GadgetServiceImpl implements GadgetService {
         for (SubGadget subGadget : all) {
             if (subGadget.getPrice() == null || subGadget.getQuantity() == 0) {
                 AddProductsResponse addProductsResponse = new AddProductsResponse(
+                        subGadget.getGadget().getId(),
                         subGadget.getId(),
                         subGadget.getGadget().getBrand().getBrandName(),
                         subGadget.getMainColour(),
@@ -293,13 +290,9 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public HttpResponse addDocument(Long subGadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
+    public HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
         try {
-            SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
-            Gadget gadget = subGadget.getGadget();
-            if (gadget == null){
-                throw new BadRequestException("No gadget to add document.");
-            }
+            Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
 
             gadget.setPDFUrl(productDocRequest.pdf());
             gadget.setVideoUrl(productDocRequest.videoUrl());

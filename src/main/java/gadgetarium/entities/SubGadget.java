@@ -44,11 +44,12 @@ public class SubGadget {
     @Enumerated(EnumType.STRING)
     private RemotenessStatus remotenessStatus;
 
-    @Size(max = 2000)
+    @Column(length = 2000)
     @ElementCollection(fetch = FetchType.LAZY)
     private List<String> images;
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @Column(length = 1000)
     private List<String> uniFiled;
 
     @ManyToOne(cascade = {DETACH, MERGE, REFRESH}, fetch = FetchType.LAZY)

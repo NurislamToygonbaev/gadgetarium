@@ -8,7 +8,8 @@ import java.time.LocalDate;
 
 @Builder
 public record AddProductsResponse(
-        Long id,
+        Long gadgetId,
+        Long subGadgetId,
         String brandName,
         String mainColour,
         String memory,

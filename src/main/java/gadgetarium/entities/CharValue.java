@@ -24,7 +24,7 @@ public class CharValue {
     private Long id;
 
     @ElementCollection(fetch = FetchType.LAZY)
-    @Size(max = 3000)
+    @Column(length = 3000)
     private Map<String, String> values;
 
     public void addCharacteristic(String key, String value) {
