@@ -1,5 +1,5 @@
 paypal:
-  client-id: AT1FdRng9wFvEgFpKFdCuan5ij3wYIrHK8kxTUg0k0J86IqbpBLKLDVGFJv4xambr2IJuKZySWULielu
-  client-secret: EMddaQFaydygHp4EykEB9u6yncT4wcAPNfhD8PgARkyVLKltvYECN_WAbsP5CGKjAEs-pVZflUZa1fNf
-  base-url: https://developer.paypal.com/dashboard/applications/live
+  client-id: AQHmZGc8JzgtRqsxaXCCTj2aDzj0PYx-K4KWdmSEsx7J0KdeNeYywakI8ZHCxpqAt-ejyz2xAc3nhi1r
+  client-secret: ED_cm6pEe6916pcwZgxpe7ZalipRri7zJWqETo6Km4VgIwAJrmvYwLw_9d-ljFOlYuWoHNeMRU7aHEh-
+  base-url: https://api.paypal.com
   

@@ -56,6 +56,7 @@ dependencies {
     implementation 'org.flywaydb:flyway-core'
     // Paypal for payment
     implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'org.apache.httpcomponents:httpclient'
     // cors
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
     // jakarta servlet openSessionFactory
