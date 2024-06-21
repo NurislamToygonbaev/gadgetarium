@@ -27,7 +27,7 @@ public class PayPalConfig {
     }
 
     @Bean
-    public com.paypal.base.rest.APIContext apiContext(){
+    public APIContext apiContext(){
         return new APIContext(clientId, clientSecret, made);
     }
 }

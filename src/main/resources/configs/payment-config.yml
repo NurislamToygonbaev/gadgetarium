@@ -1,5 +1,4 @@
 paypal:
-  client-id: AQHmZGc8JzgtRqsxaXCCTj2aDzj0PYx-K4KWdmSEsx7J0KdeNeYywakI8ZHCxpqAt-ejyz2xAc3nhi1r
-  client-secret: ED_cm6pEe6916pcwZgxpe7ZalipRri7zJWqETo6Km4VgIwAJrmvYwLw_9d-ljFOlYuWoHNeMRU7aHEh-
-  base-url: https://api.paypal.com
-  
+  client-id: AV4BFfnTqxZycsXMKhAox2OaQ16oxtWE7yjJINR7I0OwukXkqQyvCaRC8KjrFEmTPMik8IxeLvfDMJs_
+  client-secret: EI7erO6YCgmr0cDPeG6uHvAmx6Yk3kvppTvGTdGibG1QUHPmo8ZlwEwOV1bu-nRiYp0v06_dU1vmtUjB
+  mode: sandbox
