@@ -200,7 +200,7 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getGadget().getBrand().getBrandName(),
                         subGadget.getMainColour(),
                         subGadget.getMemory().name(),
-                        subGadget.getRam().name(),
+                        subGadget.getRam() != null ? subGadget.getRam().name() : null,
                         subGadget.getCountSim(),
                         subGadget.getGadget().getReleaseDate(),
                         subGadget.getQuantity(),
@@ -453,6 +453,8 @@ public class GadgetServiceImpl implements GadgetService {
 
         subGadget.setMainColour(request.colour());
         subGadget.setMemory(request.memory());
+        subGadget.setPrice(request.price());
+        subGadget.setQuantity(request.quantity());
         subGadget.getImages().addAll((request.images()));
 
         String categoryName = gadget.getSubCategory().getCategory().getCategoryName().toLowerCase();
@@ -460,7 +462,8 @@ public class GadgetServiceImpl implements GadgetService {
             categoryName.contains("laptop")) {
             subGadget.setRam(request.ram());
             subGadget.setCountSim(request.countSim());
-        } else if (categoryName.contains("smart") ||
+
+        } else if (categoryName.contains("watch") ||
                    categoryName.contains("accessories")) {
 
             subGadget.addUniField(request.materialBody());
@@ -472,7 +475,6 @@ public class GadgetServiceImpl implements GadgetService {
             subGadget.addUniField(request.materialBracelet());
             subGadget.addUniField(request.wireless());
         }
-
         subGadgetRepo.save(subGadget);
 
         return HttpResponse
@@ -487,6 +489,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Transactional
     public HttpResponse deleteGadget(Long subGadgetId) {
         SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
+        Gadget gadget = subGadget.getGadget();
 
 
         List<User> usersWithGadget = userRepo.findByBasketContainingKey(subGadget);
@@ -502,6 +505,9 @@ public class GadgetServiceImpl implements GadgetService {
         List<Order> orders = orderRepo.findBySubGadgetsContains(subGadget);
         if (!orders.isEmpty()) {
             subGadget.setRemotenessStatus(RemotenessStatus.REMOTE);
+        } else if (gadget.getSubGadgets().size() == 1) {
+            subGadgetRepo.delete(subGadget);
+            gadgetRepo.delete(gadget);
         } else {
             subGadgetRepo.delete(subGadget);
         }

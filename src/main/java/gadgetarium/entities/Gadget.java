@@ -55,7 +55,7 @@ public class Gadget {
     @ManyToOne(cascade = {DETACH}, fetch = FetchType.LAZY)
     private SubCategory subCategory;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = {DETACH})
     private Brand brand;
 
     @ElementCollection(fetch = FetchType.LAZY)
