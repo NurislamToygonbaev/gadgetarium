@@ -183,7 +183,7 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Обновление гаджета по ID", description = "Авторизация ADMIN")
-    @PutMapping("/{subGadgetId}")
+    @PatchMapping("/update/{subGadgetId}")
     public HttpResponse updateGadget(@PathVariable Long subGadgetId,
                                      @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest) {
         return gadgetService.updateGadget(subGadgetId, gadgetNewDataRequest);
@@ -202,7 +202,7 @@ public class GadgetApi {
         return gadgetService.getAllColours(gadgetId);
     }
 
-    @Operation(summary = "Памяти гаджета with color", description = "Авторизация ВСЕ")
+    @Operation(summary = "Памяти гаджета с цветом", description = "Авторизация ВСЕ")
     @GetMapping("/memories/{gadgetId}")
     public List<Memory> getAllMemories(@PathVariable Long gadgetId,
                                        @RequestParam String color){

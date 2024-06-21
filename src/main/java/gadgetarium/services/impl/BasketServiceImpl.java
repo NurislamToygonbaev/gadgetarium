@@ -81,7 +81,7 @@ public class BasketServiceImpl implements BasketService {
 
             BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 
-            GetAllBasketResponse all = new GetAllBasketResponse(
+            GetAllBasketResponse all = new GetAllBasketResponse( subGadget.getGadget().getId(),
                     subGadget.getId(), subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
                     subGadget.getGadget().getBrand().getBrandName() + " "
                     + subGadget.getGadget().getNameOfGadget(),
