@@ -2,6 +2,7 @@ package gadgetarium.configs.paypal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.paypal.base.rest.APIContext;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,8 +16,8 @@ public class PayPalConfig {
     @Value("${paypal.client-secret}")
     private String clientSecret;
 
-    @Value("${paypal.base-url}")
-    private String baseUrl;
+    @Value("${paypal.mode}")
+    private String made;
 
     @Bean
     public ObjectMapper objectMapper(){
@@ -26,17 +27,7 @@ public class PayPalConfig {
     }
 
     @Bean
-    public String getClientId() {
-        return clientId;
-    }
-
-    @Bean
-    public String getClientSecret() {
-        return clientSecret;
-    }
-
-    @Bean
-    public String getBaseUrl() {
-        return baseUrl;
+    public com.paypal.base.rest.APIContext apiContext(){
+        return new APIContext(clientId, clientSecret, made);
     }
 }

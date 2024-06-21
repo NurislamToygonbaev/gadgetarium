@@ -67,6 +67,11 @@ dependencies {
     implementation group: 'io.logz.logback', name: 'logzio-logback-appender', version: '1.0.0'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-logging
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '3.3.0'
+    // https://mvnrepository.com/artifact/com.paypal.sdk/paypal-core
+    implementation group: 'com.paypal.sdk', name: 'paypal-core', version: '1.7.0'
+    // https://mvnrepository.com/artifact/com.paypal.sdk/rest-api-sdk
+    implementation group: 'com.paypal.sdk', name: 'rest-api-sdk', version: '1.14.0'
+
 }
 
 tasks.named('test') {
