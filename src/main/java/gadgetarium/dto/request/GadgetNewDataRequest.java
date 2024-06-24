@@ -22,8 +22,6 @@ public record GadgetNewDataRequest(
         int countSim,
         Memory memory,
         Ram ram,
-        @ImageValidation
-        List<String> images,
         String materialBracelet,
         String materialBody,
         String sizeWatch,
