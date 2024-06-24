@@ -1,6 +1,7 @@
 package gadgetarium.apies;
 
 import gadgetarium.dto.request.AddProductRequest;
+import gadgetarium.dto.request.GadgetImagesRequest;
 import gadgetarium.dto.request.GadgetNewDataRequest;
 import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.response.*;
@@ -187,6 +188,14 @@ public class GadgetApi {
     public HttpResponse updateGadget(@PathVariable Long subGadgetId,
                                      @RequestBody @Valid GadgetNewDataRequest gadgetNewDataRequest) {
         return gadgetService.updateGadget(subGadgetId, gadgetNewDataRequest);
+    }
+
+    @PreAuthorize("hasAnyAuthority('ADMIN')")
+    @Operation(summary = "Обновление фотографии гаджета по ID", description = "Авторизация ADMIN")
+    @PatchMapping("/update-image/{subGadgetId}")
+    public HttpResponse updateGadgetImages(@PathVariable Long subGadgetId,
+                                     @RequestBody @Valid GadgetImagesRequest gadgetImagesRequest) {
+        return gadgetService.updateGadgetImages(subGadgetId, gadgetImagesRequest);
     }
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")

@@ -1,9 +1,6 @@
 package gadgetarium.services.impl;
 
-import gadgetarium.dto.request.AddProductRequest;
-import gadgetarium.dto.request.GadgetNewDataRequest;
-import gadgetarium.dto.request.ProductDocRequest;
-import gadgetarium.dto.request.ProductsRequest;
+import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.*;
 import gadgetarium.enums.Discount;
@@ -12,6 +9,7 @@ import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.*;
 import gadgetarium.repositories.jdbcTemplate.GadgetJDBCTemplateRepository;
+import gadgetarium.services.AwsS3Service;
 import gadgetarium.services.GadgetService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +41,7 @@ public class GadgetServiceImpl implements GadgetService {
     private final CharValueRepository charValueRepo;
     private final UserRepository userRepo;
     private final OrderRepository orderRepo;
+    private final AwsS3Service awsS3Service;
 
     private static final String PHONE_URL_PREFIX = "https://nanoreview.net/ru/phone/";
     private static final String LAPTOP_URL_PREFIX = "https://nanoreview.net/ru/laptop/";
@@ -288,6 +287,26 @@ public class GadgetServiceImpl implements GadgetService {
         return gadgetJDBCTemplateRepo.globalSearch(request);
     }
 
+    @Override @Transactional
+    public HttpResponse updateGadgetImages(Long subGadgetId, GadgetImagesRequest gadgetImagesRequest) {
+        SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
+
+        String oldImage = gadgetImagesRequest.oldImage();
+        if (subGadget.getImages().contains(oldImage)) {
+            awsS3Service.deleteFile(gadgetImagesRequest.oldKey());
+            subGadget.getImages().remove(oldImage);
+        }
+
+        String newImage = gadgetImagesRequest.newImage();
+        subGadget.getImages().add(newImage);
+
+        subGadgetRepo.save(subGadget);
+        return HttpResponse.builder()
+                .status(HttpStatus.OK)
+                .message("success changed")
+                .build();
+    }
+
     @Override
     @Transactional
     public HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws gadgetarium.exceptions.IOException {
@@ -455,7 +474,6 @@ public class GadgetServiceImpl implements GadgetService {
         subGadget.setMemory(request.memory());
         subGadget.setPrice(request.price());
         subGadget.setQuantity(request.quantity());
-        subGadget.getImages().addAll((request.images()));
 
         String categoryName = gadget.getSubCategory().getCategory().getCategoryName().toLowerCase();
         if (categoryName.contains("phone") ||

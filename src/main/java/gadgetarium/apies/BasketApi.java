@@ -26,7 +26,7 @@ public class BasketApi {
     @Operation(summary = "Все гаджеты в корзине", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping
     public List<GetAllBasketResponse> gelAllBasket() {
-        return basketService.gelAllBasket();
+        return basketService.getAllBasket();
     }
 
     @PreAuthorize("hasAuthority('USER')")
