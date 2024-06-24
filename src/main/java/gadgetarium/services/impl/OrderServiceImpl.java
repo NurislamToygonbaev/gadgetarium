@@ -324,7 +324,7 @@ public class OrderServiceImpl implements OrderService {
 
         if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), oldPassword)) {
             return HttpResponse.builder()
-                    .status(HttpStatus.UNAUTHORIZED)
+                    .status(HttpStatus.BAD_REQUEST)
                     .message("Incorrect old password")
                     .build();
         }
