@@ -14,8 +14,10 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -70,25 +72,33 @@ public class BasketServiceImpl implements BasketService {
     }
 
     @Override
-    public List<GetAllBasketResponse> gelAllBasket() {
+    public List<GetAllBasketResponse> getAllBasket() {
         User user = currentUser.get();
         Map<SubGadget, Integer> basket = user.getBasket();
 
-        List<GetAllBasketResponse> responses = new ArrayList<>();
-        for (Map.Entry<SubGadget, Integer> entry : basket.entrySet()) {
-            SubGadget subGadget = entry.getKey();
-            boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
+        List<SubGadget> sortedBasket = basket.keySet().stream()
+                .sorted(Comparator.comparing(subGadget -> subGadget.getGadget().getBrand().getBrandName()))
+                .toList();
 
+        List<GetAllBasketResponse> responses = new ArrayList<>();
+        for (SubGadget subGadget : sortedBasket) {
+            boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
             BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 
-            GetAllBasketResponse all = new GetAllBasketResponse( subGadget.getGadget().getId(),
-                    subGadget.getId(), subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
-                    subGadget.getGadget().getBrand().getBrandName() + " "
-                    + subGadget.getGadget().getNameOfGadget(),
-                    subGadget.getMemory().name(), subGadget.getMainColour(),
-                    subGadget.getGadget().getRating(), subGadget.getGadget().getFeedbacks().size(),
-                    subGadget.getQuantity(), subGadget.getArticle(),
-                    price, entry.getValue(), likes
+            GetAllBasketResponse all = new GetAllBasketResponse(
+                    subGadget.getGadget().getId(),
+                    subGadget.getId(),
+                    subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
+                    subGadget.getGadget().getBrand().getBrandName() + " " + subGadget.getGadget().getNameOfGadget(),
+                    subGadget.getMemory().name(),
+                    subGadget.getMainColour(),
+                    subGadget.getGadget().getRating(),
+                    subGadget.getGadget().getFeedbacks().size(),
+                    subGadget.getQuantity(),
+                    subGadget.getArticle(),
+                    price,
+                    basket.get(subGadget),
+                    likes
             );
             responses.add(all);
         }
