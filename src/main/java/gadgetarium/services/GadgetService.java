@@ -65,4 +65,6 @@ public interface GadgetService {
     List<DetailsResponse> gadgetDetails();
 
     List<GadgetsResponse> globalSearch(String request);
+
+    HttpResponse updateGadgetImages(Long subGadgetId, GadgetImagesRequest gadgetImagesRequest);
 }
