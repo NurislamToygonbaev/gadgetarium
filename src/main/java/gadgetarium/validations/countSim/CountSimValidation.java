@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface CountSimValidation {
 
-    String message() default "{The number of SIM cards should not be negative and no more than 2}";
+    String message() default "The number of SIM cards should not be negative and no more than 2";
 
     Class<?>[] groups() default {};
 

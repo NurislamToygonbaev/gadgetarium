@@ -15,7 +15,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RatingValidation {
 
-    String message() default "{The rating from 1 to 5 should be}";
+    String message() default "The rating from 1 to 5 should be";
 
     Class<?>[] groups() default {};
 

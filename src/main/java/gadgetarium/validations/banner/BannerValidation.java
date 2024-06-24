@@ -13,7 +13,7 @@ import java.lang.annotation.RetentionPolicy;
 @Target({ElementType.METHOD, ElementType.FIELD, ElementType.ANNOTATION_TYPE, ElementType.CONSTRUCTOR, ElementType.PARAMETER, ElementType.TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BannerValidation {
-    String message() default "{Banners size must be equal or lesser than 6 and greater than 0";
+    String message() default "Banners size must be equal or lesser than 6 and greater than 0";
 
     Class<?>[] groups() default {};
 

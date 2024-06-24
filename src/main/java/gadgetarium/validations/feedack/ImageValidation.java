@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ImageValidation {
 
-    String message() default "{Upload only 5 images}";
+    String message() default "Upload only 5 images";
 
     Class<?>[] groups() default {};
 

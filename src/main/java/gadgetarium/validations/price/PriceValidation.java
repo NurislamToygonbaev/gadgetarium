@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PriceValidation {
 
-    String message() default "{The price should not be minus!}";
+    String message() default "The price should not be minus!";
 
     Class<?>[] groups() default {};
 

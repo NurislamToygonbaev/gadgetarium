@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PasswordValidation {
 
-    String message() default "{Password length must be greater or equal 6}";
+    String message() default "Password length must be greater or equal 6";
 
     Class<?>[] groups() default {};
 
