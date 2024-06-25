@@ -10,7 +10,11 @@ import java.util.List;
 public record OrderPagination(
         String searchWord,
         Status status,
-        int quantity,
+        int waiting,
+        int progress,
+        int onTheWay,
+        int delivered,
+        int canceled,
         LocalDate startDate,
         LocalDate endDate,
         int page,
