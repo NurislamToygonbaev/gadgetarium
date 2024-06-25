@@ -7,10 +7,12 @@ import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
 import gadgetarium.enums.Payment;
 
+import java.math.BigDecimal;
+
 public interface PaymentService {
 
     com.paypal.api.payments.Payment createPayment(
-            double total,
+            BigDecimal total,
             String currency,
             String method,
             String intent,

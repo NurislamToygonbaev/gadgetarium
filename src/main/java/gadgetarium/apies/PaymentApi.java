@@ -9,8 +9,12 @@ import gadgetarium.enums.Payment;
 import gadgetarium.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
+
+import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/api/paypal")
@@ -19,13 +23,21 @@ public class PaymentApi {
 
     private final PaymentService paymentService;
 
+    @Value("${paypal.success-url}")
+    private String successUrl;
+    @Value("${paypal.cancel-url}")
+    private String cancelUrl;
+
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = " создание заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/create")
-    public RedirectView createPayment() throws PayPalRESTException {
-        String cancelUrl = "";
-        String successUrl = "";
+    public RedirectView createPayment(@RequestParam BigDecimal price,
+                                      @RequestParam String currency
+                                      ) throws PayPalRESTException {
+
         com.paypal.api.payments.Payment payment = paymentService.createPayment(
-                10.0,
-                "USD",
+                price,
+                currency,
                 "paypal",
                 "sale",
                 "Payment description",
@@ -40,6 +52,8 @@ public class PaymentApi {
         return new RedirectView("/api/payment/error");
     }
 
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = " success заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/success")
     public String paymentSuccess(@RequestParam("paymentId") String paymentId,
                                  @RequestParam("payerId") String payerId) throws PayPalRESTException {
@@ -60,6 +74,7 @@ public class PaymentApi {
         return "paymentError";
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Выбор типа оплаты", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PatchMapping("/{orderId}")
     public HttpResponse typeOrder(@PathVariable Long orderId,
@@ -67,12 +82,14 @@ public class PaymentApi {
         return paymentService.typeOrder(orderId, payment);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "образ заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/order/{orderId}")
     public OrderImageResponse orderImage(@PathVariable Long orderId){
         return paymentService.orderImage(orderId);
     }
 
+    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "заявка оформлена", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/{orderId}")
     public OrderSuccessResponse orderSuccess(@PathVariable Long orderId){

@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -29,7 +30,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public com.paypal.api.payments.Payment createPayment(
-            double total,
+            BigDecimal total,
             String currency,
             String method,
             String intent,
@@ -66,10 +67,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public com.paypal.api.payments.Payment executePayment(
-            String paymentId,
-            String payerId
-    ) throws PayPalRESTException {
+    public com.paypal.api.payments.Payment executePayment(String paymentId, String payerId) throws PayPalRESTException {
         com.paypal.api.payments.Payment payment = new com.paypal.api.payments.Payment();
         payment.setId(paymentId);
 
@@ -84,6 +82,7 @@ public class PaymentServiceImpl implements PaymentService {
     public HttpResponse typeOrder(Long orderId, Payment payment) {
         Order order = orderRepo.getOrderById(orderId);
         order.setPayment(payment);
+        orderRepo.save(order);
         return HttpResponse.builder().status(HttpStatus.OK)
                 .message("success changed order with ID: "+order.getId()).build();
     }
@@ -104,6 +103,7 @@ public class PaymentServiceImpl implements PaymentService {
     public OrderSuccessResponse orderSuccess(Long orderId) {
         Order order = orderRepo.getOrderById(orderId);
         order.setStatus(Status.PENDING);
+        orderRepo.save(order);
         return OrderSuccessResponse.builder()
                 .number(order.getNumber())
                 .createAd(String.valueOf(order.getCreatedAt()))

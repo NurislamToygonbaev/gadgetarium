@@ -1,4 +1,7 @@
 paypal:
   client-id: AV4BFfnTqxZycsXMKhAox2OaQ16oxtWE7yjJINR7I0OwukXkqQyvCaRC8KjrFEmTPMik8IxeLvfDMJs_
   client-secret: EI7erO6YCgmr0cDPeG6uHvAmx6Yk3kvppTvGTdGibG1QUHPmo8ZlwEwOV1bu-nRiYp0v06_dU1vmtUjB
-  mode: sandbox
+  mode: live
+
+  success-url: localhost:8080/success
+  cancel-url: localhost:8080/cancel
