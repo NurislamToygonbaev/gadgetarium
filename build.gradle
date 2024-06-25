@@ -54,9 +54,6 @@ dependencies {
     implementation group: 'org.jsoup', name: 'jsoup', version: '1.17.2'
     // for Migration Flyway
     implementation 'org.flywaydb:flyway-core'
-    // Paypal for payment
-    implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'org.apache.httpcomponents:httpclient'
     // cors
     implementation 'javax.servlet:javax.servlet-api:4.0.1'
     // jakarta servlet openSessionFactory
@@ -67,6 +64,10 @@ dependencies {
     implementation group: 'io.logz.logback', name: 'logzio-logback-appender', version: '1.0.0'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-logging
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '3.3.0'
+    //paypal
+    implementation 'com.paypal.sdk:paypal-core:1.7.0'
+    implementation 'com.paypal.sdk:rest-api-sdk:1.14.0'
+
 }
 
 tasks.named('test') {

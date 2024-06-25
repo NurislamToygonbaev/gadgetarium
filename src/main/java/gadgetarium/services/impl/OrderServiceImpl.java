@@ -57,6 +57,7 @@ public class OrderServiceImpl implements OrderService {
     public HttpResponse changeStatusOfOrder(Long orderId, Status status) {
         Order order = orderRepo.getOrderById(orderId);
         order.setStatus(status);
+        orderRepo.save(order);
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
                 .message("success changed")
@@ -107,14 +108,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseFindById findOrderById(Long orderId) {
         Order order = orderRepo.getOrderById(orderId);
-        BigDecimal price = order.getTotalPrice();
-        int countOfGadget = orderRepo.countOfGadgets(orderId);
+        BigDecimal price = BigDecimal.ZERO;
+        int totalGadgets = 0;
 
         List<Object[]> objects = orderRepo.getGadgetsFields(orderId);
 
-        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(countOfGadget));
-
-        BigDecimal totalDiscount = BigDecimal.ZERO;
         List<String> gadgetNameList = new ArrayList<>();
         List<String> memoryList = new ArrayList<>();
         List<String> colourList = new ArrayList<>();
@@ -125,15 +123,15 @@ public class OrderServiceImpl implements OrderService {
             memoryList.add((String) response[1]);
             colourList.add((String) response[2]);
 
+
             int percentValue = response[3] != null ? (Integer) response[3] : 0;
             percentList.add(percentValue);
 
-            BigDecimal percent = BigDecimal.valueOf(percentValue);
-            BigDecimal gadgetPrice = price.multiply(percent.divide(BigDecimal.valueOf(100)));
-            BigDecimal gadgetDiscount = gadgetPrice.multiply(BigDecimal.valueOf(countOfGadget));
-            totalDiscount = totalDiscount.add(gadgetDiscount);
+            price = price.add((BigDecimal) response[4]);
+
+            int countOfGadget = ((Long) response[5]).intValue();
+            totalGadgets += countOfGadget;
         }
-        BigDecimal discountPrice = totalPrice.subtract(totalDiscount);
 
         return OrderResponseFindById.builder()
                 .id(order.getId())
@@ -142,13 +140,14 @@ public class OrderServiceImpl implements OrderService {
                 .nameOfGadget(gadgetNameList)
                 .memory(memoryList)
                 .colour(colourList)
-                .count(countOfGadget)
+                .count(totalGadgets)
                 .price(price)
                 .percent(percentList)
-                .discountPrice(discountPrice)
-                .totalPrice(totalPrice)
+                .discountPrice(order.getDiscountPrice())
+                .totalPrice(order.getTotalPrice())
                 .build();
     }
+
 
 
     @Override

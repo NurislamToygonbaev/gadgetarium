@@ -34,78 +34,49 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
         if (startDate != null && startDate.isAfter(LocalDate.now())) {
             throw new BadRequestException("The start day should start before today!");
         }
-        List<Object> params = new ArrayList<>();
-        String whereClause = "";
-        if (status != null || startDate != null || endDate != null || keyword != null) {
-            whereClause = " where ";
-            boolean needAnd = false;
 
-            if (keyword != null) {
-                whereClause += """
-                    (u.last_name ilike concat('%', ?, '%')
-                    or u.first_name ilike concat('%', ?, '%')
-                    or o.number::text ilike concat('%', ?, '%'))
-                    """;
-                params.add(keyword.trim());
-                params.add(keyword.trim());
-                params.add(keyword.trim());
-                needAnd = true;
-            }
+        String where = " where o.status is not null ";
 
-            if (status != null) {
-                if (needAnd) {
-                    whereClause += " and ";
-                }
-                whereClause += " o.status = ? ";
-                needAnd = true;
-                params.add(status.name());
-            }
-
-            if (startDate != null && endDate != null) {
-                if (needAnd) {
-                    whereClause += " and ";
-                }
-                whereClause += " o.created_at between ? and ? ";
-                params.add(startDate);
-                params.add(endDate);
-            } else if (startDate != null) {
-                if (needAnd) {
-                    whereClause += " and ";
-                }
-                whereClause += " o.created_at >= ? ";
-                params.add(startDate);
-            } else if (endDate != null) {
-                if (needAnd) {
-                    whereClause += " and ";
-                }
-                whereClause += " o.created_at <= ? ";
-                params.add(endDate);
-            }
+        if (keyword != null && !keyword.isEmpty()) {
+            where += " and (cast(o.number as text) like '%" + keyword + "%' " +
+                     " or u.last_name ilike '%" + keyword + "%' " +
+                     " or u.first_name ilike '%" + keyword + "%') ";
         }
 
-        params.add(limit);
-        params.add(offset);
+        if (status != null) {
+            if (status.equals(Status.DELIVERED) || status.equals(Status.RECEIVED)){
+                where += " and o.status in ('"+Status.DELIVERED.name()+"', '"+Status.RECEIVED.name()+"')";
+            }else where += " and o.status = '"+status.name()+"'";
+        }
+
+        if (startDate != null && endDate != null){
+            where += " and o.created_at between '"+startDate+"' and '"+endDate+"' ";
+        } else if (startDate != null){
+            where += " and o.created_at >= '"+startDate+"'";
+        } else if (endDate != null) {
+            where += " and o.created_at <= '"+endDate+"'";
+        }
 
         List<OrderResponse> orderResponses = jdbcTemplate.query("""
-                    select o.id,
-                           concat(u.last_name, ' ', u.first_name) as fullName,
-                           o.number,
-                           o.created_at,
-                           count(s.id) as totalGadgets,
-                           o.total_price,
-                           o.type_order,
-                           o.status
-                    from orders o
-                    join users u on o.user_id = u.id
-                    left join orders_sub_gadgets og on o.id = og.orders_id
-                    left join sub_gadgets s on s.id = og.sub_gadgets_id
-                    left join gadgets g on s.gadget_id = g.id
-                    """ + whereClause + """
-                    group by o.id, o.number, o.created_at, o.type_order, o.status,
-                         o.total_price, u.last_name, u.first_name
-                    limit ? offset ?
-                    """,
-                params.toArray(),
+                           select o.id,
+                                concat(u.last_name, ' ', u.first_name) as fullName,
+                                o.number,
+                                o.created_at,
+                                count(s.id) as totalGadgets,
+                                o.total_price,
+                                o.type_order,
+                                o.status
+                           from orders o
+                           join users u on o.user_id = u.id
+                           left join orders_sub_gadgets og on o.id = og.orders_id
+                           left join sub_gadgets s on s.id = og.sub_gadgets_id
+                           left join gadgets g on s.gadget_id = g.id
+                           """ + where + """
+                           group by o.id, o.number, o.created_at, o.type_order, o.status,
+                           o.total_price, u.last_name, u.first_name
+                           limit ? offset ?
+                           """,
+                new Object[]{limit, offset},
                 (rs, rowNum) -> {
                     return new OrderResponse(
                             rs.getLong("id"),
@@ -121,7 +92,11 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
         return OrderPagination.builder()
                 .searchWord(keyword)
                 .status(status)
-                .quantity(orderResponses.size())
+                .waiting(getOrderInWaitingCount())
+                .progress(getOrderInProgressCount())
+                .onTheWay(getOrderInOnTheWayCount())
+                .delivered(getOrderInDeliveredCount())
+                .canceled(getOrderInCanceledCount())
                 .startDate(startDate)
                 .endDate(endDate)
                 .page(page)
@@ -130,4 +105,43 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                 .build();
     }
 
+    private int getOrderInWaitingCount(){
+        String sql = "select count(*) from orders o " +
+                     " where o.status = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(Status.PENDING)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    private int getOrderInProgressCount(){
+        String sql = "select count(*) from orders o " +
+                     " where o.status = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(Status.READY)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    private int getOrderInOnTheWayCount(){
+        String sql = "select count(*) from orders o " +
+                     " where o.status = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(Status.COURIER_ON_THE_WAY)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    private int getOrderInDeliveredCount(){
+        String sql = "select count(*) from orders o " +
+                     " where o.status in (?, ?)";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(Status.DELIVERED), String.valueOf(Status.RECEIVED)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    private int getOrderInCanceledCount(){
+        String sql = "select count(*) from orders o " +
+                     " where o.status = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(Status.CANCELLED)}, Integer.class);
+        return count != null ? count : 0;
+    }
 }

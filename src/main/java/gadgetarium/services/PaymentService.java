@@ -1,6 +1,6 @@
 package gadgetarium.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.paypal.base.rest.PayPalRESTException;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
@@ -8,9 +8,20 @@ import gadgetarium.enums.Payment;
 
 public interface PaymentService {
 
-    JsonNode createPayment(Long id, String currency, String paypal, String sale, String paymentDescription, String url, String url1) throws Exception;
+    com.paypal.api.payments.Payment createPayment(
+            Long orderId,
+            String currency,
+            String method,
+            String intent,
+            String description,
+            String cancelUrl,
+            String successUrl
+    ) throws PayPalRESTException;
 
-    JsonNode executePayment(String s, String s1) throws Exception;
+    com.paypal.api.payments.Payment executePayment(
+            String paymentId,
+            String payerId
+    ) throws PayPalRESTException;
 
     HttpResponse typeOrder(Long orderId, Payment payment);
 
