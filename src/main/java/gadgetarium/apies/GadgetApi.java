@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -32,14 +33,17 @@ public class GadgetApi {
 
     private final GadgetService gadgetService;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Все Гаджеты ", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping
-    public ResultPaginationGadget allGadgets(@RequestParam(required = false) Sort sort,
+    public ResultPaginationGadget allGadgets(@RequestParam(required = false) String keyword,
+                                             @RequestParam(required = false) LocalDate startDate,
+                                             @RequestParam(required = false) LocalDate endDate,
+                                             @RequestParam(required = false) Sort sort,
                                              @RequestParam(required = false) Discount discount,
                                              @RequestParam(value = "page", defaultValue = "1") int page,
                                              @RequestParam(value = "size", defaultValue = "7") int size) {
-        return gadgetService.getAll(sort, discount, page, size);
+        return gadgetService.getAll(keyword, startDate, endDate, sort, discount, page, size);
     }
 
     @Operation(summary = "Все гаджеты с фильтрацией", description = "Авторизация: ВСЕ")

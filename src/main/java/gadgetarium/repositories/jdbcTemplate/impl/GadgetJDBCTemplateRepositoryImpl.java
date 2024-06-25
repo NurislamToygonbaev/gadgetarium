@@ -5,6 +5,7 @@ import gadgetarium.entities.Gadget;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.*;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.GadgetRepository;
 import gadgetarium.repositories.SubGadgetRepository;
@@ -22,6 +23,7 @@ import java.math.BigDecimal;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.*;
 
 @Slf4j
@@ -35,34 +37,59 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     private final GadgetRepository gadgetRepo;
 
     @Override
-    public ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size) {
+    public ResultPaginationGadget getAll(String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
         String orderBy = "";
         String where = "";
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
+        if (endDate != null && startDate != null){
+            if (!endDate.isAfter(startDate)) {
+                throw new BadRequestException("End day must be after the start day!");
+            }
+        }
+        if (startDate != null){
+            if (!startDate.isBefore(LocalDate.now())) {
+                throw new BadRequestException("Start day must before from today!");
+            }
+        }
+
+        if (keyword != null && !keyword.isEmpty()) {
+            where += " and (cast(sg.article as text) like '%" + keyword + "%' " +
+                     " or b.brand_name ilike '%" + keyword + "%' " +
+                     " or g.name_of_gadget ilike '%" + keyword + "%') ";
+        }
+
+        if (startDate != null && endDate != null){
+            where += " and g.created_at between '"+startDate+"' and '"+endDate+"' ";
+        } else if (startDate != null){
+            where += " and g.created_at >= '"+startDate+"'";
+        } else if (endDate != null) {
+            where += " and g.created_at <= '"+endDate+"'";
+        }
 
         if (sort != null) {
-            if (sort.equals(Sort.NEW_PRODUCTS)) orderBy = " order by ga.release_date desc ";
+            if (sort.equals(Sort.NEW_PRODUCTS)) orderBy = " order by g.created_at desc ";
             else if (sort.equals(Sort.PROMOTION)) {
                 if (discount != null) {
                     if (discount.equals(Discount.ALL_DISCOUNTS)) where = " and  d.percent is not null ";
                     else if (discount.equals(Discount.UP_TO_50)) where = " and  d.percent < 50 ";
                     else if (discount.equals(Discount.OVER_50)) where = " and  d.percent > 50 ";
                 }
-            } else if (sort.equals(Sort.RECOMMENDED)) where = " and  g.rating > 4 ";
-            else if (sort.equals(Sort.HIGH_TO_LOW)) orderBy = " order by g.price desc ";
-            else if (sort.equals(Sort.LOW_TO_HIGH)) orderBy = " order by g.price asc ";
+            } else if (sort.equals(Sort.RECOMMENDED)) where = " and  g.rating > 3.9 or (select count(*) from orders o where o.id = og.orders_id) > 10 ";
+            else if (sort.equals(Sort.HIGH_TO_LOW)) orderBy = " order by sg.price desc ";
+            else if (sort.equals(Sort.LOW_TO_HIGH)) orderBy = " order by sg.price asc ";
 
         }
 
         List<PaginationGadget> list = jdbcTemplate.query("""
                         select sg.id,
+                               g.id as gadgetId,
                                array_agg(gi.images) as images,
                                sg.article,
                                concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
-                               g.release_date,
+                               g.created_at,
                                sg.quantity,
                                d.percent,
                                sg.price
@@ -71,10 +98,12 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
                         left outer join discounts d on g.id = d.gadget_id
+                        left join orders_sub_gadgets og on sg.id = og.sub_gadgets_id 
+                        left join orders o on o.id = og.orders_id
                         where sg.remoteness_status ="""+"'"+status+"'"+"""
                         """ + where + """
-                        group by sg.id, sg.article, g.name_of_gadget, g.release_date,
-                                   b.brand_name,  sg.quantity, d.percent, sg.price, d.end_date
+                         group by sg.id, sg.article, g.name_of_gadget, g.created_at, gadgetId,
+                                   b.brand_name,  sg.quantity, d.percent, sg.price
                         """ + orderBy + """
                         limit ? offset ?
                         """,
@@ -89,18 +118,27 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 
                     return new PaginationGadget(
+                            rs.getLong("gadgetId"),
                             id,
                             imagesFirst,
                             rs.getLong("article"),
                             rs.getString("nameOfGadget"),
-                            String.valueOf(rs.getDate("release_date")),
+                            String.valueOf(rs.getDate("created_at")),
                             rs.getInt("quantity"),
                             rs.getBigDecimal("price"),
                             rs.getInt("percent"),
                             price
                     );
                 });
+
         return ResultPaginationGadget.builder()
+                .keyword(keyword)
+                .startDate(startDate)
+                .endDate(endDate)
+                .allProduct(getAllProductCount())
+                .onSale(getOnSaleCount())
+                .inFavorites(getInFavoritesCount())
+                .inBasket(getInBasketCount())
                 .sort(sort)
                 .discount(discount)
                 .page(page)
@@ -108,6 +146,43 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 .paginationGadgets(list)
                 .build();
     }
+
+    private int getAllProductCount() {
+        String sql = "select count(*) from sub_gadgets g " +
+                     " where g.remoteness_status = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(RemotenessStatus.NOT_REMOTE)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    private int getOnSaleCount() {
+        String sql = "select count(*) from sub_gadgets sg " +
+                     " join gadgets g on sg.gadget_id = g.id " +
+                     " join discounts d on g.id = d.gadget_id " +
+                     "where sg.remoteness_status = ? and d.percent is not null";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(RemotenessStatus.NOT_REMOTE)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    private int getInFavoritesCount() {
+        String sql = "select count(*) from users_likes u " +
+                     "join sub_gadgets g on u.likes_id = g.id " +
+                     "where g.remoteness_status = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(RemotenessStatus.NOT_REMOTE)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
+    private int getInBasketCount() {
+        String sql = "select count(*) from user_basket b " +
+                     "join sub_gadgets g on b.basket_key = g.id " +
+                     "where g.remoteness_status = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(RemotenessStatus.NOT_REMOTE)}, Integer.class);
+        return count != null ? count : 0;
+    }
+
 
     @Override
     public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
@@ -125,9 +200,9 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
             if (costFrom != null && costUpTo != null){
                 where += " and sg.price between '"+costFrom+"' and '"+costUpTo+"'";
             } else if (costFrom != null){
-                where += " and sg.price > '"+costFrom+"'";
+                where += " and sg.price >= '"+costFrom+"'";
             } else if (costUpTo != null) {
-                where += " and sg.price < '"+costUpTo+"'";
+                where += " and sg.price <= '"+costUpTo+"'";
             }
             if (colour != null && !colour.isEmpty()){
                 where += " and sg.main_colour ilike any (array" + colour.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
@@ -156,7 +231,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 } else if (sort.equals(Sort.HIGH_TO_LOW)) {
                     orderBy = " order by sg.price desc ";
                 } else if (sort.equals(Sort.LOW_TO_HIGH)) {
-                    orderBy = " order by  sg.price asc ";
+                    orderBy = " order by sg.price asc ";
                 }
             }
         }
