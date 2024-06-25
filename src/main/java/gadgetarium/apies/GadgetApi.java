@@ -5,10 +5,7 @@ import gadgetarium.dto.request.GadgetImagesRequest;
 import gadgetarium.dto.request.GadgetNewDataRequest;
 import gadgetarium.dto.request.ProductDocRequest;
 import gadgetarium.dto.response.*;
-import gadgetarium.enums.Discount;
-import gadgetarium.enums.Memory;
-import gadgetarium.enums.Ram;
-import gadgetarium.enums.Sort;
+import gadgetarium.enums.*;
 import gadgetarium.exceptions.IOException;
 import gadgetarium.services.GadgetService;
 import gadgetarium.validations.price.PriceValidation;
@@ -21,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 @Slf4j
@@ -35,11 +33,15 @@ public class GadgetApi {
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Все Гаджеты ", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping
-    public ResultPaginationGadget allGadgets(@RequestParam(required = false) Sort sort,
+    public ResultPaginationGadget allGadgets(@RequestParam(required = false, defaultValue = "ALL_PRODUCTS")GetType getType,
+                                             @RequestParam(required = false) String keyword,
+                                             @RequestParam(required = false) LocalDate startDate,
+                                             @RequestParam(required = false) LocalDate endDate,
+                                             @RequestParam(required = false) Sort sort,
                                              @RequestParam(required = false) Discount discount,
                                              @RequestParam(value = "page", defaultValue = "1") int page,
                                              @RequestParam(value = "size", defaultValue = "7") int size) {
-        return gadgetService.getAll(sort, discount, page, size);
+        return gadgetService.getAll(getType, keyword, startDate, endDate, sort, discount, page, size);
     }
 
     @Operation(summary = "Все гаджеты с фильтрацией", description = "Авторизация: ВСЕ")

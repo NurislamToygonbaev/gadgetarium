@@ -8,11 +8,12 @@ import java.util.List;
 
 @Builder
 public record PaginationGadget(
-        Long id,
+        Long gadgetId,
+        Long subGadgetId,
         String images,
         Long article,
         String nameOfGadget,
-        String releaseDate,
+        String createdAt,
         int quantity,
         BigDecimal price,
         int percent,
