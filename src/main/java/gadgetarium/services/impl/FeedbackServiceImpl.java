@@ -203,7 +203,7 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .totalRatings(totalRatings)
                 .ratingCounts(ratingCounts)
                 .unanswered(unanswered)
-                .feedbackResponseList(feedbackResponses)
+                .feedbackResponseList(feedbackResponses.stream().sorted(Comparator.comparingInt(FeedbackResponse::rating).reversed()).toList())
                 .build();
     }
 
@@ -370,6 +370,7 @@ public class FeedbackServiceImpl implements FeedbackService {
     private Map<Integer, Long> getRatingCounts(List<Feedback> feedbacks) {
         Map<Integer, Long> ratingCounts = initializeDefaultRatingCounts();
         ratingCounts.putAll(feedbacks.stream()
+
                 .collect(Collectors.groupingBy(Feedback::getRating, Collectors.counting())));
 
         return ratingCounts;

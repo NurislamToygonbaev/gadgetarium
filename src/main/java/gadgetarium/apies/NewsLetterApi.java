@@ -1,6 +1,8 @@
 package gadgetarium.apies;
 
+import gadgetarium.dto.request.EmailRequest;
 import gadgetarium.dto.request.NewsLetterRequest;
+import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.NewsLetterResponse;
 import gadgetarium.services.MailingService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,5 +26,11 @@ public class NewsLetterApi {
     @PostMapping
     public NewsLetterResponse sendNewsLetter(@RequestBody @Valid NewsLetterRequest newsLetterRequest){
         return mailingService.sendNewsLetter(newsLetterRequest);
+    }
+
+    @Operation(summary = "подписаться на ГАДЖЕТАРИУМ", description = "Авторизация: ВСЕ")
+    @PostMapping("/follow")
+    public HttpResponse followUs(@RequestBody @Valid EmailRequest emailRequest){
+        return mailingService.followUs(emailRequest);
     }
 }

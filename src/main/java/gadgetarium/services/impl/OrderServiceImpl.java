@@ -12,6 +12,7 @@ import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.SubGadgetRepository;
@@ -323,17 +324,11 @@ public class OrderServiceImpl implements OrderService {
         String oldPassword = user.getPassword();
 
         if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), oldPassword)) {
-            return HttpResponse.builder()
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .message("Incorrect old password")
-                    .build();
+            throw new BadRequestException("Incorrect old password");
         }
 
         if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmationPassword())) {
-            return HttpResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .message("New password and confirmation password do not match")
-                    .build();
+            throw new BadRequestException("New password and confirmation password do not match");
         }
 
         String newPasswordEncoded = passwordEncoder.encode(changePasswordRequest.getNewPassword());

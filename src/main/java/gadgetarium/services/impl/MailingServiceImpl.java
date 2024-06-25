@@ -1,6 +1,8 @@
 package gadgetarium.services.impl;
 
+import gadgetarium.dto.request.EmailRequest;
 import gadgetarium.dto.request.NewsLetterRequest;
+import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.NewsLetterResponse;
 import gadgetarium.entities.EmailAddress;
 import gadgetarium.entities.Mailing;
@@ -11,6 +13,7 @@ import gadgetarium.repositories.MailingRepository;
 import gadgetarium.services.MailingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -57,6 +60,24 @@ public class MailingServiceImpl implements MailingService {
         }
         return NewsLetterResponse.builder()
                 .message("Successfully send news letter to emails.")
+                .build();
+    }
+
+    @Override
+    public HttpResponse followUs(EmailRequest emailRequest) {
+       boolean b = emailRepository.existsByEmail(emailRequest.email().toLowerCase());
+       if (b) {
+           return HttpResponse.builder()
+                   .status(HttpStatus.OK)
+                   .message("you are already followed!!!")
+                   .build();
+       }
+        EmailAddress address = new EmailAddress();
+        address.setEmail(emailRequest.email());
+        emailRepository.save(address);
+        return HttpResponse.builder()
+                .status(HttpStatus.OK)
+                .message("successfully follow US!!!")
                 .build();
     }
 }

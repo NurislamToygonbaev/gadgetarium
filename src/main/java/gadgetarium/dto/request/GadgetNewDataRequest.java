@@ -4,19 +4,24 @@ import gadgetarium.enums.Memory;
 import gadgetarium.enums.Ram;
 import gadgetarium.validations.countSim.CountSimValidation;
 import gadgetarium.validations.feedack.ImageValidation;
+import gadgetarium.validations.price.PriceValidation;
+import jakarta.validation.constraints.Min;
 import lombok.Builder;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Builder
 public record GadgetNewDataRequest(
+        @Min(value = 0)
+        int quantity,
+        @PriceValidation
+        BigDecimal price,
         String colour,
         @CountSimValidation
         int countSim,
         Memory memory,
         Ram ram,
-        @ImageValidation
-        List<String> images,
         String materialBracelet,
         String materialBody,
         String sizeWatch,

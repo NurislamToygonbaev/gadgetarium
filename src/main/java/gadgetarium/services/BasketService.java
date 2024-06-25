@@ -15,7 +15,7 @@ public interface BasketService {
 
     HttpResponse deleteFromBasket(Long gadgetId);
 
-    List<GetAllBasketResponse> gelAllBasket();
+    List<GetAllBasketResponse> getAllBasket();
 
     GetBasketAmounts allAmounts(List<Long> ids);
 
