@@ -33,7 +33,7 @@ public class PaymentApi {
                                       @RequestParam String currency
                                       ) throws PayPalRESTException {
 
-        com.paypal.api.payments.Payment payment = paymentService.createPayment(,
+        com.paypal.api.payments.Payment payment = paymentService.createPayment(
                 orderId,
                 currency,
                 "paypal",
