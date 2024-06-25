@@ -65,8 +65,8 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public ResultPaginationGadget getAll(String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size) {
-        return gadgetJDBCTemplateRepo.getAll(keyword, startDate, endDate, sort, discount, page, size);
+    public ResultPaginationGadget getAll(GetType getType, String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size) {
+        return gadgetJDBCTemplateRepo.getAll(getType, keyword, startDate, endDate, sort, discount, page, size);
     }
 
     @Override

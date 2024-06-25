@@ -37,12 +37,28 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     private final GadgetRepository gadgetRepo;
 
     @Override
-    public ResultPaginationGadget getAll(String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size) {
+    public ResultPaginationGadget getAll(GetType getType, String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
         String orderBy = "";
         String where = "";
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
+
+        if (getType != null) {
+            switch (getType) {
+                case IN_FAVORITES:
+                    where += " and ul.likes_id is not null ";
+                    break;
+                case IN_BASKET:
+                    where += " and ub.basket_key is not null ";
+                    break;
+                case ON_SALE:
+                    where += " and d.percent is not null ";
+                    break;
+                default:
+                    break;
+            }
+        }
 
         if (endDate != null && startDate != null){
             if (!endDate.isAfter(startDate)) {
@@ -97,9 +113,11 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         join gadgets g on g.id = sg.gadget_id
                         left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
                         join brands b on g.brand_id = b.id
-                        left outer join discounts d on g.id = d.gadget_id
                         left join orders_sub_gadgets og on sg.id = og.sub_gadgets_id 
                         left join orders o on o.id = og.orders_id
+                        left outer join discounts d on g.id = d.gadget_id
+                        left outer join users_likes ul on ul.likes_id = sg.id
+                        left outer join user_basket ub on ub.basket_key = sg.id
                         where sg.remoteness_status ="""+"'"+status+"'"+"""
                         """ + where + """
                          group by sg.id, sg.article, g.name_of_gadget, g.created_at, gadgetId,
