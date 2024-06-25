@@ -14,8 +14,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.math.BigDecimal;
-
 @RestController
 @RequestMapping("/api/paypal")
 @RequiredArgsConstructor
@@ -30,13 +28,13 @@ public class PaymentApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = " создание заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/create")
-    public RedirectView createPayment(@RequestParam BigDecimal price,
+    @GetMapping("/create/{orderId}")
+    public RedirectView createPayment(@PathVariable Long orderId,
                                       @RequestParam String currency
                                       ) throws PayPalRESTException {
 
-        com.paypal.api.payments.Payment payment = paymentService.createPayment(
-                price,
+        com.paypal.api.payments.Payment payment = paymentService.createPayment(,
+                orderId,
                 currency,
                 "paypal",
                 "sale",

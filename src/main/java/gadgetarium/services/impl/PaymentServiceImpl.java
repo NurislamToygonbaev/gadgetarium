@@ -16,7 +16,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -30,7 +29,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public com.paypal.api.payments.Payment createPayment(
-            BigDecimal total,
+            Long orderId,
             String currency,
             String method,
             String intent,
@@ -38,9 +37,10 @@ public class PaymentServiceImpl implements PaymentService {
             String cancelUrl,
             String successUrl
             ) throws PayPalRESTException {
+        Order order = orderRepo.getOrderById(orderId);
         Amount amount = new Amount();
         amount.setCurrency(currency);
-        amount.setTotal(String.format(Locale.caseFoldLanguageTag(currency), "%.2f", total));
+        amount.setTotal(String.format(Locale.caseFoldLanguageTag(currency), "%.2f", order.getTotalPrice()));
 
         Transaction transaction = new Transaction();
         transaction.setDescription(description);

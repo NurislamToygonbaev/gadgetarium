@@ -1,18 +1,15 @@
 package gadgetarium.services;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.paypal.base.rest.PayPalRESTException;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
 import gadgetarium.enums.Payment;
 
-import java.math.BigDecimal;
-
 public interface PaymentService {
 
     com.paypal.api.payments.Payment createPayment(
-            BigDecimal total,
+            Long orderId,
             String currency,
             String method,
             String intent,
