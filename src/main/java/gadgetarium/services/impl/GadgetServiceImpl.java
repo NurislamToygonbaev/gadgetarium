@@ -192,10 +192,8 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     public List<AddProductsResponse> getNewProducts(List<Long> ids) {
-        List<SubGadget> all = subGadgetRepo.findAll();
-
-        return all.stream()
-                .filter(subGadget -> subGadget.getPrice() == null || subGadget.getQuantity() == 0)
+        return ids.stream()
+                .map(subGadgetRepo::getByID)
                 .map(subGadget -> new AddProductsResponse(
                         subGadget.getGadget().getId(),
                         subGadget.getId(),
@@ -208,9 +206,11 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getQuantity(),
                         subGadget.getPrice()
                 ))
-                .sorted(Comparator.comparing(AddProductsResponse::subGadgetId))
+                .sorted(Comparator.comparingLong(AddProductsResponse::subGadgetId))
                 .collect(Collectors.toList());
     }
+
+
 
 
     @Override
