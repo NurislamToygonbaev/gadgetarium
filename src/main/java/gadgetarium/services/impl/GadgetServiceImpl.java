@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -188,11 +189,10 @@ public class GadgetServiceImpl implements GadgetService {
     @Override
     public List<AddProductsResponse> getNewProducts() {
         List<SubGadget> all = subGadgetRepo.findAll();
-        List<AddProductsResponse> addProductsResponses = new ArrayList<>();
 
-        for (SubGadget subGadget : all) {
-            if (subGadget.getPrice() == null || subGadget.getQuantity() == 0) {
-                AddProductsResponse addProductsResponse = new AddProductsResponse(
+        return all.stream()
+                .filter(subGadget -> subGadget.getPrice() == null || subGadget.getQuantity() == 0)
+                .map(subGadget -> new AddProductsResponse(
                         subGadget.getGadget().getId(),
                         subGadget.getId(),
                         subGadget.getGadget().getBrand().getBrandName(),
@@ -203,13 +203,11 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getGadget().getReleaseDate(),
                         subGadget.getQuantity(),
                         subGadget.getPrice()
-                );
-                addProductsResponses.add(addProductsResponse);
-            }
-        }
-
-        return addProductsResponses;
+                ))
+                .sorted(Comparator.comparing(AddProductsResponse::subGadgetId))
+                .collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional
