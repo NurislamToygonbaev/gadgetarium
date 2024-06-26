@@ -1,5 +1,6 @@
 package gadgetarium.apies;
 
+import gadgetarium.dto.response.CompareResponses;
 import gadgetarium.dto.response.ComparedGadgetsResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ListComparisonResponse;
@@ -42,6 +43,14 @@ public class ComparisonApi {
     public ComparedGadgetsResponse compare(@RequestParam(defaultValue = "PHONE") GadgetType gadgetType,
                                            @RequestParam(defaultValue = "false") boolean isDifferences) {
         return userService.compare(gadgetType, isDifferences);
+    }
+
+    @PreAuthorize("hasAuthority('USER')")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "просмотр различий")
+    @GetMapping("/comparing")
+    public List<CompareResponses> comparing(@RequestParam(defaultValue = "PHONE") GadgetType gadgetType,
+                                            @RequestParam(defaultValue = "false") boolean isDifferences) {
+        return userService.comparing(gadgetType, isDifferences);
     }
 
     @PreAuthorize("hasAuthority('USER')")

@@ -9,9 +9,11 @@ import gadgetarium.enums.GadgetType;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.CharValueRepository;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.UserRepository;
+import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
 import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.UserService;
 import jakarta.transaction.Transactional;
@@ -35,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final SubGadgetRepository subGadgetRepository;
     private final CurrentUser currentUser;
     private final CharValueRepository charValueRepository;
+    private final OrderJDBCTemplate orderJDBCTemplate;
 
     private void checkEmail(String email) {
         boolean existsByEmail = userRepo.existsByEmail(email);
@@ -77,6 +80,12 @@ public class UserServiceImpl implements UserService {
     public HttpResponse addCompare(Long subGadgetsId) {
         User user = currentUser.get();
         SubGadget subGadget = subGadgetRepository.getByID(subGadgetsId);
+
+        Category category = subGadget.getGadget().getSubCategory().getCategory();
+        if (category.getCategoryName().equalsIgnoreCase("accessories")){
+            throw new BadRequestException("you can't add Accessories to basket!!!");
+        }
+
         if (user.getComparison().contains(subGadget)) {
             user.getComparison().remove(subGadget);
             return HttpResponse.builder().status(HttpStatus.OK).message("Gadget removed!").build();
@@ -376,6 +385,11 @@ public class UserServiceImpl implements UserService {
         currentUser.get().getLikes().clear();
         return HttpResponse.builder().status(HttpStatus.OK).message("Favorites successfully cleared!").build();
 
+    }
+
+    @Override
+    public List<CompareResponses> comparing(GadgetType gadgetType, boolean isDifferences) {
+        return orderJDBCTemplate.comparing(gadgetType, isDifferences);
     }
 
     private AllFavoritesResponse convertToResponse(SubGadget subGadget) {
