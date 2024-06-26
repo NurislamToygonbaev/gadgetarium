@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface QuantityValidation {
 
-    String message() default "{The quantity should not be minus!}";
+    String message() default "The quantity should not be minus!";
 
     Class<?>[] groups() default {};
 

@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface StringValidation {
 
-    String message() default "{String must not be empty or length should be up to 500}";
+    String message() default "String must not be empty or length should be up to 500";
 
     Class<?>[] groups() default {};
 

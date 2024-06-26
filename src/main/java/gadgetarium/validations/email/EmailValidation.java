@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface EmailValidation {
 
-    String message() default "{Email must's contain @ symbol and ends with .com}";
+    String message() default "Email must's contain @ symbol and ends with .com";
 
     Class<?>[] groups() default {};
 

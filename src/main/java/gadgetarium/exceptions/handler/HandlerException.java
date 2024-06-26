@@ -3,13 +3,20 @@ package gadgetarium.exceptions.handler;
 import com.paypal.base.rest.PayPalRESTException;
 import gadgetarium.exceptions.*;
 import gadgetarium.exceptions.IllegalArgumentException;
+import gadgetarium.exceptions.*;
 import gadgetarium.exceptions.response.ExceptionResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 @Slf4j
@@ -71,14 +78,23 @@ public class HandlerException {
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ExceptionResponse argumentNotValid(MethodArgumentNotValidException e) {
-        log.error(e.getMessage());
-        return ExceptionResponse.builder()
-                .httpStatus(HttpStatus.BAD_REQUEST)
-                .exceptionClassName(e.getClass().getSimpleName())
-                .message(e.getMessage())
-                .build();
+    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new HashMap<>();
+        ex.getBindingResult().getAllErrors().forEach((error) -> {
+            String fieldName = ((FieldError) error).getField();
+            String errorMessage = error.getDefaultMessage();
+            errors.put(fieldName, errorMessage);
+        });
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<Map<String, String>> handleTypeMismatchExceptions(MethodArgumentTypeMismatchException ex) {
+        Map<String, String> errors = new HashMap<>();
+        String fieldName = ex.getName();
+        String errorMessage = "Invalid type for field: " + fieldName;
+        errors.put(fieldName, errorMessage);
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
@@ -135,4 +151,5 @@ public class HandlerException {
                 .message(e.getMessage())
                 .build();
     }
+
 }

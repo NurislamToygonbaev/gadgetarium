@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface IssueDateValidation {
 
-    String message() default "{The date must be before today!}";
+    String message() default "The date must be before today!";
 
     Class<?>[] groups() default {};
 

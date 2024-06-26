@@ -11,7 +11,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface WarrantyValidation {
 
-    String message() default "{The guarantee should not be 0!}";
+    String message() default "The guarantee should not be 0!";
 
     Class<?>[] groups() default {};
 

@@ -14,7 +14,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DiscountValidation {
 
-    String message() default "{Discount size must be greater than 0!}";
+    String message() default "Discount size must be greater than 0!";
 
     Class<?>[] groups() default {};
 
