@@ -1,16 +1,20 @@
 package gadgetarium.services.impl;
 
+import gadgetarium.dto.request.ContactRequest;
 import gadgetarium.dto.request.EmailRequest;
 import gadgetarium.dto.request.NewsLetterRequest;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.NewsLetterResponse;
+import gadgetarium.entities.Contact;
 import gadgetarium.entities.EmailAddress;
 import gadgetarium.entities.Mailing;
 import gadgetarium.exceptions.AuthenticationException;
 import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.repositories.ContactRepository;
 import gadgetarium.repositories.EmailRepository;
 import gadgetarium.repositories.MailingRepository;
 import gadgetarium.services.MailingService;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,6 +34,7 @@ public class MailingServiceImpl implements MailingService {
     private final MailingRepository mailingRepo;
     private final EmailRepository emailRepository;
     private final JavaMailSender javaMailSender;
+    private final ContactRepository contactRepo;
 
     @Override
     public NewsLetterResponse sendNewsLetter(NewsLetterRequest newsLetterRequest) {
@@ -78,6 +83,21 @@ public class MailingServiceImpl implements MailingService {
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
                 .message("successfully follow US!!!")
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public HttpResponse contactUs(ContactRequest contactRequest) {
+        Contact contact = new Contact();
+        contact.setFirstname(contactRequest.firstname());
+        contact.setLastname(contactRequest.lastname());
+        contact.setPhoneNumber(contactRequest.phoneNumber());
+        contact.setMessage(contactRequest.message());
+        contactRepo.save(contact);
+        return HttpResponse.builder()
+                .status(HttpStatus.OK)
+                .message("success!!!")
                 .build();
     }
 }

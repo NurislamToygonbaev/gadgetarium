@@ -38,15 +38,7 @@ public class ComparisonApi {
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод для просмотра различий")
-    @GetMapping("/compare")
-    public ComparedGadgetsResponse compare(@RequestParam(defaultValue = "PHONE") GadgetType gadgetType,
-                                           @RequestParam(defaultValue = "false") boolean isDifferences) {
-        return userService.compare(gadgetType, isDifferences);
-    }
-
-    @PreAuthorize("hasAuthority('USER')")
-    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "просмотр различий")
+    @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = " Метод для просмотра различий")
     @GetMapping("/comparing")
     public List<CompareResponses> comparing(@RequestParam(defaultValue = "PHONE") GadgetType gadgetType,
                                             @RequestParam(defaultValue = "false") boolean isDifferences) {

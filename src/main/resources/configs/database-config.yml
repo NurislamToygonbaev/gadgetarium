@@ -8,11 +8,11 @@ spring:
   sql:
      init:
         continue-on-error: true
-        mode: never
+        mode: always
 
   jpa:
     hibernate:
-        ddl-auto: update
+        ddl-auto: create
     show-sql: true
     open-in-view: false
 
