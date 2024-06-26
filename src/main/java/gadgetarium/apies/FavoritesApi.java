@@ -31,8 +31,8 @@ public class FavoritesApi {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(description = "Авторизация: ПОЛЬЗОВАТЕЛЬ", summary = "Метод добовляет несколько гаджетов в избранный")
     @PostMapping("/add-all")
-    public HttpResponse addAllGadgetsToFavorites(@RequestParam List<Long> gadgetIds){
-        return userService.addAllGadgetsToFavorites(gadgetIds);
+    public HttpResponse addAllGadgetsToFavorites(@RequestParam List<Long> subGadgetIds){
+        return userService.addAllGadgetsToFavorites(subGadgetIds);
     }
 
     @PreAuthorize("hasAuthority('USER')")

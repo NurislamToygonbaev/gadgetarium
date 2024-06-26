@@ -12,5 +12,5 @@ import java.util.List;
 public class GetAllBannerResponse {
 
     private Long id;
-    private List<String> images;
+    private String images;
 }

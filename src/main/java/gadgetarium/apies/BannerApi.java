@@ -3,6 +3,7 @@ package gadgetarium.apies;
 import gadgetarium.dto.request.BannerRequest;
 import gadgetarium.dto.response.BannerResponse;
 import gadgetarium.dto.response.GetAllBannerResponse;
+import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.services.BannerService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
@@ -25,7 +26,7 @@ public class BannerApi {
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Загрузить баннер", description = "Авторизация: АДМИНСТРАТОР")
     @PostMapping
-    public BannerResponse createBanner(@RequestBody @Valid BannerRequest bannerRequest){
+    public HttpResponse createBanner(@RequestBody @Valid BannerRequest bannerRequest){
         return bannerService.create(bannerRequest);
     }
 
@@ -39,5 +40,12 @@ public class BannerApi {
     @GetMapping("/{bannerId}")
     public GetAllBannerResponse getById(@PathVariable Long bannerId){
         return bannerService.getById(bannerId);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @Operation(summary = "Удаление Баннер по ID", description = "Авторизация: ВСЕ")
+    @DeleteMapping("/{bannerId}")
+    public HttpResponse deleteBannerById(@PathVariable Long bannerId){
+        return bannerService.deleteBannerById(bannerId);
     }
 }

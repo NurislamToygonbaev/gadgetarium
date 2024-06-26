@@ -60,6 +60,7 @@ public class FeedbackApi {
         return feedbackService.getFeedbackById(id);
 
     }
+
     @Operation(description = "Авторизация: ВСЕ", summary = "Статистика отзывов по гаджету.")
     @GetMapping("/statistics/{gadgetId}")
     public FeedbackStatisticsResponse reviewsStatistics(@PathVariable Long gadgetId) {

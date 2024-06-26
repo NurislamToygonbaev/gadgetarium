@@ -28,7 +28,6 @@ public class Banner {
     private Long id;
 
     @Column(length = 1000)
-    @ElementCollection(fetch = FetchType.LAZY)
-    private List<String> images;
+    private String image;
 
 }

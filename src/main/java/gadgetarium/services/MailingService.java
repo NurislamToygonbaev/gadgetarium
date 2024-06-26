@@ -1,5 +1,6 @@
 package gadgetarium.services;
 
+import gadgetarium.dto.request.ContactRequest;
 import gadgetarium.dto.request.EmailRequest;
 import gadgetarium.dto.request.NewsLetterRequest;
 import gadgetarium.dto.response.HttpResponse;
@@ -10,4 +11,6 @@ public interface MailingService {
     NewsLetterResponse sendNewsLetter(NewsLetterRequest newsLetterRequest);
 
     HttpResponse followUs(EmailRequest emailRequest);
+
+    HttpResponse contactUs(ContactRequest contactRequest);
 }

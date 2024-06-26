@@ -9,9 +9,10 @@ import gadgetarium.enums.GadgetType;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
-import gadgetarium.repositories.CharValueRepository;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.UserRepository;
+import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
 import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
 import gadgetarium.services.UserService;
 import jakarta.transaction.Transactional;
@@ -21,8 +22,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -34,7 +36,7 @@ public class UserServiceImpl implements UserService {
     private final JwtService jwtService;
     private final SubGadgetRepository subGadgetRepository;
     private final CurrentUser currentUser;
-    private final CharValueRepository charValueRepository;
+    private final OrderJDBCTemplate orderJDBCTemplate;
 
     private void checkEmail(String email) {
         boolean existsByEmail = userRepo.existsByEmail(email);
@@ -77,6 +79,12 @@ public class UserServiceImpl implements UserService {
     public HttpResponse addCompare(Long subGadgetsId) {
         User user = currentUser.get();
         SubGadget subGadget = subGadgetRepository.getByID(subGadgetsId);
+
+        Category category = subGadget.getGadget().getSubCategory().getCategory();
+        if (category.getCategoryName().equalsIgnoreCase("accessories")){
+            throw new BadRequestException("you can't add Accessories to basket!!!");
+        }
+
         if (user.getComparison().contains(subGadget)) {
             user.getComparison().remove(subGadget);
             return HttpResponse.builder().status(HttpStatus.OK).message("Gadget removed!").build();
@@ -94,175 +102,6 @@ public class UserServiceImpl implements UserService {
             listComparisonResponses.add(convert(subGadget));
         }
         return listComparisonResponses;
-    }
-
-    @Override
-    public ComparedGadgetsResponse compare(GadgetType gadgetType, boolean isDifferences) {
-        User user = currentUser.get();
-        List<SubGadget> comparison = user.getComparison();
-        Map<String, Integer> categoryCounts = new HashMap<>();
-
-        for (SubGadget subGadget : comparison) {
-            String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
-            categoryCounts.put(categoryName + " quantity", categoryCounts.getOrDefault(categoryName + " quantity", 0) + 1);
-        }
-
-        List<SubGadget> filteredComparison = comparison.stream()
-                .filter(subGadget -> subGadget.getGadget().getSubCategory().getCategory().getCategoryName().equalsIgnoreCase(gadgetType.name()))
-                .collect(Collectors.toList());
-
-        List<SampleResponse> responses = filteredComparison.stream()
-                .map(subGadget -> {
-                    String categoryName = subGadget.getGadget().getSubCategory().getCategory().getCategoryName();
-
-                    if (categoryName.equalsIgnoreCase(GadgetType.WATCH.name())) {
-                        return convertToWatchGadget(subGadget, filteredComparison, isDifferences);
-                    } else {
-                        return convertToSubGadget(subGadget, filteredComparison, isDifferences);
-                    }
-                })
-                .collect(Collectors.toList());
-
-        return ComparedGadgetsResponse.builder()
-                .categoryCounts(categoryCounts)
-                .subGadgetResponses(responses)
-                .build();
-    }
-
-    private SampleResponse convertToSubGadget(SubGadget subGadget, List<SubGadget> comparison, boolean differences) {
-        List<Map<String, String>> uniqueCharacteristics = new ArrayList<>();
-        CompareFieldResponse uniqueFields = null;
-        List<Map<String, String>> tenCharacteristics = charValueRepository.findTenCharacteristics(subGadget.getId());
-
-        for (SubGadget other : comparison) {
-            if (other.equals(subGadget)) {
-                continue;
-            }
-
-            List<Map<String, String>> otherTenCharacteristics = charValueRepository.findTenCharacteristics(other.getId());
-
-            if (differences) {
-                uniqueCharacteristics = getUniqueCharacteristics(tenCharacteristics, otherTenCharacteristics);
-                uniqueFields = buildCompareFieldResponse(subGadget);
-                break;
-            }
-        }
-
-        if (differences) {
-            return new UniqueFieldResponse(uniqueFields, uniqueCharacteristics);
-        } else {
-            return buildSubGadgetResponse(subGadget, tenCharacteristics);
-        }
-    }
-
-    private SampleResponse convertToWatchGadget(SubGadget subGadget, List<SubGadget> comparison, boolean differences) {
-        List<String> differencesList = new ArrayList<>();
-        CompareFieldResponse uniqueFields = null;
-
-        if (comparison == null || comparison.isEmpty()) {
-            throw new NullPointerException("comparison is empty!");
-        }
-
-        if (differences) {
-            differencesList = compareUniFiled(subGadget, comparison);
-            uniqueFields = buildCompareFieldResponse(subGadget);
-        }
-
-        if (differences) {
-            return new WatchResponse(uniqueFields, differencesList);
-        } else {
-            return buildWatchResponse(subGadget);
-        }
-    }
-
-    private WatchRespo buildWatchResponse(SubGadget subGadget) {
-        return WatchRespo.builder()
-                .id(subGadget.getId())
-                .image(getFirstImageOrNull(subGadget))
-                .brandName(subGadget.getGadget().getBrand().getBrandName())
-                .nameOfGadget(subGadget.getGadget().getNameOfGadget())
-                .memory(subGadget.getMemory())
-                .mainColour(subGadget.getMainColour())
-                .price(subGadget.getPrice())
-                .uniqF(subGadget.getUniFiled().stream().toList())
-                .build();
-    }
-
-    private List<String> compareUniFiled(SubGadget subGadget, List<SubGadget> comparison) {
-        Set<String> uniFiledSet = new HashSet<>();
-        Set<String> subGadgetFiledSet = new HashSet<>(subGadget.getUniFiled());
-
-        for (SubGadget other : comparison) {
-            for (String otherFiled : other.getUniFiled()) {
-                if (!subGadgetFiledSet.contains(otherFiled) && !uniFiledSet.contains(otherFiled)) {
-                    uniFiledSet.add(otherFiled);
-                }
-            }
-        }
-
-        return new ArrayList<>(uniFiledSet);
-    }
-
-    private CompareFieldResponse buildCompareFieldResponse(SubGadget subGadget) {
-        return CompareFieldResponse.builder()
-                .id(subGadget.getId())
-                .image(getFirstImageOrNull(subGadget))
-                .brandName(subGadget.getGadget().getBrand().getBrandName())
-                .nameOfGadget(subGadget.getGadget().getNameOfGadget())
-                .memory(subGadget.getMemory())
-                .mainColour(subGadget.getMainColour())
-                .price(subGadget.getPrice())
-                .build();
-    }
-
-    private SubGadgetResponse buildSubGadgetResponse(SubGadget subGadget, List<Map<String, String>> tenCharacteristics) {
-        return new SubGadgetResponse(
-                subGadget.getId(),
-                getFirstImageOrNull(subGadget),
-                subGadget.getGadget().getNameOfGadget(),
-                subGadget.getPrice(),
-                subGadget.getMainColour(),
-                subGadget.getGadget().getBrand().getBrandName(),
-                subGadget.getMemory(),
-                tenCharacteristics
-        );
-    }
-
-    private String getFirstImageOrNull(SubGadget subGadget) {
-        List<String> images = subGadget.getImages();
-        return (images != null && !images.isEmpty() && !images.get(0).isBlank()) ? images.get(0) : null;
-    }
-
-    private List<Map<String, String>> getUniqueCharacteristics(List<Map<String, String>> tenCharacteristics, List<Map<String, String>> otherTenCharacteristics) {
-        List<Map<String, String>> uniqueCharacteristics = new ArrayList<>();
-
-        for (Map<String, String> characteristic : tenCharacteristics) {
-            boolean isUnique = true;
-
-            for (Map<String, String> otherCharacteristic : otherTenCharacteristics) {
-                if (hasSameFields(characteristic, otherCharacteristic)) {
-                    isUnique = false;
-                    break;
-                }
-            }
-
-            if (isUnique) {
-                uniqueCharacteristics.add(characteristic);
-            }
-        }
-
-        return uniqueCharacteristics;
-    }
-
-    private boolean hasSameFields(Map<String, String> characteristic, Map<String, String> otherCharacteristic) {
-        for (Map.Entry<String, String> entry : characteristic.entrySet()) {
-            String key = entry.getKey();
-            String value = entry.getValue();
-            if (otherCharacteristic.containsKey(key) && otherCharacteristic.get(key).equals(value)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     @Override
@@ -376,6 +215,11 @@ public class UserServiceImpl implements UserService {
         currentUser.get().getLikes().clear();
         return HttpResponse.builder().status(HttpStatus.OK).message("Favorites successfully cleared!").build();
 
+    }
+
+    @Override
+    public List<CompareResponses> comparing(GadgetType gadgetType, boolean isDifferences) {
+        return orderJDBCTemplate.comparing(gadgetType, isDifferences);
     }
 
     private AllFavoritesResponse convertToResponse(SubGadget subGadget) {

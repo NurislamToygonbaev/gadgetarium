@@ -7,31 +7,27 @@ import gadgetarium.dto.response.PaginationSHowMoreGadget;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.ResultPaginationGadget;
 import gadgetarium.dto.response.*;
-import gadgetarium.enums.Discount;
-import gadgetarium.enums.Memory;
-import gadgetarium.enums.Ram;
-import gadgetarium.enums.Sort;
+import gadgetarium.enums.*;
 import gadgetarium.exceptions.IOException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import java.math.BigDecimal;
 
 public interface GadgetService {
-    ResultPaginationGadget getAll(Sort sort, Discount discount, int page, int size);
+    ResultPaginationGadget getAll(GetType getType, String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size);
 
     PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size);
 
     GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity);
 
     List<ViewedProductsResponse> viewedProduct();
-    HttpResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);
+    AddGadgetResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);
 
-    List<AddProductsResponse> getNewProducts();
+    List<AddProductsResponse> getNewProducts(List<Long> ids);
 
     HttpResponse addPrice(List<Long> ids, BigDecimal price, int quantity);
-
-    HttpResponse setPriceOneProduct(Long id, BigDecimal price);
 
     HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws IOException;
 
@@ -57,8 +53,6 @@ public interface GadgetService {
 
     List<CatResponse> getSubCategories(Long catId);
 
-    HttpResponse setQuantityOneProduct(Long id, int quantity);
-
     List<String> getAllColours(Long gadgetId);
 
     List<Memory> getAllMemories(Long gadgetId, String color);
@@ -67,4 +61,6 @@ public interface GadgetService {
     List<GadgetsResponse> globalSearch(String request);
 
     HttpResponse updateGadgetImages(Long subGadgetId, GadgetImagesRequest gadgetImagesRequest);
+
+    HttpResponse addPriceAndQuantity(List<SetPriceAndQuantityRequest> request);
 }

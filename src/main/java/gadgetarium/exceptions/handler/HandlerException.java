@@ -1,5 +1,7 @@
 package gadgetarium.exceptions.handler;
 
+import com.paypal.base.rest.PayPalRESTException;
+import gadgetarium.exceptions.*;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.exceptions.*;
 import gadgetarium.exceptions.response.ExceptionResponse;
@@ -19,6 +21,17 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class HandlerException {
+
+    @ExceptionHandler(PayPalRESTException.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ExceptionResponse handlePayPalRESTException(PayPalRESTException ex) {
+        log.error(ex.getMessage());
+        return ExceptionResponse.builder()
+                .httpStatus(HttpStatus.NOT_FOUND)
+                .exceptionClassName(ex.getClass().getSimpleName())
+                .message(ex.getMessage())
+                .build();
+    }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)

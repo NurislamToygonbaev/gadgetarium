@@ -42,7 +42,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query(value = "select sum(o.total_price) from sub_gadgets s inner join gadgets g on s.gadget_id = g.id inner join orders_sub_gadgets og on og.sub_gadgets_id = s.id inner join orders o on o.id = og.orders_id where o.status ilike 'DELIVERED' and extract(year from o.created_at) = extract(year from current_date  - INTERVAL '1 year');", nativeQuery = true)
     BigDecimal forPreviousYear();
 
-    @Query("select new gadgetarium.dto.response.AllOrderHistoryResponse(o.id, to_char(o.createdAt, 'YYYY-MM-DD'), o.number, o.status, o.totalPrice) from Order o join o.user u where u.id = :userId")
+    @Query("select new gadgetarium.dto.response.AllOrderHistoryResponse(o.id, to_char(o.createdAt, 'YYYY-MM-DD'), o.number, o.status, o.totalPrice) from Order o join o.user u where u.id = :userId and o.status is not null")
     List<AllOrderHistoryResponse> getAllHistory(Long userId);
 
     default Order getOrderById(Long orderId) {
@@ -52,21 +52,23 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findBySubGadgetsContains(SubGadget subGadget);
 
-    @Query(value = "select count(g.id) as countOfGadgets " +
-                   "from orders o join orders_sub_gadgets osg on o.id = osg.orders_id " +
-                   "join sub_gadgets g on g.id = osg.sub_gadgets_id where o.id = :id", nativeQuery = true)
-    int countOfGadgets(Long id);
+
 
     @Query(value = "select g.name_of_gadget as nameOfGadget, " +
                    "s.memory as memory, " +
                    "s.main_colour as color, " +
-                   "d.percent as percent " +
+                   "d.percent as percent, " +
+                   "sum(s.price) as price, " +
+                   "count(s.id) as countOfGadgets " +
                    "from orders o " +
                    "join orders_sub_gadgets osg on o.id = osg.orders_id " +
                    "join sub_gadgets s on s.id = osg.sub_gadgets_id " +
                    "join gadgets g on g.id = s.gadget_id " +
                    "left join discounts d on d.gadget_id = g.id " +
-                   "where o.id = ?1", nativeQuery = true)
+                   "where o.id = ?1 " +
+                   " group by g.name_of_gadget, s.memory, s.main_colour, d.percent "
+            , nativeQuery = true)
     List<Object[]> getGadgetsFields(Long id);
+
 
 }

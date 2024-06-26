@@ -12,6 +12,7 @@ import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.SubGadgetRepository;
@@ -56,6 +57,7 @@ public class OrderServiceImpl implements OrderService {
     public HttpResponse changeStatusOfOrder(Long orderId, Status status) {
         Order order = orderRepo.getOrderById(orderId);
         order.setStatus(status);
+        orderRepo.save(order);
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
                 .message("success changed")
@@ -106,14 +108,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseFindById findOrderById(Long orderId) {
         Order order = orderRepo.getOrderById(orderId);
-        BigDecimal price = order.getTotalPrice();
-        int countOfGadget = orderRepo.countOfGadgets(orderId);
+        BigDecimal price = BigDecimal.ZERO;
+        int totalGadgets = 0;
 
         List<Object[]> objects = orderRepo.getGadgetsFields(orderId);
 
-        BigDecimal totalPrice = price.multiply(BigDecimal.valueOf(countOfGadget));
-
-        BigDecimal totalDiscount = BigDecimal.ZERO;
         List<String> gadgetNameList = new ArrayList<>();
         List<String> memoryList = new ArrayList<>();
         List<String> colourList = new ArrayList<>();
@@ -124,15 +123,15 @@ public class OrderServiceImpl implements OrderService {
             memoryList.add((String) response[1]);
             colourList.add((String) response[2]);
 
+
             int percentValue = response[3] != null ? (Integer) response[3] : 0;
             percentList.add(percentValue);
 
-            BigDecimal percent = BigDecimal.valueOf(percentValue);
-            BigDecimal gadgetPrice = price.multiply(percent.divide(BigDecimal.valueOf(100)));
-            BigDecimal gadgetDiscount = gadgetPrice.multiply(BigDecimal.valueOf(countOfGadget));
-            totalDiscount = totalDiscount.add(gadgetDiscount);
+            price = price.add((BigDecimal) response[4]);
+
+            int countOfGadget = ((Long) response[5]).intValue();
+            totalGadgets += countOfGadget;
         }
-        BigDecimal discountPrice = totalPrice.subtract(totalDiscount);
 
         return OrderResponseFindById.builder()
                 .id(order.getId())
@@ -141,13 +140,14 @@ public class OrderServiceImpl implements OrderService {
                 .nameOfGadget(gadgetNameList)
                 .memory(memoryList)
                 .colour(colourList)
-                .count(countOfGadget)
+                .count(totalGadgets)
                 .price(price)
                 .percent(percentList)
-                .discountPrice(discountPrice)
-                .totalPrice(totalPrice)
+                .discountPrice(order.getDiscountPrice())
+                .totalPrice(order.getTotalPrice())
                 .build();
     }
+
 
 
     @Override
@@ -323,17 +323,11 @@ public class OrderServiceImpl implements OrderService {
         String oldPassword = user.getPassword();
 
         if (!passwordEncoder.matches(changePasswordRequest.getOldPassword(), oldPassword)) {
-            return HttpResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .message("Incorrect old password")
-                    .build();
+            throw new BadRequestException("Incorrect old password");
         }
 
         if (!changePasswordRequest.getNewPassword().equals(changePasswordRequest.getConfirmationPassword())) {
-            return HttpResponse.builder()
-                    .status(HttpStatus.BAD_REQUEST)
-                    .message("New password and confirmation password do not match")
-                    .build();
+            throw new BadRequestException("New password and confirmation password do not match");
         }
 
         String newPasswordEncoded = passwordEncoder.encode(changePasswordRequest.getNewPassword());
