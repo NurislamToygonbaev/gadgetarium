@@ -231,9 +231,10 @@ public class FeedbackServiceImpl implements FeedbackService {
         List<Feedback> feedbacks = gadgetById.getFeedbacks();
         Map<Integer, Long> ratingCounts = getRatingCounts(feedbacks);
 
+        double rating = feedbackRating(gadgetId);
         return FeedbackStatisticsResponse
                 .builder()
-                .overallRating(feedbackRating(gadgetId))
+                .overallRating(rating > 0 ? rating : 0.0)
                 .quantityFeedbacks(quantityFeedbacks)
                 .ratingCounts(ratingCounts)
                 .build();
