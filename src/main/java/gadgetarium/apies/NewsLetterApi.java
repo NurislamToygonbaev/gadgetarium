@@ -1,5 +1,6 @@
 package gadgetarium.apies;
 
+import gadgetarium.dto.request.ContactRequest;
 import gadgetarium.dto.request.EmailRequest;
 import gadgetarium.dto.request.NewsLetterRequest;
 import gadgetarium.dto.response.HttpResponse;
@@ -33,4 +34,11 @@ public class NewsLetterApi {
     public HttpResponse followUs(@RequestBody @Valid EmailRequest emailRequest){
         return mailingService.followUs(emailRequest);
     }
+
+    @Operation(summary = "Оставить данные", description = "Авторизация: ВСЕ")
+    @PostMapping("/contact-us")
+    public HttpResponse contactUs(@RequestBody @Valid ContactRequest contactRequest){
+        return mailingService.contactUs(contactRequest);
+    }
+
 }

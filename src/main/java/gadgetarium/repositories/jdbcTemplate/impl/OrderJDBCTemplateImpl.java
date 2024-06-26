@@ -1,12 +1,19 @@
 package gadgetarium.repositories.jdbcTemplate.impl;
 
+import gadgetarium.dto.response.CompareResponses;
 import gadgetarium.dto.response.OrderPagination;
 import gadgetarium.dto.response.OrderResponse;
 import gadgetarium.dto.response.OrderResponseFindById;
+import gadgetarium.entities.SubGadget;
+import gadgetarium.entities.User;
+import gadgetarium.enums.GadgetType;
 import gadgetarium.enums.RemotenessStatus;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
+import gadgetarium.services.impl.CurrentUser;
+import gadgetarium.services.impl.GadgetServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -14,6 +21,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 @Repository
@@ -21,6 +29,8 @@ import java.util.List;
 public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
 
     private final JdbcTemplate jdbcTemplate;
+    private final CurrentUser currentUser;
+    private final SubGadgetRepository subGadgetRepo;
 
     @Override
     public OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
@@ -104,6 +114,118 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                 .orderResponses(orderResponses)
                 .build();
     }
+
+    @Override
+    public List<CompareResponses> comparing(GadgetType gadgetType, boolean isDifferences) {
+        User user = currentUser.get();
+        String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
+
+        List<CompareResponses> compareResponsesList = jdbcTemplate.query(
+                "select " +
+                "sg.id, " +
+                "g.id as gadgetId, " +
+                "array_agg(gi.images) as images, " +
+                "g.name_of_gadget as nameofgadget, " +
+                "sg.memory, " +
+                "sg.main_colour, " +
+                "d.percent, " +
+                "sg.price, " +
+                "b.brand_name, " +
+                "sg.ram, " +
+                "sg.count_sim, " +
+                "g.warranty " +
+                "from sub_gadgets sg " +
+                "join gadgets g on g.id = sg.gadget_id " +
+                "left join sub_gadget_images gi on sg.id = gi.sub_gadget_id " +
+                "join brands b on g.brand_id = b.id " +
+                "join sub_categories sc on g.sub_category_id = sc.id " +
+                "join categories c on sc.category_id = c.id " +
+                "left join discounts d on g.id = d.gadget_id " +
+                "right join users_comparison uc on sg.id = uc.comparison_id " +
+                "join users u on u.id = uc.user_id " +
+                "where u.id = ? and sg.remoteness_status = ? and lower(c.category_name) = ? " +
+                "group by " +
+                "g.id, g.name_of_gadget, b.brand_name, sg.ram, d.percent, sg.price, g.warranty, " +
+                "sg.memory, sg.main_colour, sg.id, sg.count_sim, g.name_of_gadget",
+                new Object[]{user.getId(), status, gadgetType.name().toLowerCase()},
+                (rs, rowNum) -> {
+
+                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
+                    String imagesFirst = imagesArray.length > 0 ? imagesArray[0] : null;
+
+                    int percent = rs.getInt("percent");
+                    BigDecimal price = BigDecimal.ZERO;
+
+                    Long id = rs.getLong("id");
+                    SubGadget subGadget = subGadgetRepo.getByID(id);
+                    if (percent != 0) {
+                        price = price.add(GadgetServiceImpl.calculatePrice(subGadget));
+                    } else {
+                        price = price.add(subGadget.getPrice());
+                    }
+
+                    String nameOfGadget = rs.getString("nameofgadget");
+                    String brand = rs.getString("brand_name");
+                    String memory = rs.getString("memory");
+                    String ram = rs.getString("ram");
+                    String color = rs.getString("main_colour");
+                    String warranty = rs.getString("warranty");
+
+                    return new CompareResponses(
+                            rs.getLong("gadgetId"),
+                            id,
+                            imagesFirst,
+                            brand + " " + nameOfGadget,
+                            memory,
+                            color,
+                            price,
+                            nameOfGadget,
+                            color,
+                            brand,
+                            memory,
+                            ram,
+                            rs.getInt("count_sim"),
+                            warranty
+                    );
+                });
+
+        if (isDifferences) {
+            for (int i = 0; i < compareResponsesList.size(); i++) {
+                CompareResponses current = compareResponsesList.get(i);
+
+                for (int j = 0; j < compareResponsesList.size(); j++) {
+                    if (i != j) {
+                        CompareResponses other = compareResponsesList.get(j);
+
+                        if (current.getNameOfGadgetCompare() != null && current.getNameOfGadgetCompare().equalsIgnoreCase(other.getNameOfGadgetCompare())) {
+                            current.setNameOfGadgetCompare(null);
+                        }
+                        if (current.getColorCompare() != null && current.getColorCompare().equalsIgnoreCase(other.getColorCompare())) {
+                            current.setColorCompare(null);
+                        }
+                        if (current.getBrandCompare() != null && current.getBrandCompare().equalsIgnoreCase(other.getBrandCompare())) {
+                            current.setBrandCompare(null);
+                        }
+                        if (current.getMemoryCompare() != null && current.getMemoryCompare().equalsIgnoreCase(other.getMemoryCompare())) {
+                            current.setMemoryCompare(null);
+                        }
+                        if (current.getRamCompare() != null && current.getRamCompare().equalsIgnoreCase(other.getRamCompare())) {
+                            current.setRamCompare(null);
+                        }
+                        if (current.getSimCompare() == other.getSimCompare()) {
+                            current.setSimCompare(0);
+                        }
+                        if (current.getWarrantyCompare() != null && current.getWarrantyCompare().equalsIgnoreCase(other.getWarrantyCompare())) {
+                            current.setWarrantyCompare(null);
+                        }
+                    }
+                }
+            }
+        }
+        compareResponsesList.sort(Comparator.comparingLong(CompareResponses::getSubGadgetId));
+        return compareResponsesList;
+    }
+
 
     private int getOrderInWaitingCount(){
         String sql = "select count(*) from orders o " +

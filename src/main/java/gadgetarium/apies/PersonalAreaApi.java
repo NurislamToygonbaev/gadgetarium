@@ -57,6 +57,7 @@ public class PersonalAreaApi {
     public HttpResponse changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
         return orderService.changePassword(changePasswordRequest);
     }
+
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Просмотр профиля.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/get-profile")

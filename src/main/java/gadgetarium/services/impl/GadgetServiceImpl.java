@@ -62,7 +62,7 @@ public class GadgetServiceImpl implements GadgetService {
     @Override
     @Transactional
     public GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity) {
-       return gadgetJDBCTemplateRepo.getGadgetById(gadgetId, color, memory, quantity);
+        return gadgetJDBCTemplateRepo.getGadgetById(gadgetId, color, memory, quantity);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public HttpResponse addGadget(Long subCategoryId, Long brandId, AddProductRequest addProductRequest) {
+    public AddGadgetResponse addGadget(Long subCategoryId, Long brandId, AddProductRequest addProductRequest) {
         boolean exist = gadgetRepo.existsByNameOfGadget(addProductRequest.nameOfGadget());
         Gadget gadget;
 
@@ -140,6 +140,7 @@ public class GadgetServiceImpl implements GadgetService {
 
         gadgetRepo.save(gadget);
 
+        List<Long> subGadgetIds = new ArrayList<>();
         for (ProductsRequest productsRequest : addProductRequest.productsRequests()) {
             SubGadget subGadget = new SubGadget();
             subGadget.setGadget(gadget);
@@ -176,22 +177,23 @@ public class GadgetServiceImpl implements GadgetService {
                 subGadget.getUniFiled().add(productsRequest.waterproof());
                 subGadget.getUniFiled().add(productsRequest.wireless());
             }
-
+            subGadgetIds.add(subGadget.getId());
         }
 
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("Успешно добавлено")
+        return AddGadgetResponse.builder()
+                .ids(subGadgetIds)
+                .httpResponse(HttpResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Успешно добавлено")
+                        .build())
                 .build();
     }
 
 
     @Override
-    public List<AddProductsResponse> getNewProducts() {
-        List<SubGadget> all = subGadgetRepo.findAll();
-
-        return all.stream()
-                .filter(subGadget -> subGadget.getPrice() == null || subGadget.getQuantity() == 0)
+    public List<AddProductsResponse> getNewProducts(List<Long> ids) {
+        return ids.stream()
+                .map(subGadgetRepo::getByID)
                 .map(subGadget -> new AddProductsResponse(
                         subGadget.getGadget().getId(),
                         subGadget.getId(),
@@ -204,71 +206,41 @@ public class GadgetServiceImpl implements GadgetService {
                         subGadget.getQuantity(),
                         subGadget.getPrice()
                 ))
-                .sorted(Comparator.comparing(AddProductsResponse::subGadgetId))
+                .sorted(Comparator.comparingLong(AddProductsResponse::subGadgetId))
                 .collect(Collectors.toList());
     }
 
+
+
+
+    @Override
+    @Transactional
+    public HttpResponse addPriceAndQuantity(List<SetPriceAndQuantityRequest> request) {
+        for (SetPriceAndQuantityRequest quantityRequest : request) {
+            SubGadget subGadget = subGadgetRepo.getByID(quantityRequest.id());
+            subGadget.setPrice(quantityRequest.price());
+            subGadget.setQuantity(quantityRequest.quantity());
+        }
+        return HttpResponse
+                .builder()
+                .status(HttpStatus.OK)
+                .message("Success added price and quantity!")
+                .build();
+    }
 
     @Override
     @Transactional
     public HttpResponse addPrice(List<Long> ids, BigDecimal price, int quantity) {
         for (Long id : ids) {
             SubGadget subGadget = subGadgetRepo.getByID(id);
-            if (subGadget.getPrice() == null && subGadget.getQuantity() <= 0){
-                subGadget.setPrice(price);
-                subGadget.setQuantity(quantity);
-                subGadgetRepo.save(subGadget);
-                return HttpResponse
-                        .builder()
-                        .status(HttpStatus.OK)
-                        .message("Success added price and quantity! " + "price: "+price +", quantity: "+ quantity)
-                        .build();
-            }
-        }
-        return HttpResponse
-                .builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message("price and quantity already exists!")
-                .build();
-
-    }
-
-    @Override
-    @Transactional
-    public HttpResponse setPriceOneProduct(Long id, BigDecimal price) {
-        SubGadget subGadget = subGadgetRepo.getByID(id);
-        if (subGadget.getPrice() == null){
             subGadget.setPrice(price);
-            subGadgetRepo.save(subGadget);
-            return HttpResponse
-                    .builder()
-                    .status(HttpStatus.OK)
-                    .message("Success added price and quantity! " + "price: "+price)
-                    .build();
-        }
-        return HttpResponse
-                .builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message("price already exists!")
-                .build();
-    }
-
-    @Override
-    public HttpResponse setQuantityOneProduct(Long id, int quantity) {
-        SubGadget subGadget = subGadgetRepo.getByID(id);
-        if (subGadget.getQuantity() <= 0){
             subGadget.setQuantity(quantity);
             subGadgetRepo.save(subGadget);
-            return HttpResponse
-                    .builder()
-                    .status(HttpStatus.OK)
-                    .message("Success added quantity! " + "quantity: "+ quantity)
-                    .build();
         }
         return HttpResponse
                 .builder()
-                .status(HttpStatus.BAD_REQUEST)
-                .message("quantity already exists!")
+                .status(HttpStatus.OK)
+                .message("Success added price and quantity! " + "price: " + price + ", quantity: " + quantity)
                 .build();
 
     }
@@ -284,7 +256,8 @@ public class GadgetServiceImpl implements GadgetService {
         return gadgetJDBCTemplateRepo.globalSearch(request);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public HttpResponse updateGadgetImages(Long subGadgetId, GadgetImagesRequest gadgetImagesRequest) {
         SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
 
@@ -348,7 +321,6 @@ public class GadgetServiceImpl implements GadgetService {
             throw new gadgetarium.exceptions.IOException(e.getMessage());
         }
     }
-
 
 
     @Override
@@ -551,7 +523,7 @@ public class GadgetServiceImpl implements GadgetService {
         List<Memory> memories = new ArrayList<>();
 
         for (SubGadget subGadget : gadgetById.getSubGadgets()) {
-            if (subGadget.getMainColour().equalsIgnoreCase(color)){
+            if (subGadget.getMainColour().equalsIgnoreCase(color)) {
                 memories.add(subGadget.getMemory());
             }
         }

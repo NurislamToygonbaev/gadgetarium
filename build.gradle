@@ -18,8 +18,7 @@ repositories {
 
 dependencies {
 
-    // Java main sender
-    implementation 'com.sun.mail:jakarta.mail:2.0.0'
+    // Java mail sender
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     // fireBase Google
     implementation group: 'com.google.firebase', name: 'firebase-admin', version: '8.1.0'

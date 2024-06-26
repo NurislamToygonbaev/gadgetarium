@@ -76,16 +76,13 @@ public class BasketServiceImpl implements BasketService {
         User user = currentUser.get();
         Map<SubGadget, Integer> basket = user.getBasket();
 
-        List<SubGadget> sortedBasket = basket.keySet().stream()
-                .sorted(Comparator.comparing(subGadget -> subGadget.getGadget().getBrand().getBrandName()))
-                .toList();
+        return basket.keySet().stream()
+                .sorted(Comparator.comparingLong(SubGadget::getId))
+                .map(subGadget -> {
+                    boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
+                    BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 
-        List<GetAllBasketResponse> responses = new ArrayList<>();
-        for (SubGadget subGadget : sortedBasket) {
-            boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
-            BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
-
-            GetAllBasketResponse all = new GetAllBasketResponse(
+                    return new GetAllBasketResponse(
                     subGadget.getGadget().getId(),
                     subGadget.getId(),
                     subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
@@ -99,11 +96,11 @@ public class BasketServiceImpl implements BasketService {
                     price,
                     basket.get(subGadget),
                     likes
-            );
-            responses.add(all);
-        }
-        return responses;
+                    );
+                })
+                .collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional

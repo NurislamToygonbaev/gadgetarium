@@ -17,8 +17,6 @@ public interface UserService {
 
     List<ListComparisonResponse> seeComparison();
 
-    ComparedGadgetsResponse compare(GadgetType gadgetType, boolean isDifferences);
-
     HttpResponse deleteSubGadget(Long subId);
 
     HttpResponse deleteAllGadgets();
@@ -34,4 +32,6 @@ public interface UserService {
     HttpResponse deleteById(Long subGadgetId);
 
     HttpResponse clearFavorites();
+
+    List<CompareResponses> comparing(GadgetType gadgetType, boolean isDifferences);
 }
