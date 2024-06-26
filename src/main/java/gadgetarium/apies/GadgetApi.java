@@ -1,9 +1,6 @@
 package gadgetarium.apies;
 
-import gadgetarium.dto.request.AddProductRequest;
-import gadgetarium.dto.request.GadgetImagesRequest;
-import gadgetarium.dto.request.GadgetNewDataRequest;
-import gadgetarium.dto.request.ProductDocRequest;
+import gadgetarium.dto.request.*;
 import gadgetarium.dto.response.*;
 import gadgetarium.enums.*;
 import gadgetarium.exceptions.IOException;
@@ -101,20 +98,12 @@ public class GadgetApi {
         return gadgetService.addPrice(ids, price, quantity);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Установить цены по одному.", description = "Авторизация: АДМИНСТРАТОР")
-    @PatchMapping("/{id}/set-price")
-    public HttpResponse addPrice(@RequestParam @PriceValidation BigDecimal price,
-                                 @PathVariable Long id) {
-        return gadgetService.setPriceOneProduct(id, price);
-    }
 
     @PreAuthorize("hasAuthority('ADMIN')")
-    @Operation(summary = "Установить количество по одному.", description = "Авторизация: АДМИНСТРАТОР")
-    @PatchMapping("/{id}/set-quantity")
-    public HttpResponse addQuantity(@RequestParam @QuantityValidation int quantity,
-                                    @PathVariable Long id) {
-        return gadgetService.setQuantityOneProduct(id, quantity);
+    @Operation(summary = "Установить цены и количество на добавленные товары по одному", description = "Авторизация: АДМИНСТРАТОР")
+    @PatchMapping("/price-quantity")
+    public HttpResponse addPriceAndQuantity(@RequestBody @Valid List<SetPriceAndQuantityRequest> request){
+        return gadgetService.addPriceAndQuantity(request);
     }
 
     @Operation(summary = " Все категории", description = "Авторизация: ВСЕ")

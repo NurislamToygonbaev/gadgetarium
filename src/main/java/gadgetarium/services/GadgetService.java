@@ -29,8 +29,6 @@ public interface GadgetService {
 
     HttpResponse addPrice(List<Long> ids, BigDecimal price, int quantity);
 
-    HttpResponse setPriceOneProduct(Long id, BigDecimal price);
-
     HttpResponse addDocument(Long gadgetId, ProductDocRequest productDocRequest) throws IOException;
 
     GadgetPaginationForMain mainPageDiscounts(int page, int size);
@@ -55,8 +53,6 @@ public interface GadgetService {
 
     List<CatResponse> getSubCategories(Long catId);
 
-    HttpResponse setQuantityOneProduct(Long id, int quantity);
-
     List<String> getAllColours(Long gadgetId);
 
     List<Memory> getAllMemories(Long gadgetId, String color);
@@ -65,4 +61,6 @@ public interface GadgetService {
     List<GadgetsResponse> globalSearch(String request);
 
     HttpResponse updateGadgetImages(Long subGadgetId, GadgetImagesRequest gadgetImagesRequest);
+
+    HttpResponse addPriceAndQuantity(List<SetPriceAndQuantityRequest> request);
 }
