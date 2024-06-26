@@ -23,9 +23,9 @@ public interface GadgetService {
     GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity);
 
     List<ViewedProductsResponse> viewedProduct();
-    HttpResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);
+    AddGadgetResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);
 
-    List<AddProductsResponse> getNewProducts();
+    List<AddProductsResponse> getNewProducts(List<Long> ids);
 
     HttpResponse addPrice(List<Long> ids, BigDecimal price, int quantity);
 

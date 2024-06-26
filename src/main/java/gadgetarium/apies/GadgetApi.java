@@ -76,7 +76,7 @@ public class GadgetApi {
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = " Добавление продукта ", description = "Авторизация: АДМИНСТРАТОР")
     @PostMapping("/{subCategoryId}/{brandId}")
-    public HttpResponse addGadget(@PathVariable Long subCategoryId,
+    public AddGadgetResponse addGadget(@PathVariable Long subCategoryId,
                                   @PathVariable Long brandId,
                                   @RequestBody @Valid AddProductRequest addProductRequest) {
         return gadgetService.addGadget(subCategoryId, brandId, addProductRequest);
@@ -85,8 +85,8 @@ public class GadgetApi {
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Возвращение добавленных товаров.", description = "Авторизация: АДМИНСТРАТОР")
     @GetMapping("/get-new")
-    public List<AddProductsResponse> getNewProducts() {
-        return gadgetService.getNewProducts();
+    public List<AddProductsResponse> getNewProducts(@RequestParam List<Long> ids) {
+        return gadgetService.getNewProducts(ids);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")
@@ -97,7 +97,6 @@ public class GadgetApi {
                                  @RequestParam List<Long> ids) {
         return gadgetService.addPrice(ids, price, quantity);
     }
-
 
     @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Установить цены и количество на добавленные товары по одному", description = "Авторизация: АДМИНСТРАТОР")

@@ -99,7 +99,7 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public HttpResponse addGadget(Long subCategoryId, Long brandId, AddProductRequest addProductRequest) {
+    public AddGadgetResponse addGadget(Long subCategoryId, Long brandId, AddProductRequest addProductRequest) {
         boolean exist = gadgetRepo.existsByNameOfGadget(addProductRequest.nameOfGadget());
         Gadget gadget;
 
@@ -140,6 +140,7 @@ public class GadgetServiceImpl implements GadgetService {
 
         gadgetRepo.save(gadget);
 
+        List<Long> subGadgetIds = new ArrayList<>();
         for (ProductsRequest productsRequest : addProductRequest.productsRequests()) {
             SubGadget subGadget = new SubGadget();
             subGadget.setGadget(gadget);
@@ -176,18 +177,21 @@ public class GadgetServiceImpl implements GadgetService {
                 subGadget.getUniFiled().add(productsRequest.waterproof());
                 subGadget.getUniFiled().add(productsRequest.wireless());
             }
-
+            subGadgetIds.add(subGadget.getId());
         }
 
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("Успешно добавлено")
+        return AddGadgetResponse.builder()
+                .ids(subGadgetIds)
+                .httpResponse(HttpResponse.builder()
+                        .status(HttpStatus.OK)
+                        .message("Успешно добавлено")
+                        .build())
                 .build();
     }
 
 
     @Override
-    public List<AddProductsResponse> getNewProducts() {
+    public List<AddProductsResponse> getNewProducts(List<Long> ids) {
         List<SubGadget> all = subGadgetRepo.findAll();
 
         return all.stream()
