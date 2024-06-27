@@ -460,24 +460,24 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         StringBuilder sqlBuilder = new StringBuilder("""
-            SELECT g.id,
-                   array_agg(gi.images) AS images,
-                   CONCAT(b.brand_name, ' ', g.name_of_gadget) AS nameOfGadget,
+            select g.id,
+                   array_agg(gi.images) as images,
+                   concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
                    sg.quantity,
                    d.percent,
-                   COUNT(f.id) AS countOfFeedback,
+                   count(f.id) as countOfFeedback,
                    sg.main_colour,
                    g.rating,
                    sg.memory,
                    sg.price,
                    sg.id AS subGadgetId
-            FROM sub_gadgets sg
-            JOIN gadgets g ON g.id = sg.gadget_id
-            LEFT JOIN sub_gadget_images gi ON sg.id = gi.sub_gadget_id
-            JOIN brands b ON g.brand_id = b.id
-            LEFT OUTER JOIN discounts d ON g.id = d.gadget_id
-            LEFT OUTER JOIN feedbacks f ON f.gadget_id = g.id
-            WHERE sg.remoteness_status = ?
+            from sub_gadgets sg
+            join gadgets g ON g.id = sg.gadget_id
+            left join sub_gadget_images gi on sg.id = gi.sub_gadget_id
+            join brands b on g.brand_id = b.id
+            left outer join discounts d on g.id = d.gadget_id
+            left outer join feedbacks f on f.gadget_id = g.id
+            where sg.remoteness_status = ?
             """);
 
         if (additionalWhereClause != null) {
@@ -552,13 +552,14 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     }
 
     @Override
-    public List<DetailsResponse> gadgetDetails() {
+    public List<DetailsResponse> gadgetDetails(Long gadgetId) {
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
-        List<DetailsResponse> detailsResponses = jdbcTemplate.query("""
-                select  sg.id,
+        return jdbcTemplate.query("""
+                select  g.id as gadgetId,
+                        sg.id,
                         array_agg(i.images) as images,
-                        g.name_of_gadget,
+                        concat(b.brand_name, ' ', g.name_of_gadget) as nameOfGadget,
                         sg.main_colour,
                         sg.count_sim,
                         sg.ram,
@@ -568,32 +569,30 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 from sub_gadgets sg
                 left join sub_gadget_images i on i.sub_gadget_id = sg.id
                 join gadgets g on sg.gadget_id = g.id
-                where sg.remoteness_status ="""+"'"+status+"'"+"""
-                group by sg.id, g.name_of_gadget, sg.main_colour, sg.count_sim, sg.ram, sg.memory, sg.quantity, sg.price                       
-                        """,
+                join brands b on g.brand_id = b.id
+                where g.id = ? and sg.remoteness_status = ?
+                group by sg.id, g.name_of_gadget, sg.main_colour, g.id,
+                 sg.count_sim, sg.ram, sg.memory, sg.quantity, sg.price, b.brand_name
+                 """,
+                new Object[]{gadgetId, status},
                 (rs, rowNum) -> {
 
-                    Array imagesArray = rs.getArray("images");
-                    String[] images = null;
-                    if (imagesArray != null) {
-                        images = (String[]) imagesArray.getArray();
-                    }
-                    String image = images != null && images.length > 0 ? images[0] : null;
+                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
+                    String image = imagesArray.length > 0 ? imagesArray[0] : null;
 
                     return DetailsResponse.builder()
-                            .id(rs.getLong(1))
+                            .gadgetId(rs.getLong(1))
+                            .subGadgetId(rs.getLong(2))
                             .image(image)
-                            .nameOfGadget(rs.getString(3))
-                            .colour(rs.getString(4))
-                            .countSim(rs.getInt(5))
-                            .ram(rs.getString(6))
-                            .memory(rs.getString(7))
-                            .quantity(rs.getInt(8))
-                            .price(rs.getBigDecimal(9))
+                            .nameOfGadget(rs.getString(4))
+                            .colour(rs.getString(5))
+                            .countSim(rs.getInt(6))
+                            .ram(rs.getString(7))
+                            .memory(rs.getString(8))
+                            .quantity(rs.getInt(9))
+                            .price(rs.getBigDecimal(10))
                             .build();
                 });
-
-        return detailsResponses;
     }
 
 

@@ -23,7 +23,7 @@ public interface GadgetJDBCTemplateRepository {
 
     GadgetPaginationForMain mainPageRecommend(int page, int size);
 
-    List<DetailsResponse> gadgetDetails();
+    List<DetailsResponse> gadgetDetails(Long gadgetId);
 
     List<GadgetsResponse> globalSearch(String request);
 

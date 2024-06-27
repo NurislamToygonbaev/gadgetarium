@@ -56,7 +56,7 @@ public interface GadgetService {
     List<String> getAllColours(Long gadgetId);
 
     List<Memory> getAllMemories(Long gadgetId, String color);
-    List<DetailsResponse> gadgetDetails();
+    List<DetailsResponse> gadgetDetails(Long gadgetId);
 
     List<GadgetsResponse> globalSearch(String request);
 

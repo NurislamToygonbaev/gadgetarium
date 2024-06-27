@@ -531,7 +531,9 @@ public class GadgetServiceImpl implements GadgetService {
         return memories;
     }
 
-    public List<DetailsResponse> gadgetDetails() {
-        return gadgetJDBCTemplateRepo.gadgetDetails();
+    @Override
+    public List<DetailsResponse> gadgetDetails(Long gadgetId) {
+        gadgetRepo.getGadgetById(gadgetId);
+        return gadgetJDBCTemplateRepo.gadgetDetails(gadgetId);
     }
 }
