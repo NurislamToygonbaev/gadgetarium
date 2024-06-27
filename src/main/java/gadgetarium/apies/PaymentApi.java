@@ -1,7 +1,5 @@
 package gadgetarium.apies;
 
-import com.paypal.api.payments.Links;
-import com.paypal.base.rest.PayPalRESTException;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
@@ -9,67 +7,29 @@ import gadgetarium.enums.Payment;
 import gadgetarium.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.view.RedirectView;
 
 @RestController
-@RequestMapping("/api/paypal")
+@RequestMapping("/api/payment")
 @RequiredArgsConstructor
 public class PaymentApi {
 
     private final PaymentService paymentService;
 
-    @Value("${paypal.success-url}")
-    private String successUrl;
-    @Value("${paypal.cancel-url}")
-    private String cancelUrl;
-
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(summary = " создание заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/create/{orderId}")
-    public RedirectView createPayment(@PathVariable Long orderId,
-                                      @RequestParam String currency
-                                      ) throws PayPalRESTException {
-
-        com.paypal.api.payments.Payment payment = paymentService.createPayment(
-                orderId,
-                currency,
-                "paypal",
-                "sale",
-                "Payment description",
-                cancelUrl,
-                successUrl
-        );
-        for (Links link : payment.getLinks()) {
-            if (link.getRel().equals("approval_url")){
-                return new RedirectView(link.getHref());
-            }
-        }
-        return new RedirectView("/api/payment/error");
+    @Operation(summary = "Создание платежа", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @PostMapping("/create/{orderId}")
+    public HttpResponse createPayment(@RequestParam String token,
+                                      @PathVariable Long orderId) {
+        return paymentService.createPayment(orderId, token);
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(summary = " success заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/success")
-    public String paymentSuccess(@RequestParam("paymentId") String paymentId,
-                                 @RequestParam("payerId") String payerId) throws PayPalRESTException {
-        com.paypal.api.payments.Payment payment = paymentService.executePayment(paymentId, payerId);
-        if (payment.getState().equals("approved")){
-            return "paymentSuccess";
-        }
-        return "paymentSuccess";
-    }
-
-    @GetMapping("/cancel")
-    public String paymentCancel(){
-        return "paymentCancel";
-    }
-
-    @GetMapping("/error")
-    public String paymentError(){
-        return "paymentError";
+    @Operation(summary = "Подтвердение платежа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @PostMapping("/confirm/payment")
+    public HttpResponse confirmPayment(@RequestParam String paymentId) {
+        return paymentService.confirmPayment(paymentId);
     }
 
     @PreAuthorize("hasAuthority('USER')")
