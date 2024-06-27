@@ -210,9 +210,9 @@ public class GadgetApi {
 
     @PreAuthorize("hasAnyAuthority('ADMIN')")
     @Operation(summary = "Детали товаров", description = "Авторизация ADMIN")
-    @GetMapping("/details")
-    public List<DetailsResponse> gadgetDetails(){
-        return gadgetService.gadgetDetails();
+    @GetMapping("/details/{gadgetId}")
+    public List<DetailsResponse> gadgetDetails(@PathVariable Long gadgetId){
+        return gadgetService.gadgetDetails(gadgetId);
     }
 
     @Operation(summary = "Поиск всех гаджетов", description = "Авторизация: ВСЕ")

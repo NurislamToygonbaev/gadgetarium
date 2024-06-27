@@ -29,7 +29,7 @@ public class BasketServiceImpl implements BasketService {
     @Override
     @Transactional
     public HttpResponse addToBasket(Long subGadgetId, int quantity) {
-        if (quantity <= 0){
+        if (quantity <= 0) {
             throw new BadRequestException("can't be quantity -");
         }
         SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
@@ -83,19 +83,19 @@ public class BasketServiceImpl implements BasketService {
                     BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
 
                     return new GetAllBasketResponse(
-                    subGadget.getGadget().getId(),
-                    subGadget.getId(),
-                    subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
-                    subGadget.getGadget().getBrand().getBrandName() + " " + subGadget.getGadget().getNameOfGadget(),
-                    subGadget.getMemory().name(),
-                    subGadget.getMainColour(),
-                    subGadget.getGadget().getRating(),
-                    subGadget.getGadget().getFeedbacks().size(),
-                    subGadget.getQuantity(),
-                    subGadget.getArticle(),
-                    price,
-                    basket.get(subGadget),
-                    likes
+                            subGadget.getGadget().getId(),
+                            subGadget.getId(),
+                            subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
+                            subGadget.getGadget().getBrand().getBrandName() + " " + subGadget.getGadget().getNameOfGadget(),
+                            subGadget.getMemory().name(),
+                            subGadget.getMainColour(),
+                            subGadget.getGadget().getRating(),
+                            subGadget.getGadget().getFeedbacks().size(),
+                            subGadget.getQuantity(),
+                            subGadget.getArticle(),
+                            price,
+                            basket.get(subGadget),
+                            likes
                     );
                 })
                 .collect(Collectors.toList());
@@ -103,7 +103,6 @@ public class BasketServiceImpl implements BasketService {
 
 
     @Override
-    @Transactional
     public GetBasketAmounts allAmounts(List<Long> ids) {
         BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalPrice = BigDecimal.ZERO;
@@ -115,18 +114,19 @@ public class BasketServiceImpl implements BasketService {
         for (Long id : ids) {
             SubGadget subGadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(subGadget)) {
-                count++;
                 Integer quantity = user.getBasket().get(subGadget);
+                count += quantity;
 
                 BigDecimal price = subGadget.getPrice();
-                BigDecimal discount = GadgetServiceImpl.calculatePrice(subGadget);
-
-                totalDiscount = totalDiscount.add(discount.multiply(BigDecimal.valueOf(quantity)));
+                BigDecimal priceWithDiscount = GadgetServiceImpl.calculatePrice(subGadget);
+                BigDecimal discount = price.subtract(priceWithDiscount);
 
                 BigDecimal totalItemPrice = price.multiply(BigDecimal.valueOf(quantity));
-                totalPrice = totalPrice.add(totalItemPrice);
+                BigDecimal totalItemDiscount = discount.multiply(BigDecimal.valueOf(quantity));
+                BigDecimal totalItemPriceWithDiscount = totalItemPrice.subtract(totalItemDiscount);
 
-                BigDecimal totalItemPriceWithDiscount = totalItemPrice.subtract(discount.multiply(BigDecimal.valueOf(quantity)));
+                totalDiscount = totalDiscount.add(totalItemDiscount);
+                totalPrice = totalPrice.add(totalItemPrice);
                 totalPriceWithDiscount = totalPriceWithDiscount.add(totalItemPriceWithDiscount);
             }
         }
@@ -138,6 +138,7 @@ public class BasketServiceImpl implements BasketService {
                 .currentPrice(totalPriceWithDiscount)
                 .build();
     }
+
 
     @Override
     @Transactional
