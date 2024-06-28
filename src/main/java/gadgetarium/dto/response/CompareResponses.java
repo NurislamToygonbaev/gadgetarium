@@ -22,6 +22,7 @@ public class CompareResponses {
     private String brandCompare;
     private String memoryCompare;
     private String ramCompare;
+    private boolean inBasket;
     private int simCompare;
     private String warrantyCompare;
     private int phoneCount;

@@ -77,10 +77,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public InfoResponse getInfo() {
-        BigDecimal buyPrice = orderRepo.getBuyPrice();
+        BigDecimal buyPrice = orderRepo.getBuyPrice() != null ? orderRepo.getBuyPrice() : BigDecimal.ZERO;
         int buyCount = orderRepo.getBuyCount();
-        BigDecimal orderPrice = orderRepo.getOrderPrice();
+        BigDecimal orderPrice = orderRepo.getOrderPrice() != null ? orderRepo.getOrderPrice() : BigDecimal.ZERO;
         int orderCount = orderRepo.getOrderCount();
+
         return InfoResponse.builder()
                 .buyPrice(buyPrice)
                 .buyCount(buyCount)
@@ -88,6 +89,7 @@ public class OrderServiceImpl implements OrderService {
                 .orderCount(orderCount)
                 .build();
     }
+
 
     @Override
     public InfoResponseFor getInfoForPeriod(ForPeriod forPeriod) {

@@ -184,6 +184,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             brand,
                             memory,
                             ram,
+                            GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user),
                             rs.getInt("count_sim"),
                             warranty,
                             phoneCount(),
