@@ -20,6 +20,7 @@ dependencies {
 
     // Java mail sender
     implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.apache.commons:commons-email:1.5'
     // fireBase Google
     implementation group: 'com.google.firebase', name: 'firebase-admin', version: '8.1.0'
     // swagger

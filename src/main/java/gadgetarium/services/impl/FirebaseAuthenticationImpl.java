@@ -12,10 +12,13 @@ import gadgetarium.dto.response.SignResponse;
 import gadgetarium.entities.User;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AuthenticationException;
+import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.IllegalArgumentException;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.FirebaseAuthenticationService;
 import jakarta.annotation.PostConstruct;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +26,8 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +43,7 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final JavaMailSender javaMailSender;
+
     @PostConstruct
     void init() throws IOException {
         try {
@@ -119,13 +125,21 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
     }
 
 
-    private void sendEmail(String email, String password) {
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setFrom("GADGETARIUM");
-        mailMessage.setTo(email);
-        mailMessage.setSubject("Ваш новый временный пароль!");
-        mailMessage.setText(password);
-        javaMailSender.send(mailMessage);
+    @Async
+    public void sendEmail(String email, String password) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            String htmlMsg = "<p style=\"font-size: 16px;\">Ваш новый временный пароль:</p> " +
+                             "<p style=\"font-size: 16px; font-weight: bold;\">" + password + "</p>";
+            helper.setText(htmlMsg, true);
+            helper.setTo(email);
+            helper.setSubject("Ваш новый временный пароль!");
+            helper.setFrom("GADGETARIUM <gadgetarium22@gmail.com>");
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new BadRequestException("Не удалось отправить письмо.");
+        }
     }
 }
 

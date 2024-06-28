@@ -15,14 +15,17 @@ import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.mail.EmailException;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Slf4j
@@ -45,6 +48,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
 
         String resetPasswordUrl = "http://localhost:5173/auth/newForgotPassword";
         String resetLink = String.format("%s?token=%s", resetPasswordUrl, token);
+
         sendEmail(email, resetLink);
         log.info("success send to email");
         return HttpResponse.builder()
@@ -64,20 +68,20 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         passwordResetToken.setUser(user);
     }
 
-    private void sendEmail(String email, String resetLink) {
+    @Async
+    public void sendEmail(String email, String resetLink) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper;
         try {
-            helper = new MimeMessageHelper(mimeMessage, true);
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
             String htmlMsg = "<p style=\"font-size: 20px;\">Чтоб изменить пароль, нажмите на эту ссылку:</p> " +
                              "<a href=\"" + resetLink + "\" style=\"font-size: 15px;\">Изменить пароль</a>";
             helper.setText(htmlMsg, true);
             helper.setTo(email);
             helper.setSubject("Забыли пароль!");
-            helper.setFrom("GADGETARIUM");
+            helper.setFrom("GADGETARIUM <gadgetarium22@gmail.com>");
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            e.printStackTrace();
+            throw new BadRequestException("Failed to send email.");
         }
     }
 

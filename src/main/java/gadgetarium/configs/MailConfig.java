@@ -4,10 +4,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.Properties;
+import java.util.concurrent.Executor;
 
 @Configuration
+@EnableAsync
 public class MailConfig {
 
     @Bean
@@ -16,8 +20,8 @@ public class MailConfig {
         mailSender.setHost("smtp.gmail.com");
         mailSender.setPort(587);
 
-        mailSender.setUsername("ntoygonbaev098@gmail.com");
-        mailSender.setPassword("rexu gvod yszc tnhg");
+        mailSender.setUsername("gadgetarium22@gmail.com");
+        mailSender.setPassword("gcom ilti iegg egxq");
 
         Properties props = mailSender.getJavaMailProperties();
         props.put("mail.transport.protocol", "smtp");

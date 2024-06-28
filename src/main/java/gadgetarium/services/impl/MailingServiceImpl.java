@@ -14,17 +14,25 @@ import gadgetarium.repositories.ContactRepository;
 import gadgetarium.repositories.EmailRepository;
 import gadgetarium.repositories.MailingRepository;
 import gadgetarium.services.MailingService;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.HtmlEmail;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.MailAuthenticationException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,47 +44,72 @@ public class MailingServiceImpl implements MailingService {
     private final JavaMailSender javaMailSender;
     private final ContactRepository contactRepo;
 
+    @Async
+    public void sendHtmlEmail(String from, List<String> to, String subject, String htmlMessage) throws EmailException {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        try {
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+            helper.setText(htmlMessage, true);
+            for (String s : to) {
+                helper.setTo(s);
+            }
+            helper.setSubject(subject);
+            helper.setFrom(from);
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new BadRequestException("fail");
+        }
+    }
+
     @Override
     public NewsLetterResponse sendNewsLetter(NewsLetterRequest newsLetterRequest) {
-        if (!newsLetterRequest.endDateOfDiscount().isAfter(newsLetterRequest.startDateOfDiscount()))
-            throw new BadRequestException("End day must be after than start day!");
-        if (newsLetterRequest.startDateOfDiscount().isBefore(LocalDate.now()))
+        if (!newsLetterRequest.endDateOfDiscount().isAfter(newsLetterRequest.startDateOfDiscount())) {
+            throw new BadRequestException("End day must be after the start day!");
+        }
+        if (newsLetterRequest.startDateOfDiscount().isBefore(LocalDate.now())) {
             throw new BadRequestException("Start day must begin from this date or later!");
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        List<EmailAddress> all = emailRepository.findAll();
-        Mailing buildedMailing = Mailing.builder()
+        }
+
+        List<String> allEmails = emailRepository.findAll()
+                .stream()
+                .map(EmailAddress::getEmail)
+                .collect(Collectors.toList());
+
+        Mailing builtMailing = Mailing.builder()
                 .image(newsLetterRequest.image())
                 .title(newsLetterRequest.nameOfNewsLetter())
                 .description(newsLetterRequest.description())
                 .startDate(newsLetterRequest.startDateOfDiscount())
                 .endDate(newsLetterRequest.endDateOfDiscount())
                 .build();
-        mailingRepo.save(buildedMailing);
+
+        mailingRepo.save(builtMailing);
+
         try {
-            for (EmailAddress emailAddress : all) {
-                mailMessage.setFrom("ntoygonbaev098@gmail.com");
-                mailMessage.setTo(emailAddress.getEmail());
-                mailMessage.setSubject("New discounts:");
-                mailMessage.setText("Image: " + newsLetterRequest.image() + "\n" + "Title: " + newsLetterRequest.nameOfNewsLetter() + "\n" + "Description: " + newsLetterRequest.description() + "\n" + "Start date: " + newsLetterRequest.startDateOfDiscount() + "\n" + "End date: " + newsLetterRequest.endDateOfDiscount());
-                javaMailSender.send(mailMessage);
-            }
-        }catch (MailAuthenticationException e){
+            String htmlMessage = "Image: " + newsLetterRequest.image() + "<br>" +
+                                 "Title: " + newsLetterRequest.nameOfNewsLetter() + "<br>" +
+                                 "Description: " + newsLetterRequest.description() + "<br>" +
+                                 "Start date: " + newsLetterRequest.startDateOfDiscount() + "<br>" +
+                                 "End date: " + newsLetterRequest.endDateOfDiscount();
+            sendHtmlEmail("gadgetarium22@gmail.com", allEmails, "New discounts:", htmlMessage);
+        } catch (EmailException e) {
             throw new AuthenticationException(e.getMessage());
         }
+
         return NewsLetterResponse.builder()
-                .message("Successfully send news letter to emails.")
+                .message("Successfully sent newsletter to emails.")
                 .build();
     }
 
     @Override
     public HttpResponse followUs(EmailRequest emailRequest) {
-       boolean b = emailRepository.existsByEmail(emailRequest.email().toLowerCase());
-       if (b) {
-           return HttpResponse.builder()
-                   .status(HttpStatus.OK)
-                   .message("you are already followed!!!")
-                   .build();
-       }
+        boolean b = emailRepository.existsByEmail(emailRequest.email().toLowerCase());
+        if (b) {
+            return HttpResponse.builder()
+                    .status(HttpStatus.OK)
+                    .message("you are already followed!!!")
+                    .build();
+        }
         EmailAddress address = new EmailAddress();
         address.setEmail(emailRequest.email());
         emailRepository.save(address);
