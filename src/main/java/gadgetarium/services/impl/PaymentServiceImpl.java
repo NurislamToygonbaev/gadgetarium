@@ -20,11 +20,19 @@ import gadgetarium.enums.Status;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.OrderRepository;
+import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.PaymentService;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -38,6 +46,8 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepo;
     private final CurrentUser currentUser;
+    private final JavaMailSender javaMailSender;
+    private final UserRepository userRepo;
 
     @Value("${stripe.api}")
     private String stripeKey;
@@ -78,73 +88,61 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public HttpResponse createPayment(Long orderId, String token) {
-        User user = currentUser.get();
+    public HttpResponse createPayment(Long orderId, String token){
         Order order = orderRepo.getOrderById(orderId);
-
-        CompletableFuture<Void> future = CompletableFuture.runAsync(() ->
-                createPaymentIntent(user, token, Long.valueOf(String.valueOf(order.getTotalPrice()))));
-        future.join();
-        return HttpResponse.builder()
-                .status(HttpStatus.OK)
-                .message("")
+        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                .setAmount(Long.parseLong(String.valueOf(order.getTotalPrice())) * 100L)
+                .setCurrency("kgs")
+                .addPaymentMethodType("card")
+                .setDescription("Order ID: " + orderId)
+                .setReceiptEmail(token)
                 .build();
-    }
 
-    private void createPaymentIntent(User user, String token, Long amount){
-        Stripe.apiKey = stripeKey;
-
+        PaymentIntent paymentIntent = null;
         try {
-            CustomerSearchParams params = CustomerSearchParams.builder()
-                    .setQuery("email:\"" + user.getEmail() + "\"")
-                    .build();
-            CustomerSearchResult customers = Customer.search(params);
-
-            List<Customer> customersData = customers.getData();
-
-            PaymentMethodCreateParams paymentMethodCreateParams = PaymentMethodCreateParams
-                    .builder()
-                    .setType(PaymentMethodCreateParams.Type.CARD)
-                    .setBillingDetails(PaymentMethodCreateParams.BillingDetails.builder()
-                            .setEmail(customersData.getFirst().getEmail())
-                            .setName(customersData.getFirst().getName())
-                            .build())
-                    .setCard(PaymentMethodCreateParams.Token.builder()
-                            .setToken(token)
-                            .build())
-                    .build();
-
-            PaymentMethod paymentMethod = PaymentMethod.create(paymentMethodCreateParams);
-
-            PaymentMethodAttachParams attachParams = PaymentMethodAttachParams
-                    .builder()
-                    .setCustomer(customersData.getFirst().getId())
-                    .build();
-            paymentMethod = paymentMethod.attach(attachParams);
-
-            PaymentIntentCreateParams paymentIntentCreateParams = PaymentIntentCreateParams.builder()
-                    .setAmount(amount * 100)
-                    .setPaymentMethod(paymentMethod.getId())
-                    .setCustomer(customersData.getFirst().getId())
-                    .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods
-                            .builder()
-                            .setAllowRedirects(PaymentIntentCreateParams.AutomaticPaymentMethods.AllowRedirects.NEVER)
-                            .setEnabled(true)
-                            .build())
-                    .setCurrency("kgs")
-                    .build();
-
-            PaymentIntent intent = PaymentIntent.create(paymentIntentCreateParams);
-
-        }catch (StripeException e){
-            throw new BadRequestException(e.getMessage());
-        }catch (NoSuchElementException e){
-            throw new NotFoundException("not found");
+            paymentIntent = PaymentIntent.create(params);
+        } catch (StripeException e) {
+            throw new RuntimeException("failed");
         }
+
+        sendEmail(token, paymentIntent.getId());
+
+        return new HttpResponse(HttpStatus.OK, "Payment created successfully and confirmation email sent.");
     }
 
     @Override
-    public HttpResponse confirmPayment(String paymentId) {
-        return null;
+    public HttpResponse confirmPayment(String paymentId){
+        try {
+            PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentId);
+            PaymentIntent updatedPaymentIntent = paymentIntent.confirm();
+
+            if ("succeeded".equals(updatedPaymentIntent.getStatus())) {
+                return new HttpResponse(HttpStatus.OK, "Payment confirmed successfully.");
+            } else {
+                throw new BadRequestException("Payment confirmation failed.,");
+            }
+        }catch (StripeException e){
+            throw new BadRequestException("Payment confirmation failed.,");
+        }
+    }
+
+
+    private void sendEmail(String email, String paymentId) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper;
+        try {
+            helper = new MimeMessageHelper(mimeMessage, true);
+            String htmlMsg = "<div class=\"content\">" +
+                             "                    \"<p>Платеж успешно создан, чтобы подтвердить платёж, перейдите по ссылке:</p>" +
+                             "                    \"<a href=\"http://localhost:8080/api/payment/confirm?paymentId=" + paymentId + "\" class=\"button\">Подтвердить платёж</a>" +
+                             "                    \"</div>\"";
+            helper.setText(htmlMsg, true);
+            helper.setTo(email);
+            helper.setSubject("Забыли пароль!");
+            helper.setFrom("GADGETARIUM");
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 }

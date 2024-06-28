@@ -27,7 +27,7 @@ public class PaymentApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Подтвердение платежа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/confirm/payment")
+    @PostMapping("/confirm")
     public HttpResponse confirmPayment(@RequestParam String paymentId) {
         return paymentService.confirmPayment(paymentId);
     }
