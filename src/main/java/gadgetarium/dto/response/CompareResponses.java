@@ -24,4 +24,7 @@ public class CompareResponses {
     private String ramCompare;
     private int simCompare;
     private String warrantyCompare;
+    private int phoneCount;
+    private int laptopCount;
+    private int watchCount;
 }

@@ -185,7 +185,10 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             memory,
                             ram,
                             rs.getInt("count_sim"),
-                            warranty
+                            warranty,
+                            phoneCount(),
+                            laptopCount(),
+                            watchCount()
                     );
                 });
 
@@ -226,6 +229,65 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
         return compareResponsesList;
     }
 
+    private int phoneCount() {
+        User user = currentUser.get();
+        String sql = "select count(*) from sub_gadgets sg " +
+                     "join gadgets g on sg.gadget_id = g.id " +
+                     "join sub_categories sc on g.sub_category_id = sc.id " +
+                     "right join users_comparison uc on sg.id = uc.comparison_id " +
+                     "join users u on u.id = uc.user_id " +
+                     "join categories c on sc.category_id = c.id " +
+                     "where lower(c.category_name) = 'phone' and " +
+                     "sg.remoteness_status = ? and u.id = ?";
+
+        Integer count = jdbcTemplate.queryForObject(
+                sql,
+                new Object[]{String.valueOf(RemotenessStatus.NOT_REMOTE), user.getId()},
+                Integer.class
+        );
+
+        return count != null ? count : 0;
+    }
+
+    private int laptopCount() {
+        User user = currentUser.get();
+        String sql = "select count(*) from sub_gadgets sg " +
+                     "join gadgets g on sg.gadget_id = g.id " +
+                     "join sub_categories sc on g.sub_category_id = sc.id " +
+                     "right join users_comparison uc on sg.id = uc.comparison_id " +
+                     "join users u on u.id = uc.user_id " +
+                     "join categories c on sc.category_id = c.id " +
+                     "where lower(c.category_name) = 'laptop' and " +
+                     "sg.remoteness_status = ? and u.id = ?";
+
+        Integer count = jdbcTemplate.queryForObject(
+                sql,
+                new Object[]{String.valueOf(RemotenessStatus.NOT_REMOTE), user.getId()},
+                Integer.class
+        );
+
+        return count != null ? count : 0;
+    }
+
+    private int watchCount() {
+        User user = currentUser.get();
+        String sql = "select count(*) from sub_gadgets sg " +
+                     "join gadgets g on sg.gadget_id = g.id " +
+                     "join sub_categories sc on g.sub_category_id = sc.id " +
+                     "right join users_comparison uc on sg.id = uc.comparison_id " +
+                     "join users u on u.id = uc.user_id " +
+                     "join categories c on sc.category_id = c.id " +
+                     "where lower(c.category_name) = 'watch' and " +
+                     "sg.remoteness_status = ? and u.id = ?";
+
+        Integer count = jdbcTemplate.queryForObject(
+                sql,
+                new Object[]{String.valueOf(RemotenessStatus.NOT_REMOTE), user.getId()},
+                Integer.class
+        );
+
+        return count != null ? count : 0;
+    }
 
     private int getOrderInWaitingCount(){
         String sql = "select count(*) from orders o " +

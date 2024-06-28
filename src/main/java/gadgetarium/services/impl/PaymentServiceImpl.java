@@ -1,81 +1,57 @@
 package gadgetarium.services.impl;
 
-import com.paypal.api.payments.*;
-import com.paypal.base.rest.APIContext;
-import com.paypal.base.rest.PayPalRESTException;
+import com.stripe.Stripe;
+import com.stripe.exception.StripeException;
+import com.stripe.model.Customer;
+import com.stripe.model.CustomerSearchResult;
+import com.stripe.model.PaymentIntent;
+import com.stripe.model.PaymentMethod;
+import com.stripe.param.CustomerSearchParams;
+import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.PaymentMethodAttachParams;
+import com.stripe.param.PaymentMethodCreateParams;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
 import gadgetarium.entities.Order;
+import gadgetarium.entities.User;
 import gadgetarium.enums.Payment;
 import gadgetarium.enums.Status;
+import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.OrderRepository;
+import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.PaymentService;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.List;
-import java.util.Locale;
+import java.util.NoSuchElementException;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepo;
-    private final APIContext apiContext;
+    private final CurrentUser currentUser;
+    private final JavaMailSender javaMailSender;
+    private final UserRepository userRepo;
 
-    @Override
-    public com.paypal.api.payments.Payment createPayment(
-            Long orderId,
-            String currency,
-            String method,
-            String intent,
-            String description,
-            String cancelUrl,
-            String successUrl
-            ) throws PayPalRESTException {
-        Order order = orderRepo.getOrderById(orderId);
-        Amount amount = new Amount();
-        amount.setCurrency(currency);
-        amount.setTotal(String.format(Locale.caseFoldLanguageTag(currency), "%.2f", order.getTotalPrice()));
+    @Value("${stripe.api}")
+    private String stripeKey;
 
-        Transaction transaction = new Transaction();
-        transaction.setDescription(description);
-        transaction.setAmount(amount);
-
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(transaction);
-
-        Payer payer = new Payer();
-        payer.setPaymentMethod(method);
-
-        com.paypal.api.payments.Payment payment = new com.paypal.api.payments.Payment();
-        payment.setIntent(intent);
-        payment.setPayer(payer);
-        payment.setTransactions(transactions);
-
-        RedirectUrls redirectUrls = new RedirectUrls();
-        redirectUrls.setCancelUrl(cancelUrl);
-        redirectUrls.setReturnUrl(successUrl);
-
-        payment.setRedirectUrls(redirectUrls);
-
-        return payment.create(apiContext);
-    }
-
-    @Override
-    public com.paypal.api.payments.Payment executePayment(String paymentId, String payerId) throws PayPalRESTException {
-        com.paypal.api.payments.Payment payment = new com.paypal.api.payments.Payment();
-        payment.setId(paymentId);
-
-        PaymentExecution paymentExecution = new PaymentExecution();
-        paymentExecution.setPayerId(payerId);
-
-        return payment.execute(apiContext, paymentExecution);
-    }
 
     @Override
     @Transactional
@@ -109,5 +85,64 @@ public class PaymentServiceImpl implements PaymentService {
                 .createAd(String.valueOf(order.getCreatedAt()))
                 .email(order.getUser().getEmail())
                 .build();
+    }
+
+    @Override
+    public HttpResponse createPayment(Long orderId, String token){
+        Order order = orderRepo.getOrderById(orderId);
+        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
+                .setAmount(Long.parseLong(String.valueOf(order.getTotalPrice())) * 100L)
+                .setCurrency("kgs")
+                .addPaymentMethodType("card")
+                .setDescription("Order ID: " + orderId)
+                .setReceiptEmail(token)
+                .build();
+
+        PaymentIntent paymentIntent = null;
+        try {
+            paymentIntent = PaymentIntent.create(params);
+        } catch (StripeException e) {
+            throw new RuntimeException("failed");
+        }
+
+        sendEmail(token, paymentIntent.getId());
+
+        return new HttpResponse(HttpStatus.OK, "Payment created successfully and confirmation email sent.");
+    }
+
+    @Override
+    public HttpResponse confirmPayment(String paymentId){
+        try {
+            PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentId);
+            PaymentIntent updatedPaymentIntent = paymentIntent.confirm();
+
+            if ("succeeded".equals(updatedPaymentIntent.getStatus())) {
+                return new HttpResponse(HttpStatus.OK, "Payment confirmed successfully.");
+            } else {
+                throw new BadRequestException("Payment confirmation failed.,");
+            }
+        }catch (StripeException e){
+            throw new BadRequestException("Payment confirmation failed.,");
+        }
+    }
+
+
+    private void sendEmail(String email, String paymentId) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper;
+        try {
+            helper = new MimeMessageHelper(mimeMessage, true);
+            String htmlMsg = "<div class=\"content\">" +
+                             "                    \"<p>Платеж успешно создан, чтобы подтвердить платёж, перейдите по ссылке:</p>" +
+                             "                    \"<a href=\"http://localhost:8080/api/payment/confirm?paymentId=" + paymentId + "\" class=\"button\">Подтвердить платёж</a>" +
+                             "                    \"</div>\"";
+            helper.setText(htmlMsg, true);
+            helper.setTo(email);
+            helper.setSubject("Забыли пароль!");
+            helper.setFrom("GADGETARIUM");
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new NotFoundException(e.getMessage());
+        }
     }
 }
