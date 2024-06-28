@@ -1,4 +1,4 @@
-package gadgetarium.configs;
+package gadgetarium.configs.mailconfigs;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
