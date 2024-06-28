@@ -7,6 +7,6 @@ public class EmailValidator implements ConstraintValidator<EmailValidation, Stri
 
     @Override
     public boolean isValid(String email, ConstraintValidatorContext constraintValidatorContext) {
-        return email.contains("@") && email.endsWith(".com");
+        return email.contains("@");
     }
 }
