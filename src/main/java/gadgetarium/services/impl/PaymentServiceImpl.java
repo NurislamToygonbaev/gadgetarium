@@ -114,11 +114,13 @@ public class PaymentServiceImpl implements PaymentService {
             PaymentIntentCreateParams paymentIntentCreateParams = PaymentIntentCreateParams.builder()
                     .setAmount(amountInCents)
                     .setPaymentMethod(paymentMethod.getId())
-                    .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                    .setAutomaticPaymentMethods(PaymentIntentCreateParams.
+                            AutomaticPaymentMethods
+                            .builder()
                             .setEnabled(true)
+                            .putExtraParam("allow_redirects", "never")
                             .build())
                     .setCurrency("kgs")
-                    .setReceiptEmail(receiptEmail)
                     .build();
 
             intent = PaymentIntent.create(paymentIntentCreateParams);
@@ -135,28 +137,30 @@ public class PaymentServiceImpl implements PaymentService {
 
     private void sendEmail(String paymentId, String email) {
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper;
         try {
-            helper = new MimeMessageHelper(mimeMessage, true);
-
-            String htmlMsg = "<div class=\"content\">" +
-                             "<p>Платеж успешно создан, чтобы подтвердить платёж, перейдите по ссылке:</p>" +
-                             "<a href=\"http://localhost:8080/api/payment/confirm?paymentId=" +
-                             URLEncoder.encode(paymentId, StandardCharsets.UTF_8) +
-                             "\" class=\"button\">Подтвердить платёж</a>" +
-                             "</div>";
-
-            helper.setText(htmlMsg, true);
+            MimeMessageHelper helper = getMimeMessageHelper(paymentId, mimeMessage);
             helper.setTo(email);
             helper.setSubject("Подтверждение платежа!");
             helper.setFrom("GADGETARIUM <gadgetarium22@gmail.com>");
+
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
             throw new BadRequestException("Failed to send email: " + e.getMessage());
         }
     }
 
+    private static MimeMessageHelper getMimeMessageHelper(String paymentId, MimeMessage mimeMessage) throws MessagingException {
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
+        String htmlMsg = "<div class=\"content\">" +
+                         "<p style=\"font-size: 20px;\">Платеж успешно создан, чтобы подтвердить платёж, перейдите по ссылке:</p>" +
+                         "<a href=\"http://localhost:8080/api/payment/confirm?paymentId=" + paymentId +
+                         "\" class=\"button\" style=\"font-size: 15px;\">Подтвердить платёж</a>" +
+                         "</div>";
+
+        helper.setText(htmlMsg, true);
+        return helper;
+    }
 
 
     @Override
@@ -164,19 +168,14 @@ public class PaymentServiceImpl implements PaymentService {
         if (paymentId == null || paymentId.isEmpty()) {
             throw new BadRequestException("Payment ID cannot be null or empty");
         }
-
         try {
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentId);
-            PaymentIntent updatedPaymentIntent = paymentIntent.confirm();
-
-            if ("succeeded".equals(updatedPaymentIntent.getStatus())) {
-                return new HttpResponse(HttpStatus.OK, "Payment confirmed successfully.");
-            } else {
-                throw new BadRequestException("Payment confirmation failed. Status: " + updatedPaymentIntent.getStatus());
-            }
+            paymentIntent.confirm();
         } catch (StripeException e) {
             throw new BadRequestException("Payment confirmation failed: " + e.getMessage());
         }
+
+        return new HttpResponse(HttpStatus.OK, "Payment confirmed successfully.");
     }
 
 
