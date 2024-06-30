@@ -5,10 +5,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentMethod;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodCreateParams;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.OrderIdsResponse;
-import gadgetarium.dto.response.OrderImageResponse;
-import gadgetarium.dto.response.OrderSuccessResponse;
+import gadgetarium.dto.response.*;
 import gadgetarium.entities.Order;
 import gadgetarium.entities.User;
 import gadgetarium.enums.Payment;
@@ -72,7 +69,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public HttpResponse createPayment(Long orderId, String token) {
+    public PaymentIdResponse createPayment(Long orderId, String token) {
         Order order = orderRepo.getOrderById(orderId);
         if (order == null) {
             throw new BadRequestException("Order not found");
@@ -122,7 +119,10 @@ public class PaymentServiceImpl implements PaymentService {
             throw new RuntimeException("Payment creation failed", e);
         }
 
-        return new HttpResponse(HttpStatus.OK, "Payment created successfully. Payment ID: " + intent.getId());
+        return PaymentIdResponse.builder()
+                .paymentId(intent.getId())
+                .httpResponse(new HttpResponse(HttpStatus.OK, "Payment created successfully."))
+                .build();
     }
 
 

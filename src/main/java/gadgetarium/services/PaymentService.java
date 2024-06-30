@@ -1,10 +1,7 @@
 package gadgetarium.services;
 
 import com.stripe.exception.StripeException;
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.OrderIdsResponse;
-import gadgetarium.dto.response.OrderImageResponse;
-import gadgetarium.dto.response.OrderSuccessResponse;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.Payment;
 
 public interface PaymentService {
@@ -15,7 +12,7 @@ public interface PaymentService {
 
     OrderSuccessResponse orderSuccess(Long orderId);
 
-    HttpResponse createPayment(Long orderId, String token);
+    PaymentIdResponse createPayment(Long orderId, String token);
 
     HttpResponse confirmPayment(String paymentId);
 

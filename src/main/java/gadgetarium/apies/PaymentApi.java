@@ -1,9 +1,6 @@
 package gadgetarium.apies;
 
-import gadgetarium.dto.response.HttpResponse;
-import gadgetarium.dto.response.OrderIdsResponse;
-import gadgetarium.dto.response.OrderImageResponse;
-import gadgetarium.dto.response.OrderSuccessResponse;
+import gadgetarium.dto.response.*;
 import gadgetarium.enums.Payment;
 import gadgetarium.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,8 +18,8 @@ public class PaymentApi {
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "Создание платежа", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/create/{orderId}")
-    public HttpResponse createPayment(@RequestParam String token,
-                                      @PathVariable Long orderId) {
+    public PaymentIdResponse createPayment(@RequestParam String token,
+                                           @PathVariable Long orderId) {
         return paymentService.createPayment(orderId, token);
     }
 
