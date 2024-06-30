@@ -116,7 +116,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> getGadgetsFields(Long id);
 
 
-    @Query("select o.id from Order o where o.status is null and o.user.id = :userId")
-    List<Long> findLastByStatusIsNullAndUserId(Long userId);
+    @Query("select max(o.id) from Order o where o.status is null and o.user.id = :userId")
+    Long findLastByStatusIsNullAndUserId(Long userId);
 
 }

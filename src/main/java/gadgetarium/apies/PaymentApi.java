@@ -43,7 +43,7 @@ public class PaymentApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "получение нового заказа Айди без статуса", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @PostMapping("/get-new")
+    @GetMapping("/get-new")
     public OrderIdsResponse getNew(){
         return paymentService.getNew();
     }

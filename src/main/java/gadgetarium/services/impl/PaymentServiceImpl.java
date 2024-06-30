@@ -174,10 +174,8 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public OrderIdsResponse getNew() {
         User user = currentUser.get();
-        List<Long> last = orderRepo.findLastByStatusIsNullAndUserId(user.getId());
-        last.sort(Comparator.comparingLong(Long::longValue).reversed());
         return OrderIdsResponse.builder()
-                .orderId(last.getFirst() > 0 ? last.getFirst() : 0)
+                .orderId(orderRepo.findLastByStatusIsNullAndUserId(user.getId()))
                 .build();
     }
 }
