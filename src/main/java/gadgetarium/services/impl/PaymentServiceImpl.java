@@ -26,6 +26,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -172,6 +174,10 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public OrderIdsResponse getNew() {
         User user = currentUser.get();
-        return orderRepo.findFirstByStatusIsNullAndUserId(user.getId());
+        List<Long> last = orderRepo.findLastByStatusIsNullAndUserId(user.getId());
+        last.sort(Comparator.comparingLong(Long::longValue).reversed());
+        return OrderIdsResponse.builder()
+                .orderId(last.getFirst() > 0 ? last.getFirst() : 0)
+                .build();
     }
 }

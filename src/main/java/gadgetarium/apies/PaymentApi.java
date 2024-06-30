@@ -41,7 +41,7 @@ public class PaymentApi {
         return paymentService.typeOrder(orderId, payment);
     }
 
-//    @PreAuthorize("hasAuthority('USER')")
+    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "получение нового заказа Айди без статуса", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/get-new")
     public OrderIdsResponse getNew(){

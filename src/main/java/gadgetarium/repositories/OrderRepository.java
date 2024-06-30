@@ -116,7 +116,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> getGadgetsFields(Long id);
 
 
-    @Query("select new gadgetarium.dto.response.OrderIdsResponse(o.id) from Order o where o.status is null and o.user.id = :userId")
-    OrderIdsResponse findFirstByStatusIsNullAndUserId(Long userId);
+    @Query("select o.id from Order o where o.status is null and o.user.id = :userId")
+    List<Long> findLastByStatusIsNullAndUserId(Long userId);
 
 }
