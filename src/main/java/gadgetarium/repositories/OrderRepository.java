@@ -115,4 +115,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Object[]> getGadgetsFields(Long id);
 
 
+    @Query("select (o.id) from Order o where o.status is null ")
+    Long getOrderByStatus();
 }
