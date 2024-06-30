@@ -1,6 +1,7 @@
 package gadgetarium.apies;
 
 import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.OrderIdsResponse;
 import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
 import gadgetarium.enums.Payment;
@@ -40,10 +41,10 @@ public class PaymentApi {
         return paymentService.typeOrder(orderId, payment);
     }
 
-    @PreAuthorize("hasAuthority('USER')")
+//    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "получение нового заказа Айди без статуса", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/get-new")
-    public Long getNew(){
+    public OrderIdsResponse getNew(){
         return paymentService.getNew();
     }
 

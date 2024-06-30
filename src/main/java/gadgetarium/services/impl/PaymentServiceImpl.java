@@ -1,14 +1,12 @@
 package gadgetarium.services.impl;
 
 import com.stripe.exception.StripeException;
-import com.stripe.model.Customer;
-import com.stripe.model.CustomerSearchResult;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentMethod;
 import com.stripe.param.PaymentIntentCreateParams;
-import com.stripe.param.PaymentMethodAttachParams;
 import com.stripe.param.PaymentMethodCreateParams;
 import gadgetarium.dto.response.HttpResponse;
+import gadgetarium.dto.response.OrderIdsResponse;
 import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
 import gadgetarium.entities.Order;
@@ -16,26 +14,18 @@ import gadgetarium.entities.User;
 import gadgetarium.enums.Payment;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.BadRequestException;
-import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.OrderRepository;
-import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.PaymentService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
-import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -179,9 +169,9 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 
-
     @Override
-    public Long getNew() {
-        return orderRepo.getOrderByStatus();
+    public OrderIdsResponse getNew() {
+        User user = currentUser.get();
+        return orderRepo.findFirstByStatusIsNullAndUserId(user.getId());
     }
 }
