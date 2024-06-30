@@ -41,6 +41,13 @@ public class PaymentApi {
     }
 
     @PreAuthorize("hasAuthority('USER')")
+    @Operation(summary = "получение нового заказа Айди без статуса", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/get-new")
+    public Long getNew(){
+        return paymentService.getNew();
+    }
+
+    @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "образ заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/order/{orderId}")
     public OrderImageResponse orderImage(@PathVariable Long orderId){

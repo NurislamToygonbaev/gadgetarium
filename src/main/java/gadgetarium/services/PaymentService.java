@@ -1,5 +1,6 @@
 package gadgetarium.services;
 
+import com.stripe.exception.StripeException;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.OrderImageResponse;
 import gadgetarium.dto.response.OrderSuccessResponse;
@@ -16,4 +17,7 @@ public interface PaymentService {
     HttpResponse createPayment(Long orderId, String token);
 
     HttpResponse confirmPayment(String paymentId);
+
+    Long getNew();
+
 }

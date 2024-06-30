@@ -1,4 +1,4 @@
-package gadgetarium.configs.stripesonfigs;
+package gadgetarium.configs.stripeсonfigs;
 
 import com.stripe.Stripe;
 import org.springframework.beans.factory.annotation.Value;

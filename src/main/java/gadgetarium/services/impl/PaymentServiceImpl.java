@@ -1,12 +1,10 @@
 package gadgetarium.services.impl;
 
-import com.stripe.Stripe;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Customer;
 import com.stripe.model.CustomerSearchResult;
 import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentMethod;
-import com.stripe.param.CustomerSearchParams;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodAttachParams;
 import com.stripe.param.PaymentMethodCreateParams;
@@ -22,10 +20,7 @@ import gadgetarium.exceptions.NotFoundException;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.UserRepository;
 import gadgetarium.services.PaymentService;
-import jakarta.mail.Message;
 import jakarta.mail.MessagingException;
-import jakarta.mail.Session;
-import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -35,10 +30,12 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.concurrent.CompletableFuture;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -47,11 +44,6 @@ public class PaymentServiceImpl implements PaymentService {
     private final OrderRepository orderRepo;
     private final CurrentUser currentUser;
     private final JavaMailSender javaMailSender;
-    private final UserRepository userRepo;
-
-    @Value("${stripe.api}")
-    private String stripeKey;
-
 
     @Override
     @Transactional
@@ -60,7 +52,7 @@ public class PaymentServiceImpl implements PaymentService {
         order.setPayment(payment);
         orderRepo.save(order);
         return HttpResponse.builder().status(HttpStatus.OK)
-                .message("success changed order with ID: "+order.getId()).build();
+                .message("success changed order with ID: " + order.getId()).build();
     }
 
     @Override
@@ -88,30 +80,91 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public HttpResponse createPayment(Long orderId, String token){
+    public HttpResponse createPayment(Long orderId, String token) {
         Order order = orderRepo.getOrderById(orderId);
-        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
-                .setAmount(Long.parseLong(String.valueOf(order.getTotalPrice())) * 100L)
-                .setCurrency("kgs")
-                .addPaymentMethodType("card")
-                .setDescription("Order ID: " + orderId)
-                .setReceiptEmail(token)
-                .build();
-
-        PaymentIntent paymentIntent = null;
-        try {
-            paymentIntent = PaymentIntent.create(params);
-        } catch (StripeException e) {
-            throw new RuntimeException("failed");
+        if (order == null) {
+            throw new BadRequestException("Order not found");
         }
 
-        sendEmail(token, paymentIntent.getId());
+        if (!Payment.PAYMENT_BY_CARD.equals(order.getPayment())) {
+            throw new BadRequestException("Incorrect payment type");
+        }
 
-        return new HttpResponse(HttpStatus.OK, "Payment created successfully and confirmation email sent.");
+        BigDecimal totalPrice = order.getTotalPrice();
+        if (totalPrice == null) {
+            throw new BadRequestException("Total price not found");
+        }
+
+        long amountInCents = totalPrice.multiply(new BigDecimal(100)).longValue();
+        String receiptEmail = order.getUser().getEmail();
+
+        if (receiptEmail == null || receiptEmail.isEmpty()) {
+            throw new BadRequestException("Email not found for user");
+        }
+
+        PaymentMethodCreateParams paymentMethodParams = PaymentMethodCreateParams.builder()
+                .setType(PaymentMethodCreateParams.Type.CARD)
+                .setCard(PaymentMethodCreateParams.Token.builder().setToken(token).build())
+                .build();
+
+        PaymentIntent intent;
+        try {
+            PaymentMethod paymentMethod = PaymentMethod.create(paymentMethodParams);
+
+            PaymentIntentCreateParams paymentIntentCreateParams = PaymentIntentCreateParams.builder()
+                    .setAmount(amountInCents)
+                    .setPaymentMethod(paymentMethod.getId())
+                    .setAutomaticPaymentMethods(PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
+                            .setEnabled(true)
+                            .build())
+                    .setCurrency("kgs")
+                    .setReceiptEmail(receiptEmail)
+                    .build();
+
+            intent = PaymentIntent.create(paymentIntentCreateParams);
+
+            sendEmail(intent.getId(), receiptEmail);
+        } catch (StripeException e) {
+            throw new RuntimeException("Payment creation failed", e);
+        }
+
+        return new HttpResponse(HttpStatus.OK, "Payment created successfully. Payment ID: " + intent.getId());
     }
 
+
+
+    private void sendEmail(String paymentId, String email) {
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper helper;
+        try {
+            helper = new MimeMessageHelper(mimeMessage, true);
+
+            String htmlMsg = "<div class=\"content\">" +
+                             "<p>Платеж успешно создан, чтобы подтвердить платёж, перейдите по ссылке:</p>" +
+                             "<a href=\"http://localhost:8080/api/payment/confirm?paymentId=" +
+                             URLEncoder.encode(paymentId, StandardCharsets.UTF_8) +
+                             "\" class=\"button\">Подтвердить платёж</a>" +
+                             "</div>";
+
+            helper.setText(htmlMsg, true);
+            helper.setTo(email);
+            helper.setSubject("Подтверждение платежа!");
+            helper.setFrom("GADGETARIUM <gadgetarium22@gmail.com>");
+            javaMailSender.send(mimeMessage);
+        } catch (MessagingException e) {
+            throw new BadRequestException("Failed to send email: " + e.getMessage());
+        }
+    }
+
+
+
+
     @Override
-    public HttpResponse confirmPayment(String paymentId){
+    public HttpResponse confirmPayment(String paymentId) {
+        if (paymentId == null || paymentId.isEmpty()) {
+            throw new BadRequestException("Payment ID cannot be null or empty");
+        }
+
         try {
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentId);
             PaymentIntent updatedPaymentIntent = paymentIntent.confirm();
@@ -119,30 +172,17 @@ public class PaymentServiceImpl implements PaymentService {
             if ("succeeded".equals(updatedPaymentIntent.getStatus())) {
                 return new HttpResponse(HttpStatus.OK, "Payment confirmed successfully.");
             } else {
-                throw new BadRequestException("Payment confirmation failed.,");
+                throw new BadRequestException("Payment confirmation failed. Status: " + updatedPaymentIntent.getStatus());
             }
-        }catch (StripeException e){
-            throw new BadRequestException("Payment confirmation failed.,");
+        } catch (StripeException e) {
+            throw new BadRequestException("Payment confirmation failed: " + e.getMessage());
         }
     }
 
 
-    private void sendEmail(String email, String paymentId) {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        MimeMessageHelper helper;
-        try {
-            helper = new MimeMessageHelper(mimeMessage, true);
-            String htmlMsg = "<div class=\"content\">" +
-                             "                    \"<p>Платеж успешно создан, чтобы подтвердить платёж, перейдите по ссылке:</p>" +
-                             "                    \"<a href=\"http://localhost:8080/api/payment/confirm?paymentId=" + paymentId + "\" class=\"button\">Подтвердить платёж</a>" +
-                             "                    \"</div>\"";
-            helper.setText(htmlMsg, true);
-            helper.setTo(email);
-            helper.setSubject("Забыли пароль!");
-            helper.setFrom("GADGETARIUM");
-            javaMailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new NotFoundException(e.getMessage());
-        }
+
+    @Override
+    public Long getNew() {
+        return orderRepo.getOrderByStatus();
     }
 }
