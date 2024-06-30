@@ -956,28 +956,3 @@ VALUES
     (71, '0.99 Вт/кг', 'Уровень излучения SAR для головы'),
     (71, '0.98 Вт/кг', 'Уровень излучения SAR для тела'),
     (71, '- Барометр - Датчик приближения - Гироскоп - Акселерометр - Датчик света - Компас - Сканер распознавания лица', 'Сенсоры и датчики');
-insert into banners(id)
-values (1),
-       (2),
-       (3),
-       (4),
-       (5),
-       (6),
-       (7),
-       (8),
-       (9),
-       (10);
-
-insert into banner_images(banner_id, images)
-values (1, 'https://img.freepik.com/vector-premium/conjunto-publicacion-redes-sociales-plantilla-coleccion-gadgets_155157-162.jpg'),
-       (2, 'https://img.freepik.com/free-psd/black-friday-super-sale-facebook-cover-template_106176-1544.jpg'),
-       (3, 'https://img.freepik.com/free-vector/flat-black-friday-twitter-cover-template_23-2149103019.jpg'),
-       (4, 'https://invent.irujul.com/theme/default/img/npi/npi-20/po_iphone_2020.png'),
-       (5, 'https://www.startech.com.bd/image/cache/catalog/blog/2023/apple-iphone-15-leak/apple-iphone-15-leak-banner-740x350.jpg'),
-       (6, 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTAC0xfcwCnFdvSmEy1bf0OSvm2f1K4ERjCkQ&s'),
-       (7, 'https://i.pinimg.com/originals/ea/bd/aa/eabdaadef69a169117a2900e77bfde9f.jpg'),
-       (8, 'https://www.ptcshop.com.au/cdn/shop/collections/Collection-banner_8551fbc7-79ed-4316-947b-ccb20913ea10.jpg?v=1675302791&width=2048'),
-       (9, 'https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/a0c9b737352801.573d3df29868a.jpg'),
-       (10, 'https://cdn5.f-cdn.com/contestentries/1763465/15747646/5ea19c2d19506_thumb900.jpg');
-
-

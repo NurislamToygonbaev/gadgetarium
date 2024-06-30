@@ -42,7 +42,7 @@ public class PaymentApi {
 
     @PreAuthorize("hasAuthority('USER')")
     @Operation(summary = "получение нового заказа Айди без статуса", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/get-new")
+    @PostMapping("/get-new")
     public Long getNew(){
         return paymentService.getNew();
     }
