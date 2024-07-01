@@ -52,4 +52,9 @@ public class Order {
         this.subGadgets = new ArrayList<>();
         this.createdAt = LocalDate.now();
     }
+
+    public void addSubGadget(SubGadget subGadget) {
+        if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
+        this.subGadgets.add(subGadget);
+    }
 }

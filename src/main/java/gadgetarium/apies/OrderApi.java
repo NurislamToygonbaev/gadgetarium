@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -85,8 +86,10 @@ public class OrderApi {
     @PostMapping
     public HttpResponse placingAnOrder(@RequestParam List<Long> subGadgetId,
                                        @RequestParam boolean deliveryType,
+                                       @RequestParam BigDecimal price,
+                                       @RequestParam(required = false, defaultValue = "0") BigDecimal discountPrice,
                                        @RequestBody @Valid PersonalDataRequest personalDataRequest){
-        return orderService.placingAnOrder(subGadgetId, deliveryType, personalDataRequest);
+        return orderService.placingAnOrder(subGadgetId, deliveryType, price, discountPrice, personalDataRequest);
     }
 
     @PreAuthorize("hasAnyAuthority('USER')")

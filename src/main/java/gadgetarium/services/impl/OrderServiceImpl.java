@@ -27,7 +27,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -166,7 +165,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public HttpResponse placingAnOrder(List<Long> subGadgetId, boolean orderType, PersonalDataRequest personalDataRequest) {
+    public HttpResponse placingAnOrder(List<Long> subGadgetId, boolean orderType, BigDecimal price, BigDecimal discountPrice, PersonalDataRequest personalDataRequest) {
         if (subGadgetId == null || personalDataRequest == null) {
             throw new IllegalArgumentException("SubGadget ID list and personal data request must not be null");
         }
@@ -183,26 +182,6 @@ public class OrderServiceImpl implements OrderService {
         orderRepo.save(order);
         long orderNumber = ThreadLocalRandom.current().nextLong(100000, 1000000);
 
-        BigDecimal totalSum = BigDecimal.ZERO;
-        BigDecimal totalDiscount = BigDecimal.ZERO;
-
-        List<SubGadget> subGadgets = new ArrayList<>();
-        for (Long gadgetId : subGadgetId) {
-            SubGadget subGadget = subGadgetRepo.getByID(gadgetId);
-            BigDecimal price = subGadget.getPrice();
-            BigDecimal discount = BigDecimal.ZERO;
-
-            if (subGadget.getGadget().getDiscount() != null) {
-                int percent = subGadget.getGadget().getDiscount().getPercent();
-                discount = price.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            }
-
-            totalSum = totalSum.add(price);
-            totalDiscount = totalDiscount.add(discount);
-            subGadgets.add(subGadget);
-        }
-
-        BigDecimal totalPriceWithDiscount = totalSum.subtract(totalDiscount);
         user.setFirstName(personalDataRequest.firstName());
         user.setLastName(personalDataRequest.lastName());
         user.setEmail(userEmail);
@@ -210,23 +189,27 @@ public class OrderServiceImpl implements OrderService {
 
         if (orderType) {
             order.setTypeOrder(true);
-            order.setTotalPrice(totalPriceWithDiscount);
+            order.setTotalPrice(price);
         } else {
             order.setTypeOrder(false);
             user.setAddress(personalDataRequest.deliveryAddress());
 
-            if (FREE_DELIVERY_THRESHOLD.compareTo(totalPriceWithDiscount) >= 0) {
-                totalPriceWithDiscount = totalPriceWithDiscount.add(DELIVERY_CHARGE);
+            if (FREE_DELIVERY_THRESHOLD.compareTo(price) >= 0) {
+                price = price.add(DELIVERY_CHARGE);
             }
-            order.setTotalPrice(totalPriceWithDiscount);
+            order.setTotalPrice(price);
         }
 
-        order.setDiscountPrice(totalDiscount);
+        order.setDiscountPrice(discountPrice);
         order.setNumber(orderNumber);
 
         order.setUser(user);
         user.addOrder(order);
-        order.getSubGadgets().addAll(subGadgets);
+
+        for (Long aLong : subGadgetId) {
+            SubGadget subGadget = subGadgetRepo.getByID(aLong);
+            order.addSubGadget(subGadget);
+        }
 
         return HttpResponse
                 .builder()

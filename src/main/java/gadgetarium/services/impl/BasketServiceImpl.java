@@ -119,10 +119,9 @@ public class BasketServiceImpl implements BasketService {
 
                 BigDecimal price = subGadget.getPrice();
                 BigDecimal priceWithDiscount = GadgetServiceImpl.calculatePrice(subGadget);
-                BigDecimal discount = price.subtract(priceWithDiscount);
 
                 BigDecimal totalItemPrice = price.multiply(BigDecimal.valueOf(quantity));
-                BigDecimal totalItemDiscount = discount.multiply(BigDecimal.valueOf(quantity));
+                BigDecimal totalItemDiscount = priceWithDiscount.multiply(BigDecimal.valueOf(quantity));
                 BigDecimal totalItemPriceWithDiscount = totalItemPrice.subtract(totalItemDiscount);
 
                 totalDiscount = totalDiscount.add(totalItemDiscount);
@@ -133,9 +132,9 @@ public class BasketServiceImpl implements BasketService {
 
         return GetBasketAmounts.builder()
                 .quantity(count)
-                .discountPrice(totalDiscount)
+                .discountPrice(totalPriceWithDiscount)
                 .price(totalPrice)
-                .currentPrice(totalPriceWithDiscount)
+                .currentPrice(totalDiscount)
                 .build();
     }
 

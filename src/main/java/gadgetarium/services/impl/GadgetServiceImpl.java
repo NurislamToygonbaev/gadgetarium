@@ -48,15 +48,14 @@ public class GadgetServiceImpl implements GadgetService {
 
     public static BigDecimal calculatePrice(SubGadget subGadget) {
         BigDecimal currentPrice = subGadget.getPrice();
-        BigDecimal discountedPrice = currentPrice;
 
         if (subGadget.getGadget().getDiscount() != null) {
             int percent = subGadget.getGadget().getDiscount().getPercent();
             BigDecimal discountAmount = currentPrice.multiply(BigDecimal.valueOf(percent)).divide(BigDecimal.valueOf(100));
-            discountedPrice = currentPrice.subtract(discountAmount);
+            currentPrice = currentPrice.subtract(discountAmount);
         }
 
-        return discountedPrice;
+        return currentPrice;
     }
 
     @Override
@@ -83,6 +82,7 @@ public class GadgetServiceImpl implements GadgetService {
 
         for (SubGadget subGadget : viewed) {
             responses.add(new ViewedProductsResponse(
+                    subGadget.getGadget().getId(),
                     subGadget.getId(),
                     subGadget.getGadget().getDiscount().getPercent(),
                     subGadget.getImages().getFirst(),

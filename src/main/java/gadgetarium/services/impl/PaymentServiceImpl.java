@@ -7,23 +7,19 @@ import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodCreateParams;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.Order;
+import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.Payment;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.OrderRepository;
 import gadgetarium.services.PaymentService;
-import jakarta.mail.MessagingException;
-import jakarta.mail.internet.MimeMessage;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -32,7 +28,6 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepo;
     private final CurrentUser currentUser;
-    private final JavaMailSender javaMailSender;
 
     @Override
     @Transactional
@@ -113,8 +108,6 @@ public class PaymentServiceImpl implements PaymentService {
                     .build();
 
             intent = PaymentIntent.create(paymentIntentCreateParams);
-
-            sendEmail(intent.getId(), receiptEmail);
         } catch (StripeException e) {
             throw new RuntimeException("Payment creation failed", e);
         }
@@ -123,35 +116,6 @@ public class PaymentServiceImpl implements PaymentService {
                 .paymentId(intent.getId())
                 .httpResponse(new HttpResponse(HttpStatus.OK, "Payment created successfully."))
                 .build();
-    }
-
-
-
-    private void sendEmail(String paymentId, String email) {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        try {
-            MimeMessageHelper helper = getMimeMessageHelper(paymentId, mimeMessage);
-            helper.setTo(email);
-            helper.setSubject("Подтверждение платежа!");
-            helper.setFrom("GADGETARIUM <gadgetarium22@gmail.com>");
-
-            javaMailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new BadRequestException("Failed to send email: " + e.getMessage());
-        }
-    }
-
-    private static MimeMessageHelper getMimeMessageHelper(String paymentId, MimeMessage mimeMessage) throws MessagingException {
-        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-
-        String htmlMsg = "<div class=\"content\">" +
-                         "<p style=\"font-size: 20px;\">Платеж успешно создан, чтобы подтвердить платёж, перейдите по ссылке:</p>" +
-                         "<a href=\"http://localhost:8080/api/payment/confirm?paymentId=" + paymentId +
-                         "\" class=\"button\" style=\"font-size: 15px;\">Подтвердить платёж</a>" +
-                         "</div>";
-
-        helper.setText(htmlMsg, true);
-        return helper;
     }
 
 

@@ -6,7 +6,8 @@ import java.math.BigDecimal;
 
 @Builder
 public record ViewedProductsResponse(
-        Long id,
+        Long gadgetId,
+        Long subGadgetId,
         int discount,
         String image,
         String nameOfGadget,
