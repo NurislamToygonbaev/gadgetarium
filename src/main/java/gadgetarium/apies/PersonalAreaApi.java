@@ -23,6 +23,7 @@ import java.util.List;
 public class PersonalAreaApi {
 
     private final OrderService orderService;
+
     @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть весь истории заказов.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping
@@ -57,12 +58,4 @@ public class PersonalAreaApi {
     public HttpResponse changePassword(@RequestBody @Valid ChangePasswordRequest changePasswordRequest){
         return orderService.changePassword(changePasswordRequest);
     }
-
-    @PreAuthorize("hasAnyAuthority({'USER'})")
-    @Operation(summary = "Просмотр профиля.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
-    @GetMapping("/get-profile")
-    public UserProfileResponse findUserProfile(){
-        return orderService.findUserProfile();
-    }
-
 }

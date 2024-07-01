@@ -88,6 +88,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                            """,
                 new Object[]{limit, offset},
                 (rs, rowNum) -> {
+                    String statusInRussian = Status.toRussian(rs.getString("status"));
                     return new OrderResponse(
                             rs.getLong("id"),
                             rs.getString("fullName"),
@@ -96,7 +97,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             rs.getInt("totalGadgets"),
                             rs.getBigDecimal("total_price"),
                             rs.getBoolean("type_order"),
-                            rs.getString("status")
+                            statusInRussian
                     );
                 });
         return OrderPagination.builder()

@@ -57,7 +57,7 @@ public class OrderApi {
     @PatchMapping("/{orderId}")
     public HttpResponse changeStatus(@PathVariable Long orderId,
                                      @RequestParam Status status){
-        return orderService.changeStatusOfOrder(orderId, status);
+        return orderService.changeStatusOfOrder(orderId, status.name());
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

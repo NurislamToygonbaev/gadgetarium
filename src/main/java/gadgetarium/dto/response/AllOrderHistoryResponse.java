@@ -1,5 +1,6 @@
 package gadgetarium.dto.response;
 
+import com.amazonaws.services.s3.internal.S3RequestEndpointResolver;
 import gadgetarium.enums.Status;
 import lombok.Builder;
 
@@ -11,7 +12,7 @@ public record AllOrderHistoryResponse(
         Long id,
         String createdAt,
         Long number,
-        Status status,
+        String status,
         BigDecimal deliveryPrice
 
 

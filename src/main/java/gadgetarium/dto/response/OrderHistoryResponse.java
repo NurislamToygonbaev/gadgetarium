@@ -12,7 +12,7 @@ import java.util.List;
 public record OrderHistoryResponse(
         Long number,
         List<PrivateGadgetResponse> privateGadgetResponse,
-        Status status,
+        String status,
         String clientFullName,
         String userName,
         String address,
@@ -21,7 +21,7 @@ public record OrderHistoryResponse(
         BigDecimal discount,
         BigDecimal currentPrice,
         String createdAt,
-        Payment payment,
+        String payment,
         String lastName
 
 

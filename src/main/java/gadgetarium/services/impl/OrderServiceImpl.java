@@ -10,6 +10,7 @@ import gadgetarium.entities.Order;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.ForPeriod;
+import gadgetarium.enums.Payment;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.BadRequestException;
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -43,6 +45,9 @@ public class OrderServiceImpl implements OrderService {
     private final CurrentUser currentUser;
     private final UserRepository userRepo;
     private final PasswordEncoder passwordEncoder;
+
+    private Status status;
+
     private static final BigDecimal FREE_DELIVERY_THRESHOLD = BigDecimal.valueOf(10000);
     private static final BigDecimal DELIVERY_CHARGE = BigDecimal.valueOf(200);
 
@@ -53,13 +58,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public HttpResponse changeStatusOfOrder(Long orderId, Status status) {
+    public HttpResponse changeStatusOfOrder(Long orderId, String russianStatus) {
+        Status status = Status.fromRussian(russianStatus);
+        if (status == null) {
+            throw new BadRequestException("Invalid status: " + russianStatus);
+        }
+
         Order order = orderRepo.getOrderById(orderId);
         order.setStatus(status);
         orderRepo.save(order);
+
         return HttpResponse.builder()
                 .status(HttpStatus.OK)
-                .message("success changed")
+                .message("Status successfully changed")
                 .build();
     }
 
@@ -157,7 +168,7 @@ public class OrderServiceImpl implements OrderService {
         return OrderInfoResponse.builder()
                 .id(order.getId())
                 .number(order.getNumber())
-                .status(order.getStatus().name())
+                .status(order.getStatus())
                 .phoneNumber(order.getUser().getPhoneNumber())
                 .address(order.getUser().getAddress())
                 .build();
@@ -221,7 +232,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<AllOrderHistoryResponse> getAllOrdersHistory() {
-        return orderRepo.getAllHistory(currentUser.get().getId());
+        List<AllOrderHistoryResponse> allHistory = orderRepo.getAllHistory(currentUser.get().getId());
+        return allHistory.stream()
+                .map(response -> new AllOrderHistoryResponse(
+                        response.id(),
+                        response.createdAt(),
+                        response.number(),
+                        Status.toRussian(response.status()),
+                        response.deliveryPrice()
+                ))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -231,6 +251,7 @@ public class OrderServiceImpl implements OrderService {
                 .findFirst();
 
         Order foundOrder = optionalOrder.orElseThrow(() -> new NotFoundException("Order not found"));
+        String paymentRussian = Payment.toRussian(foundOrder.getPayment().name());
 
         User user = foundOrder.getUser();
         return OrderHistoryResponse.builder()
@@ -245,7 +266,7 @@ public class OrderServiceImpl implements OrderService {
                 .discount(foundOrder.getDiscountPrice())
                 .currentPrice(foundOrder.getTotalPrice())
                 .createdAt(String.valueOf(foundOrder.getCreatedAt()))
-                .payment(foundOrder.getPayment())
+                .payment(paymentRussian)
                 .lastName(user.getLastName())
                 .build();
     }
@@ -374,4 +395,5 @@ public class OrderServiceImpl implements OrderService {
                 .image(user.getImage())
                 .build();
     }
+
 }

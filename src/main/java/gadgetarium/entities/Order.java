@@ -53,6 +53,10 @@ public class Order {
         this.createdAt = LocalDate.now();
     }
 
+    public String getStatus() {
+        return status.getRussian();
+    }
+
     public void addSubGadget(SubGadget subGadget) {
         if (this.subGadgets == null) this.subGadgets = new ArrayList<>();
         this.subGadgets.add(subGadget);

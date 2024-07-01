@@ -46,11 +46,13 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public OrderImageResponse orderImage(Long orderId) {
         Order order = orderRepo.getOrderById(orderId);
+        String paymentRussian = Payment.toRussian(order.getPayment().name());
+
         return OrderImageResponse.builder()
                 .id(order.getId())
                 .price(order.getTotalPrice())
                 .delivery(order.getUser().getAddress())
-                .payment(order.getPayment())
+                .payment(paymentRussian)
                 .build();
     }
 

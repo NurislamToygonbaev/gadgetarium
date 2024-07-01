@@ -51,7 +51,7 @@ public class PaymentApi {
     }
 
     @PreAuthorize("hasAuthority('USER')")
-    @Operation(summary = "образ заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @Operation(summary = "Обзор заказа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/order/{orderId}")
     public OrderImageResponse orderImage(@PathVariable Long orderId){
         return paymentService.orderImage(orderId);

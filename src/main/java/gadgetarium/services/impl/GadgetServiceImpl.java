@@ -493,7 +493,6 @@ public class GadgetServiceImpl implements GadgetService {
         if (!orders.isEmpty()) {
             subGadget.setRemotenessStatus(RemotenessStatus.REMOTE);
         } else if (gadget.getSubGadgets().size() == 1) {
-//            awsS3Service.deleteFile()
             subGadgetRepo.delete(subGadget);
             gadgetRepo.delete(gadget);
         } else {
@@ -509,7 +508,9 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     public List<CatResponse> getCategories() {
-        return categoryRepo.getAllCategories();
+        List<CatResponse> categories = categoryRepo.getAllCategories();
+        categories.forEach(cat -> cat.setCategoryName(cat.getCategoryName()));
+        return categories;
     }
 
     @Override

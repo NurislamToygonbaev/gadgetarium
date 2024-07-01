@@ -15,7 +15,7 @@ import java.util.List;
 public interface OrderService {
     OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size);
 
-    HttpResponse changeStatusOfOrder(Long orderId, Status status);
+    HttpResponse changeStatusOfOrder(Long orderId, String russianStatus);
 
     HttpResponse deleteOrder(Long orderId);
 
