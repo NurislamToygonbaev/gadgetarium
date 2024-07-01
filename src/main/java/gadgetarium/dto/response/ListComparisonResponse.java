@@ -12,7 +12,7 @@ public record ListComparisonResponse(
         List<String> images,
         String nameOfGadget,
         String mainColor,
-        Memory memory,
+        String memory,
         BigDecimal price,
         boolean basket
 

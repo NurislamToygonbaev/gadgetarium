@@ -6,9 +6,7 @@ import gadgetarium.dto.response.OrderResponse;
 import gadgetarium.dto.response.OrderResponseFindById;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
-import gadgetarium.enums.GadgetType;
-import gadgetarium.enums.RemotenessStatus;
-import gadgetarium.enums.Status;
+import gadgetarium.enums.*;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
@@ -168,7 +166,9 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                     String nameOfGadget = rs.getString("nameofgadget");
                     String brand = rs.getString("brand_name");
                     String memory = rs.getString("memory");
+                    String memRussian = Memory.getMemoryToRussian(memory);
                     String ram = rs.getString("ram");
+                    String ramRussian = Ram.getRamToRussian(ram);
                     String color = rs.getString("main_colour");
                     String warranty = rs.getString("warranty");
 
@@ -177,14 +177,14 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
                             id,
                             imagesFirst,
                             brand + " " + nameOfGadget,
-                            memory,
+                            memRussian,
                             color,
                             price,
                             nameOfGadget,
                             color,
                             brand,
-                            memory,
-                            ram,
+                            memRussian,
+                            ramRussian,
                             GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user),
                             rs.getInt("count_sim"),
                             warranty,

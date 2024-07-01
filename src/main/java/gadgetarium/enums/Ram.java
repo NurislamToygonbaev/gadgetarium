@@ -1,31 +1,50 @@
 package gadgetarium.enums;
 
 import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.exceptions.IllegalArgumentException;
+import lombok.Getter;
 
+import java.util.HashMap;
+import java.util.Map;
+
+@Getter
 public enum Ram {
-    RAM_4,
-    RAM_6,
-    RAM_8,
-    RAM_12,
-    RAM_16,
-    RAM_32;
+    RAM_4("4"),
+    RAM_6("6"),
+    RAM_8("8"),
+    RAM_12("12"),
+    RAM_16("16"),
+    RAM_32("32");
 
-    public static Ram fromString(String ramString) {
-        switch (ramString) {
-            case "RAM_4":
-                return RAM_4;
-            case "RAM_6":
-                return RAM_6;
-            case "RAM_8":
-                return RAM_8;
-            case "RAM_12":
-                return RAM_12;
-            case "RAM_16":
-                return RAM_16;
-            case "RAM_32":
-                return RAM_32;
-            default:
-                throw new BadRequestException("Unsupported RAM size: " + ramString);
+    private final String russianName;
+
+    private static final Map<String, String> englishToRussianMap = new HashMap<>();
+    private static final Map<String, String> russianToEnglishMap = new HashMap<>();
+
+    static {
+        for (Ram ram : Ram.values()) {
+            englishToRussianMap.put(ram.name(), ram.russianName);
+            russianToEnglishMap.put(ram.russianName, ram.name());
         }
+    }
+
+    Ram(String russianName) {
+        this.russianName = russianName;
+    }
+
+    public static String getRamToRussian(String englishName) {
+        String russianName = englishToRussianMap.get(englishName);
+        if (russianName == null) {
+            throw new BadRequestException("No such memory type: " + englishName);
+        }
+        return russianName;
+    }
+
+    public static String getRamToEnglish(String russianName) {
+        String englishName = russianToEnglishMap.get(russianName);
+        if (englishName == null) {
+            throw new BadRequestException("No such memory type: " + russianName);
+        }
+        return englishName;
     }
 }

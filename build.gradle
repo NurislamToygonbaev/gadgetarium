@@ -66,7 +66,8 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-logging', version: '3.3.0'
     //stripe
     implementation group: 'com.stripe', name: 'stripe-java', version: '25.7.0'
-
+    // for hash code colors
+    implementation 'com.github.mboudra:colorhash:0.3.0'
 }
 
 tasks.named('test') {

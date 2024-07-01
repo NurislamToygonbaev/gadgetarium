@@ -1,45 +1,49 @@
 package gadgetarium.enums;
 
-import lombok.Getter;
-import lombok.Setter;
+import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.exceptions.IllegalArgumentException;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@Getter
 public enum Memory {
-    GB_16("16", "16"),
-    GB_32("32", "32"),
-    GB_64("64", "64"),
-    GB_128("128", "128"),
-    GB_256("256", "256"),
-    GB_512("512", "512"),
-    TB_1("1", "1");
+    GB_16("16"),
+    GB_32("32"),
+    GB_64("64"),
+    GB_128("128"),
+    GB_256("256"),
+    GB_512("512"),
+    TB_1("1");
 
-    private final String name;
+    private final String russianName;
 
-    private static final Map<String, Memory> nameToMemoryMap = new HashMap<>();
+    private static final Map<String, String> englishToRussianMap = new HashMap<>();
+    private static final Map<String, String> russianToEnglishMap = new HashMap<>();
 
     static {
         for (Memory memory : Memory.values()) {
-            nameToMemoryMap.put(memory.name, memory);
+            englishToRussianMap.put(memory.name(), memory.russianName);
+            russianToEnglishMap.put(memory.russianName, memory.name());
         }
     }
 
-    Memory(String name, String russianName) {
-        this.name = name;
+    Memory(String russianName) {
+        this.russianName = russianName;
     }
 
-    public String getRussianName() {
-        return name;
-    }
-
-    public static Memory fromName(String name) {
-        Memory memory = nameToMemoryMap.get(name);
-        if (memory == null) {
-            throw new IllegalArgumentException("No such memory type: " + name);
+    public static String getMemoryToRussian(String englishName) {
+        String russianName = englishToRussianMap.get(englishName);
+        if (russianName == null) {
+            throw new BadRequestException("No such memory type: " + englishName);
         }
-        return memory;
+        return russianName;
+    }
+
+    public static String getMemoryToEnglish(String russianName) {
+        String englishName = russianToEnglishMap.get(russianName);
+        if (englishName == null) {
+            throw new BadRequestException("No such memory type: " + russianName);
+        }
+        return englishName;
     }
 }
-

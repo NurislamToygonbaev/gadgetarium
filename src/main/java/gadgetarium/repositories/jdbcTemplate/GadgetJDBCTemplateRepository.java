@@ -15,7 +15,7 @@ public interface GadgetJDBCTemplateRepository {
 
     ResultPaginationGadget getAll(GetType getType, String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size);
 
-    PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size);
+    PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<String> memory, List<String> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size);
 
     GadgetPaginationForMain mainPageDiscounts(int page, int size);
 

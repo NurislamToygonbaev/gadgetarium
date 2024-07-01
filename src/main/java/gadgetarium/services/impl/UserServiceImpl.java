@@ -6,6 +6,7 @@ import gadgetarium.dto.request.SignUpRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.*;
 import gadgetarium.enums.GadgetType;
+import gadgetarium.enums.Memory;
 import gadgetarium.enums.Role;
 import gadgetarium.exceptions.AlreadyExistsException;
 import gadgetarium.exceptions.AuthenticationException;
@@ -243,13 +244,14 @@ public class UserServiceImpl implements UserService {
             percent = gadget.getDiscount().getPercent();
         }
 
+        String memory = Memory.getMemoryToRussian(subGadget.getMemory().name());
         return new AllFavoritesResponse(
                 subGadget.getId(),
                 images.isEmpty() ? null : images.getFirst(),
                 category.getCategoryName(),
                 brand.getBrandName(),
                 gadget.getNameOfGadget(),
-                subGadget.getMemory(),
+                memory,
                 subGadget.getMainColour(),
                 gadget.getRating(),
                 percent,
@@ -267,9 +269,10 @@ public class UserServiceImpl implements UserService {
         User user = currentUser.get();
         List<String> images = subGadget.getImages();
         boolean basket = GadgetJDBCTemplateRepositoryImpl.checkBasket(subGadget, user);
+        String memory = Memory.getMemoryToRussian(subGadget.getMemory().name());
         return new ListComparisonResponse(subGadget.getId(),
                 images.isEmpty() ? null : Collections.singletonList(images.getFirst()),
                 subGadget.getGadget().getNameOfGadget(), subGadget.getMainColour(),
-                subGadget.getMemory(), subGadget.getPrice(), basket);
+                memory, subGadget.getPrice(), basket);
     }
 }

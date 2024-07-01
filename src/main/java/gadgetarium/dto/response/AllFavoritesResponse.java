@@ -13,7 +13,7 @@ public record AllFavoritesResponse(
         String category,
         String brandName,
         String nameOfGadget,
-        Memory memory,
+        String memory,
         String color,
         double rating,
         int percent,

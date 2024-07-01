@@ -70,7 +70,7 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
+    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<String> memory, List<String> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
         return gadgetJDBCTemplateRepo.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
     }
 
@@ -127,12 +127,12 @@ public class GadgetServiceImpl implements GadgetService {
         for (ProductsRequest productsRequest : addProductRequest.productsRequests()) {
             for (SubGadget subGadget : gadget.getSubGadgets()) {
                 if (subGadget.getMainColour().equalsIgnoreCase(productsRequest.mainColour()) &&
-                    subGadget.getMemory() == productsRequest.memory() &&
-                    subGadget.getRam() == productsRequest.ram()) {
+                    Memory.getMemoryToRussian(subGadget.getMemory().name()).equalsIgnoreCase(productsRequest.memory()) &&
+                    Ram.getRamToRussian(subGadget.getRam().name()).equalsIgnoreCase(productsRequest.ram())) {
                     throw new AlreadyExistsException(
                             "SubGadget with color: " + productsRequest.mainColour() +
-                            ", memory: " + productsRequest.memory().name() +
-                            ", ram: " + productsRequest.ram().name() + " already exists for this gadget"
+                            ", memory: " + productsRequest.memory() +
+                            ", ram: " + productsRequest.ram() + " already exists for this gadget"
                     );
                 }
             }
@@ -146,7 +146,8 @@ public class GadgetServiceImpl implements GadgetService {
             subGadget.setGadget(gadget);
             gadget.addSubGadget(subGadget);
             subGadget.setMainColour(productsRequest.mainColour());
-            subGadget.setMemory(productsRequest.memory());
+            Memory memory = Memory.valueOf(Memory.getMemoryToEnglish(productsRequest.memory()));
+            subGadget.setMemory(memory);
 
             if (subGadget.getImages() == null) {
                 subGadget.setImages(new ArrayList<>());
@@ -165,7 +166,8 @@ public class GadgetServiceImpl implements GadgetService {
             if (category.getCategoryName().toLowerCase().contains("phone") ||
                 category.getCategoryName().toLowerCase().contains("laptop")) {
                 subGadget.setCountSim(productsRequest.countSim());
-                subGadget.setRam(productsRequest.ram());
+                Ram ram = Ram.valueOf(Ram.getRamToEnglish(productsRequest.ram()));
+                subGadget.setRam(ram);
             } else if (category.getCategoryName().toLowerCase().contains("watch") ||
                        category.getCategoryName().toLowerCase().contains("accessories")) {
                 subGadget.getUniFiled().add(productsRequest.materialBracelet());
@@ -194,23 +196,24 @@ public class GadgetServiceImpl implements GadgetService {
     public List<AddProductsResponse> getNewProducts(List<Long> ids) {
         return ids.stream()
                 .map(subGadgetRepo::getByID)
-                .map(subGadget -> new AddProductsResponse(
-                        subGadget.getGadget().getId(),
-                        subGadget.getId(),
-                        subGadget.getGadget().getBrand().getBrandName(),
-                        subGadget.getMainColour(),
-                        subGadget.getMemory().name(),
-                        subGadget.getRam() != null ? subGadget.getRam().name() : null,
-                        subGadget.getCountSim(),
-                        subGadget.getGadget().getReleaseDate(),
-                        subGadget.getQuantity(),
-                        subGadget.getPrice()
-                ))
+                .map(subGadget -> {
+                    Ram.getRamToRussian(subGadget.getRam().name());
+                    return new AddProductsResponse(
+                            subGadget.getGadget().getId(),
+                            subGadget.getId(),
+                            subGadget.getGadget().getBrand().getBrandName(),
+                            subGadget.getMainColour(),
+                            Memory.getMemoryToRussian(subGadget.getMemory().name()),
+                            (subGadget.getRam() != null) ? Ram.getRamToRussian(subGadget.getRam().name()) : null,
+                            subGadget.getCountSim(),
+                            subGadget.getGadget().getReleaseDate(),
+                            subGadget.getQuantity(),
+                            subGadget.getPrice()
+                    );
+                })
                 .sorted(Comparator.comparingLong(AddProductsResponse::subGadgetId))
                 .collect(Collectors.toList());
     }
-
-
 
 
     @Override
@@ -440,14 +443,16 @@ public class GadgetServiceImpl implements GadgetService {
         Gadget gadget = subGadget.getGadget();
 
         subGadget.setMainColour(request.colour());
-        subGadget.setMemory(request.memory());
+        Memory memory = Memory.valueOf(Memory.getMemoryToEnglish(request.memory()));
+        subGadget.setMemory(memory);
         subGadget.setPrice(request.price());
         subGadget.setQuantity(request.quantity());
 
         String categoryName = gadget.getSubCategory().getCategory().getCategoryName().toLowerCase();
         if (categoryName.contains("phone") ||
             categoryName.contains("laptop")) {
-            subGadget.setRam(request.ram());
+            Ram ram = Ram.valueOf(Ram.getRamToEnglish(request.ram()));
+            subGadget.setRam(ram);
             subGadget.setCountSim(request.countSim());
 
         } else if (categoryName.contains("watch") ||
@@ -519,14 +524,14 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public List<Memory> getAllMemories(Long gadgetId, String color) {
+    public List<String> getAllMemories(Long gadgetId, String color) {
         Gadget gadgetById = gadgetRepo.getGadgetById(gadgetId);
 
-        List<Memory> memories = new ArrayList<>();
+        List<String> memories = new ArrayList<>();
 
         for (SubGadget subGadget : gadgetById.getSubGadgets()) {
             if (subGadget.getMainColour().equalsIgnoreCase(color)) {
-                memories.add(subGadget.getMemory());
+                memories.add(Memory.getMemoryToRussian(subGadget.getMemory().name()));
             }
         }
 

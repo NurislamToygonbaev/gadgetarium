@@ -50,8 +50,8 @@ public class GadgetApi {
                                                        @RequestParam(required = false) List<String> colour,
                                                        @RequestParam(required = false) BigDecimal costFrom,
                                                        @RequestParam(required = false) BigDecimal costUpTo,
-                                                       @RequestParam(required = false) List<Memory> memory,
-                                                       @RequestParam(required = false) List<Ram> ram,
+                                                       @RequestParam(required = false) List<String> memory,
+                                                       @RequestParam(required = false) List<String> ram,
                                                        @RequestParam(value = "page", defaultValue = "1") int page,
                                                        @RequestParam(value = "size", defaultValue = "12") int size) {
         return gadgetService.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
@@ -203,7 +203,7 @@ public class GadgetApi {
 
     @Operation(summary = "Памяти гаджета с цветом", description = "Авторизация ВСЕ")
     @GetMapping("/memories/{gadgetId}")
-    public List<Memory> getAllMemories(@PathVariable Long gadgetId,
+    public List<String> getAllMemories(@PathVariable Long gadgetId,
                                        @RequestParam String color){
         return gadgetService.getAllMemories(gadgetId, color);
     }

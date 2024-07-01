@@ -20,8 +20,8 @@ public record GadgetNewDataRequest(
         String colour,
         @CountSimValidation
         int countSim,
-        Memory memory,
-        Ram ram,
+        String memory,
+        String ram,
         String materialBracelet,
         String materialBody,
         String sizeWatch,

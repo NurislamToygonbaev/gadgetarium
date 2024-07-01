@@ -3,6 +3,7 @@ package gadgetarium.services.impl;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
+import gadgetarium.enums.Memory;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.jdbcTemplate.impl.GadgetJDBCTemplateRepositoryImpl;
@@ -81,13 +82,13 @@ public class BasketServiceImpl implements BasketService {
                 .map(subGadget -> {
                     boolean likes = GadgetJDBCTemplateRepositoryImpl.checkLikes(subGadget, user);
                     BigDecimal price = GadgetServiceImpl.calculatePrice(subGadget);
-
+                    String memory = Memory.getMemoryToRussian(subGadget.getMemory().name());
                     return new GetAllBasketResponse(
                             subGadget.getGadget().getId(),
                             subGadget.getId(),
                             subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
                             subGadget.getGadget().getBrand().getBrandName() + " " + subGadget.getGadget().getNameOfGadget(),
-                            subGadget.getMemory().name(),
+                            memory,
                             subGadget.getMainColour(),
                             subGadget.getGadget().getRating(),
                             subGadget.getGadget().getFeedbacks().size(),
@@ -148,10 +149,11 @@ public class BasketServiceImpl implements BasketService {
             SubGadget subGadget = subGadgetRepo.getByID(id);
             if (user.getBasket().containsKey(subGadget)) {
                 Integer quantity = user.getBasket().get(subGadget);
+                String memory = Memory.getMemoryToRussian(subGadget.getMemory().name());
                 GadgetResponseInOrder inOrder = new GadgetResponseInOrder(
                         subGadget.getId(), subGadget.getImages().isEmpty() ? null : subGadget.getImages().getFirst(),
                         subGadget.getGadget().getBrand().getBrandName() + " " +
-                        subGadget.getGadget().getNameOfGadget(), subGadget.getMemory().name(),
+                        subGadget.getGadget().getNameOfGadget(), memory,
                         subGadget.getMainColour(), subGadget.getArticle(),
                         quantity
                 );
