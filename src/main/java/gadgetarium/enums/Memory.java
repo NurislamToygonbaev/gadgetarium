@@ -1,35 +1,45 @@
 package gadgetarium.enums;
 
-import gadgetarium.exceptions.BadRequestException;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.HashMap;
+import java.util.Map;
+
+@Getter
 public enum Memory {
-    GB_16,
-    GB_32,
-    GB_64,
-    GB_128,
-    GB_256,
-    GB_512,
-    TB_1;
+    GB_16("16", "16"),
+    GB_32("32", "32"),
+    GB_64("64", "64"),
+    GB_128("128", "128"),
+    GB_256("256", "256"),
+    GB_512("512", "512"),
+    TB_1("1", "1");
 
-    public static Memory fromString(String memoryString) {
-        switch (memoryString) {
-            case "GB_16":
-                return GB_16;
-            case "GB_32":
-                return GB_32;
-            case "GB_64":
-                return GB_64;
-            case "GB_128":
-                return GB_128;
-            case "GB_256":
-                return GB_256;
-            case "GB_512":
-                return GB_512;
-            case "TB_1":
-                return TB_1;
-            default:
-                throw new BadRequestException("Unsupported memory size: " + memoryString);
+    private final String name;
+
+    private static final Map<String, Memory> nameToMemoryMap = new HashMap<>();
+
+    static {
+        for (Memory memory : Memory.values()) {
+            nameToMemoryMap.put(memory.name, memory);
         }
     }
 
+    Memory(String name, String russianName) {
+        this.name = name;
+    }
+
+    public String getRussianName() {
+        return name;
+    }
+
+    public static Memory fromName(String name) {
+        Memory memory = nameToMemoryMap.get(name);
+        if (memory == null) {
+            throw new IllegalArgumentException("No such memory type: " + name);
+        }
+        return memory;
+    }
 }
+
