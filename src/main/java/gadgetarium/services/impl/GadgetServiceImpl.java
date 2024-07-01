@@ -493,6 +493,7 @@ public class GadgetServiceImpl implements GadgetService {
         if (!orders.isEmpty()) {
             subGadget.setRemotenessStatus(RemotenessStatus.REMOTE);
         } else if (gadget.getSubGadgets().size() == 1) {
+//            awsS3Service.deleteFile()
             subGadgetRepo.delete(subGadget);
             gadgetRepo.delete(gadget);
         } else {

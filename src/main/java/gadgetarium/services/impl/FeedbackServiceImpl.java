@@ -117,9 +117,8 @@ public class FeedbackServiceImpl implements FeedbackService {
     @Transactional
     public FeedbackResponse getFeedbackById(Long id) {
         Feedback feedback = feedbackRepo.getByIdd(id);
-        if (currentUserr.get().getRole().equals(Role.ADMIN)) {
-            feedback.setReviewType(ReviewType.READ);
-        }
+        feedback.setReviewType(ReviewType.READ);
+        feedbackRepo.save(feedback);
         Long article = feedback.getGadget().getSubGadgets().stream()
                 .map(SubGadget::getArticle)
                 .findFirst()

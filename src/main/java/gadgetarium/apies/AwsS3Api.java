@@ -1,6 +1,5 @@
 package gadgetarium.apies;
 
-import gadgetarium.dto.response.DownloadPdfResponse;
 import gadgetarium.dto.response.HttpResponse;
 import gadgetarium.dto.response.S3Response;
 import gadgetarium.services.AwsS3Service;
@@ -8,6 +7,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -41,17 +41,18 @@ public class AwsS3Api {
 
     @Operation(summary = "download файл из s3", description = "Авторизация: Все")
     @GetMapping
-    public DownloadPdfResponse downloadFile(@RequestParam("key") String key) {
+    public ResponseEntity<ByteArrayResource> downloadFile(@RequestParam("key") String key) {
         byte[] data = awsS3Service.downloadFile(key);
         ByteArrayResource resource = new ByteArrayResource(data);
-        return DownloadPdfResponse.builder()
-                .response(ResponseEntity
-                        .ok()
-                        .contentLength(data.length)
-                        .header("Content-type", "application/octet-stream")
-                        .header("Content-disposition", "inline; filename=\"" + key + "\"")
-                        .body(resource))
-                .build();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentLength(data.length);
+        headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + key + "\"");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(resource);
     }
 
     @Operation(summary = "delete файл из s3", description = "Авторизация: Все")

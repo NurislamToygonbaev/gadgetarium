@@ -5,14 +5,17 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentMethod;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodCreateParams;
+import gadgetarium.dto.request.IdsGadgetAndQuantityRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.Order;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.Payment;
+import gadgetarium.enums.RemotenessStatus;
 import gadgetarium.enums.Status;
 import gadgetarium.exceptions.BadRequestException;
 import gadgetarium.repositories.OrderRepository;
+import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.services.PaymentService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +31,7 @@ public class PaymentServiceImpl implements PaymentService {
 
     private final OrderRepository orderRepo;
     private final CurrentUser currentUser;
+    private final SubGadgetRepository subGadgetRepo;
 
     @Override
     @Transactional
@@ -119,11 +123,29 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 
-    @Override
-    public HttpResponse confirmPayment(String paymentId) {
+    @Override @Transactional
+    public HttpResponse confirmPayment(String paymentId, List<IdsGadgetAndQuantityRequest> request) {
         if (paymentId == null || paymentId.isEmpty()) {
             throw new BadRequestException("Payment ID cannot be null or empty");
         }
+
+        if (request == null || request.isEmpty()) {
+            throw new BadRequestException("Request list cannot be null or empty");
+        }
+
+        for (IdsGadgetAndQuantityRequest quantityRequest : request) {
+            SubGadget subGadget = subGadgetRepo.getByID(quantityRequest.id());
+            int newQuantity = subGadget.getQuantity() - quantityRequest.quantity();
+            if (newQuantity < 0) {
+                throw new BadRequestException("Not enough stock for SubGadget with ID: " + quantityRequest.id());
+            }
+            if (newQuantity == 0) {
+                subGadget.setRemotenessStatus(RemotenessStatus.REMOTE);
+            }
+            subGadget.setQuantity(newQuantity);
+            subGadgetRepo.save(subGadget);
+        }
+
         try {
             PaymentIntent paymentIntent = PaymentIntent.retrieve(paymentId);
             paymentIntent.confirm();
