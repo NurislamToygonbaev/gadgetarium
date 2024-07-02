@@ -7,7 +7,6 @@ import gadgetarium.dto.request.UserImageRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.enums.ForPeriod;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -26,7 +25,7 @@ public interface OrderService {
 
     OrderInfoResponse findOrderInfo(Long orderId);
 
-    HttpResponse placingAnOrder(List<Long> subGadgetId, boolean deliveryType, BigDecimal price,BigDecimal discountPrice, PersonalDataRequest personalDataRequest);
+    HttpResponse placingAnOrder(List<Long> subGadgetId, boolean deliveryType, PersonalDataRequest personalDataRequest);
 
     PersonalDataResponse personalDataCustomer();
     List<AllOrderHistoryResponse> getAllOrdersHistory();

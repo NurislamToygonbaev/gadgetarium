@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -231,7 +232,11 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         .map(Memory::getMemoryToEnglish)
                         .toList();
 
-                where += " and sg.memory ilike any (array" + englishMemoryNames.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
+                String memoryCondition = englishMemoryNames.stream()
+                        .map(name -> " sg.memory ilike '" + name + "' ")
+                        .collect(Collectors.joining(" or "));
+
+                where += " and (" + memoryCondition + ") ";
             }
 
             if (ram != null && !ram.isEmpty()) {
@@ -239,11 +244,13 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         .map(Ram::getRamToEnglish)
                         .toList();
 
-                where += " and sg.ram ilike any (array" + englishRamNames.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
+                String ramCondition = englishRamNames.stream()
+                        .map(name -> " sg.ram ilike '" + name + "' ")
+                        .collect(Collectors.joining(" or "));
+
+                where += " and (" + ramCondition + ") ";
             }
-            if (ram != null && !ram.isEmpty()){
-                where += " and sg.ram ilike any (array" + ram.stream().toList().toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
-            }
+
             if (sort != null){
                 if (sort.equals(Sort.RECOMMENDED)){
                     where += " and g.rating > 3.9 or (select count(*) from orders o where o.id = og.orders_id) > 10 ";
