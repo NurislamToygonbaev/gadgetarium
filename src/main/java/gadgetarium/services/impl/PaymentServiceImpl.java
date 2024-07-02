@@ -35,9 +35,10 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     @Transactional
-    public HttpResponse typeOrder(Long orderId, Payment payment) {
+    public HttpResponse typeOrder(Long orderId, String payment) {
+        Payment english = Payment.fromRussian(payment);
         Order order = orderRepo.getOrderById(orderId);
-        order.setPayment(payment);
+        order.setPayment(english);
         orderRepo.save(order);
         return HttpResponse.builder().status(HttpStatus.OK)
                 .message("success changed order with ID: " + order.getId()).build();

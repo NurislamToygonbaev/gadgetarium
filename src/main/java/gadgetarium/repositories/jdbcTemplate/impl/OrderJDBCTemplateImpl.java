@@ -3,7 +3,6 @@ package gadgetarium.repositories.jdbcTemplate.impl;
 import gadgetarium.dto.response.CompareResponses;
 import gadgetarium.dto.response.OrderPagination;
 import gadgetarium.dto.response.OrderResponse;
-import gadgetarium.dto.response.OrderResponseFindById;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.*;
@@ -18,7 +17,6 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -31,7 +29,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
     private final SubGadgetRepository subGadgetRepo;
 
     @Override
-    public OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
+    public OrderPagination getAllOrders(String status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
 
@@ -52,9 +50,10 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
         }
 
         if (status != null) {
-            if (status.equals(Status.DELIVERED) || status.equals(Status.RECEIVED)){
-                where += " and o.status in ('"+Status.DELIVERED.name()+"', '"+Status.RECEIVED.name()+"')";
-            }else where += " and o.status = '"+status.name()+"'";
+            Status statusRussian = Status.fromRussian(status);
+            if (statusRussian.equals(Status.DELIVERED) || statusRussian.equals(Status.RECEIVED)){
+                where += " and upper(o.status) in ('"+Status.DELIVERED.name()+"', '"+Status.RECEIVED.name()+"')";
+            }else where += " and o.status ilike '"+statusRussian.name()+"'";
         }
 
         if (startDate != null && endDate != null){

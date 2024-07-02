@@ -60,7 +60,7 @@ public class GadgetServiceImpl implements GadgetService {
 
     @Override
     @Transactional
-    public GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity) {
+    public GadgetResponse getGadgetById(Long gadgetId, String color, String memory, int quantity) {
         return gadgetJDBCTemplateRepo.getGadgetById(gadgetId, color, memory, quantity);
     }
 

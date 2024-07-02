@@ -9,7 +9,7 @@ import java.util.List;
 @Builder
 public record OrderPagination(
         String searchWord,
-        Status status,
+        String status,
         int waiting,
         int progress,
         int onTheWay,

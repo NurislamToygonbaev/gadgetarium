@@ -61,7 +61,7 @@ public class GadgetApi {
     @GetMapping("/by-id/{gadgetId}")
     public GadgetResponse getGadget(@PathVariable Long gadgetId,
                                     @RequestParam(required = false) String color,
-                                    @RequestParam(required = false) Memory memory,
+                                    @RequestParam(required = false) String memory,
                                     @RequestParam(required = false, defaultValue = "0") int quantity) {
         return gadgetService.getGadgetById(gadgetId, color, memory, quantity);
     }

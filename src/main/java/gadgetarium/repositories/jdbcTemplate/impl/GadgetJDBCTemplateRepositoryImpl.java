@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Repository
@@ -640,7 +639,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
     @Override
     @Transactional
-    public GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity) {
+    public GadgetResponse getGadgetById(Long gadgetId, String color, String memory, int quantity) {
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         Map<String, Object> params = new HashMap<>();
@@ -653,8 +652,9 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
             params.put("color", color);
         }
         if (memory != null) {
+            String memoryToEnglish = Memory.getMemoryToEnglish(memory);
             condition.append(" and sg.memory = :memory");
-            params.put("memory", memory.name());
+            params.put("memory", memoryToEnglish);
         }
 
         NamedParameterJdbcTemplate namedParameterJdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);

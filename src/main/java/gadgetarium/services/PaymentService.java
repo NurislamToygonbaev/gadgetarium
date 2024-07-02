@@ -1,15 +1,13 @@
 package gadgetarium.services;
 
-import com.stripe.exception.StripeException;
 import gadgetarium.dto.request.IdsGadgetAndQuantityRequest;
 import gadgetarium.dto.response.*;
-import gadgetarium.enums.Payment;
 
 import java.util.List;
 
 public interface PaymentService {
 
-    HttpResponse typeOrder(Long orderId, Payment payment);
+    HttpResponse typeOrder(Long orderId, String payment);
 
     OrderImageResponse orderImage(Long orderId);
 

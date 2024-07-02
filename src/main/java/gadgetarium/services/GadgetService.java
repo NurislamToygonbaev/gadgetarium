@@ -20,7 +20,7 @@ public interface GadgetService {
 
     PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<String> memory, List<String> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size);
 
-    GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity);
+    GadgetResponse getGadgetById(Long gadgetId, String color, String memory, int quantity);
 
     List<ViewedProductsResponse> viewedProduct();
     AddGadgetResponse addGadget(Long sunCategoryId, Long brandId, AddProductRequest addProductRequest);

@@ -44,7 +44,7 @@ public class OrderApi {
     @GetMapping
     public OrderPagination getAllOrders(
                         @RequestParam(required = false) String keyword,
-                        @RequestParam(required = false, defaultValue = "PENDING") Status status,
+                        @RequestParam(required = false, defaultValue = "PENDING") String status,
                         @RequestParam(value = "startDate", required = false) LocalDate startDate,
                         @RequestParam(value = "endDate", required = false) LocalDate endDate,
                         @RequestParam(value = "page", defaultValue = "1") int page,
@@ -56,8 +56,8 @@ public class OrderApi {
     @Operation(summary = "Изменение статуса гаджета", description = "Авторизация: АДМИНСТРАТОР")
     @PatchMapping("/{orderId}")
     public HttpResponse changeStatus(@PathVariable Long orderId,
-                                     @RequestParam Status status){
-        return orderService.changeStatusOfOrder(orderId, status.name());
+                                     @RequestParam String status){
+        return orderService.changeStatusOfOrder(orderId, status);
     }
 
     @PreAuthorize("hasAuthority('ADMIN')")

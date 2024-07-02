@@ -6,14 +6,13 @@ import gadgetarium.dto.request.CurrentUserProfileRequest;
 import gadgetarium.dto.request.UserImageRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.enums.ForPeriod;
-import gadgetarium.enums.Status;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 public interface OrderService {
-    OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size);
+    OrderPagination getAllOrders(String status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size);
 
     HttpResponse changeStatusOfOrder(Long orderId, String russianStatus);
 
