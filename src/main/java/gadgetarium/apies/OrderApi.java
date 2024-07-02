@@ -44,7 +44,7 @@ public class OrderApi {
     @GetMapping
     public OrderPagination getAllOrders(
                         @RequestParam(required = false) String keyword,
-                        @RequestParam(required = false, defaultValue = "PENDING") String status,
+                        @RequestParam(required = false, defaultValue = "Ожидание") String status,
                         @RequestParam(value = "startDate", required = false) LocalDate startDate,
                         @RequestParam(value = "endDate", required = false) LocalDate endDate,
                         @RequestParam(value = "page", defaultValue = "1") int page,

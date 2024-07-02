@@ -119,7 +119,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderResponseFindById findOrderById(Long orderId) {
-        Order order = orderRepo.getOrderById(orderId);
+        Optional<Order> orderOptional = orderRepo.getOrderWithStatus(orderId);
+        Order order = orderOptional.orElseThrow(() ->
+                new BadRequestException("order with ID: " + orderId + " not found"));
+
         BigDecimal price = BigDecimal.ZERO;
         int totalGadgets = 0;
 

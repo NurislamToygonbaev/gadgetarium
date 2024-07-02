@@ -1,6 +1,5 @@
 package gadgetarium.dto.response;
 
-import gadgetarium.enums.Status;
 import lombok.Builder;
 
 import java.math.BigDecimal;

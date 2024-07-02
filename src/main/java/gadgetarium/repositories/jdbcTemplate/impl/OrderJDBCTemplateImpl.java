@@ -55,7 +55,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
             Status statusRussian = Status.fromRussian(status);
             if (statusRussian.equals(Status.DELIVERED) || statusRussian.equals(Status.RECEIVED)){
                 where += " and upper(o.status) in ('"+Status.DELIVERED.name()+"', '"+Status.RECEIVED.name()+"')";
-            }else where += " and o.status ilike '"+statusRussian.name()+"'";
+            }else where += " and lower(o.status) ilike '"+statusRussian.name().toLowerCase()+"'";
         }
 
         if (startDate != null && endDate != null){

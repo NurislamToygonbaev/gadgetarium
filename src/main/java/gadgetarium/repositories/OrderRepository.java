@@ -12,6 +12,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
@@ -128,7 +129,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                    "join sub_gadgets s on s.id = osg.sub_gadgets_id " +
                    "join gadgets g on g.id = s.gadget_id " +
                    "left join discounts d on d.gadget_id = g.id " +
-                   "where o.id = ?1 " +
+                   "where o.id = ?1 and o.status is not null " +
                    " group by g.name_of_gadget, s.memory, s.main_colour, d.percent "
             , nativeQuery = true)
     List<Object[]> getGadgetsFields(Long id);
@@ -137,4 +138,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("select max(o.id) from Order o where o.status is null and o.user.id = :userId")
     Long findLastByStatusIsNullAndUserId(Long userId);
 
+    @Query("select o from Order o where o.id =:orderId and o.status is not null ")
+    Optional<Order> getOrderWithStatus(Long orderId);
 }
