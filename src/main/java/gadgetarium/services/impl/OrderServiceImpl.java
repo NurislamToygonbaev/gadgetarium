@@ -234,45 +234,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<AllOrderHistoryResponse> getAllOrdersHistory() {
-        User user = currentUser.get();
-        List<AllOrderHistoryResponse> allHistory = orderRepo.getAllHistory(user.getId());
-        return allHistory.stream()
-                .map(response -> new AllOrderHistoryResponse(
-                        response.id(),
-                        response.createdAt(),
-                        response.number(),
-                        Status.toRussian(response.status()),
-                        response.deliveryPrice()
-                ))
-                .collect(Collectors.toList());
+        return orderJDBCTemplate.getAllHistory();
     }
 
     @Override
     public OrderHistoryResponse getOrderHistoryById(Long orderId) throws NotFoundException {
-        Optional<Order> optionalOrder = currentUser.get().getOrders().stream()
-                .filter(order -> Objects.equals(order.getId(), orderId))
-                .findFirst();
-
-        Order foundOrder = optionalOrder.orElseThrow(() -> new NotFoundException("Order not found"));
-        String paymentRussian = Payment.toRussian(foundOrder.getPayment().name());
-        String statusRussian = Status.toRussian(foundOrder.getStatus());
-
-        User user = foundOrder.getUser();
-        return OrderHistoryResponse.builder()
-                .number(foundOrder.getNumber())
-                .privateGadgetResponse(mapGadgets(foundOrder.getSubGadgets()))
-                .status(statusRussian)
-                .clientFullName(user.getFirstName() + " " + user.getLastName())
-                .userName(user.getFirstName())
-                .address(user.getAddress())
-                .phoneNumber(user.getPhoneNumber())
-                .email(user.getEmail())
-                .discount(foundOrder.getDiscountPrice())
-                .currentPrice(foundOrder.getTotalPrice())
-                .createdAt(String.valueOf(foundOrder.getCreatedAt()))
-                .payment(paymentRussian)
-                .lastName(user.getLastName())
-                .build();
+       return orderJDBCTemplate.getOrderHistoryById(orderId);
     }
 
     @Override
@@ -354,31 +321,6 @@ public class OrderServiceImpl implements OrderService {
                 .status(HttpStatus.OK)
                 .message("Password successfully changed")
                 .build();
-    }
-
-    private List<PrivateGadgetResponse> mapGadgets(List<SubGadget> gadgets) {
-        List<PrivateGadgetResponse> gadgetResponses = new ArrayList<>();
-
-        for (SubGadget subGadget : gadgets) {
-            if (subGadget == null) continue;
-            List<String> images = !subGadget.getImages().isEmpty() ?
-                    Collections.singletonList(subGadget.getImages().getFirst()) :
-                    Collections.emptyList();
-
-
-            PrivateGadgetResponse privateGadgetResponse = PrivateGadgetResponse.builder()
-                    .id(subGadget.getId())
-                    .gadgetImage(images.isEmpty() ? null : Collections.singletonList(images.getFirst()))
-                    .nameOfGadget(subGadget.getGadget().getNameOfGadget())
-                    .subCategoryName(subGadget.getGadget().getSubCategory().getSubCategoryName())
-                    .rating(subGadget.getGadget().getRating())
-                    .countRating(0)
-                    .currentPrice(subGadget.getPrice())
-                    .build();
-            gadgetResponses.add(privateGadgetResponse);
-
-        }
-        return gadgetResponses;
     }
 
     @Override

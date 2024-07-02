@@ -1,12 +1,12 @@
 package gadgetarium.repositories.jdbcTemplate.impl;
 
-import gadgetarium.dto.response.CompareResponses;
-import gadgetarium.dto.response.OrderPagination;
-import gadgetarium.dto.response.OrderResponse;
+import gadgetarium.dto.response.*;
 import gadgetarium.entities.SubGadget;
 import gadgetarium.entities.User;
 import gadgetarium.enums.*;
 import gadgetarium.exceptions.BadRequestException;
+import gadgetarium.exceptions.NotFoundException;
+import gadgetarium.repositories.OrderRepository;
 import gadgetarium.repositories.SubGadgetRepository;
 import gadgetarium.repositories.jdbcTemplate.OrderJDBCTemplate;
 import gadgetarium.services.impl.CurrentUser;
@@ -17,6 +17,7 @@ import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
     private final JdbcTemplate jdbcTemplate;
     private final CurrentUser currentUser;
     private final SubGadgetRepository subGadgetRepo;
+    private final OrderRepository orderRepo;
 
     @Override
     public OrderPagination getAllOrders(String status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
@@ -329,4 +331,125 @@ public class OrderJDBCTemplateImpl implements OrderJDBCTemplate {
         Integer count = jdbcTemplate.queryForObject(sql, new Object[]{String.valueOf(Status.CANCELLED)}, Integer.class);
         return count != null ? count : 0;
     }
+
+
+    @Override
+    public List<AllOrderHistoryResponse> getAllHistory() {
+        User user = currentUser.get();
+        return jdbcTemplate.query("""
+            select o.id,
+            to_char(o.created_at, 'YYYY-MM-DD') as createdAt,
+            o.number,
+            o.status,
+            o.total_price
+            from orders o
+            join users u on u.id = o.user_id
+            where u.id = ? and o.status is not null
+            group by o.id, o.created_at, o.number, o.status, o.total_price
+            """,
+                new Object[]{user.getId()},
+                (rs, rowNum) -> {
+                    String status = rs.getString("status");
+                    String russian = Status.toRussian(status);
+
+                    return new AllOrderHistoryResponse(
+                            rs.getLong("id"),
+                            rs.getString("createdAt"),
+                            rs.getLong("number"),
+                            russian,
+                            rs.getBigDecimal("total_price")
+                    );
+                });
+    }
+
+
+    @Override
+    public OrderHistoryResponse getOrderHistoryById(Long orderId) {
+        orderRepo.getOrderById(orderId);
+        User user = currentUser.get();
+        OrderHistoryResponse orderHistoryResponse = jdbcTemplate.queryForObject("""
+            select o.id,
+            o.number,
+            o.status,
+            o.created_at,
+            o.total_price,
+            o.discount_price,
+            o.payment,
+            u.first_name,
+            u.last_name,
+            u.address,
+            u.phone_number,
+            u.email
+            from orders o
+            join users u on u.id = o.user_id
+            where o.id = ? and u.id = ? and o.status is not null
+            group by o.id, o.number, o.status, o.created_at, o.total_price,
+            o.discount_price, o.payment, u.first_name, u.last_name, u.address,
+            u.phone_number, u.email
+            """,
+                new Object[]{orderId, user.getId()},
+                (rs, rowNum) -> {
+                    String paymentRussian = Payment.toRussian(rs.getString("payment"));
+                    String statusRussian = Status.toRussian(rs.getString("status"));
+                    return OrderHistoryResponse.builder()
+                            .number(rs.getLong("number"))
+                            .status(statusRussian)
+                            .clientFullName(rs.getString("first_name") + " " + rs.getString("last_name"))
+                            .userName(rs.getString("first_name"))
+                            .address(rs.getString("address"))
+                            .phoneNumber(rs.getString("phone_number"))
+                            .email(rs.getString("email"))
+                            .discount(rs.getBigDecimal("discount_price"))
+                            .currentPrice(rs.getBigDecimal("total_price"))
+                            .createdAt(rs.getString("created_at"))
+                            .payment(paymentRussian)
+                            .lastName(rs.getString("last_name"))
+                            .build();
+                });
+
+        List<PrivateGadgetResponse> gadgetResponses = jdbcTemplate.query("""
+            select sg.id,
+            array_agg(i.images) as images,
+            g.name_of_gadget,
+            b.brand_name,
+            g.rating,
+            sg.price,
+            count(f.id) as quantity
+            from sub_gadgets sg
+            join gadgets g on g.id = sg.gadget_id
+            left join sub_gadget_images i on i.sub_gadget_id = sg.id
+            join brands b on b.id = g.brand_id
+            left outer join feedbacks f on f.gadget_id = g.id
+            left join orders_sub_gadgets og on sg.id = og.sub_gadgets_id
+            left join orders o on og.orders_id = o.id
+            where o.id = ?
+            group by g.name_of_gadget, f.id, sg.price,
+            i.images, sg.id, b.brand_name, g.rating
+            """,
+                new Object[]{orderId},
+                (rs, rowNum) -> {
+                    String[] imagesArray = (String[]) rs.getArray("images").getArray();
+                    String image = imagesArray.length > 0 ? imagesArray[0] : null;
+
+                    double rating = rs.getDouble("rating");
+                    rating = Math.round(rating * 10.0) / 10.0;
+
+                    return PrivateGadgetResponse.builder()
+                            .id(rs.getLong("id"))
+                            .gadgetImage(image)
+                            .nameOfGadget(rs.getString("name_of_gadget"))
+                            .subCategoryName(rs.getString("brand_name"))
+                            .rating(rating)
+                            .countRating(rs.getInt("quantity"))
+                            .currentPrice(rs.getBigDecimal("price"))
+                            .build();
+                });
+
+        if (orderHistoryResponse == null) {
+            throw new NotFoundException("Order not found for the given orderId");
+        }
+        orderHistoryResponse.setPrivateGadgetResponse(gadgetResponses);
+        return orderHistoryResponse;
+    }
+
 }
