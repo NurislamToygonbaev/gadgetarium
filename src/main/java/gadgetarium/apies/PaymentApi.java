@@ -39,7 +39,7 @@ public class PaymentApi {
     @Operation(summary = "Выбор типа оплаты", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PatchMapping("/{orderId}")
     public HttpResponse typeOrder(@PathVariable Long orderId,
-                                  @RequestParam Payment payment){
+                                  @RequestParam String payment){
         return paymentService.typeOrder(orderId, payment);
     }
 

@@ -52,7 +52,7 @@ public class OrderServiceImpl implements OrderService {
     private static final BigDecimal DELIVERY_CHARGE = BigDecimal.valueOf(200);
 
     @Override
-    public OrderPagination getAllOrders(Status status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
+    public OrderPagination getAllOrders(String status, String keyword, LocalDate startDate, LocalDate endDate, int page, int size) {
         return orderJDBCTemplate.getAllOrders(status, keyword, startDate, endDate, page, size);
     }
 
@@ -87,15 +87,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public InfoResponse getInfo() {
-        BigDecimal buyPrice = orderRepo.getBuyPrice() != null ? orderRepo.getBuyPrice() : BigDecimal.ZERO;
+        BigDecimal repoBuyPrice = orderRepo.getBuyPrice();
         int buyCount = orderRepo.getBuyCount();
-        BigDecimal orderPrice = orderRepo.getOrderPrice() != null ? orderRepo.getOrderPrice() : BigDecimal.ZERO;
+        BigDecimal repoOrderPrice = orderRepo.getOrderPrice();
         int orderCount = orderRepo.getOrderCount();
 
         return InfoResponse.builder()
-                .buyPrice(buyPrice)
+                .buyPrice(repoBuyPrice)
                 .buyCount(buyCount)
-                .orderPrice(orderPrice)
+                .orderPrice(repoOrderPrice)
                 .orderCount(orderCount)
                 .build();
     }
@@ -176,7 +176,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public HttpResponse placingAnOrder(List<Long> subGadgetId, boolean orderType, BigDecimal price, BigDecimal discountPrice, PersonalDataRequest personalDataRequest) {
+    public HttpResponse placingAnOrder(List<Long> subGadgetId, boolean orderType, PersonalDataRequest personalDataRequest) {
         if (subGadgetId == null || personalDataRequest == null) {
             throw new IllegalArgumentException("SubGadget ID list and personal data request must not be null");
         }
@@ -197,10 +197,11 @@ public class OrderServiceImpl implements OrderService {
         user.setLastName(personalDataRequest.lastName());
         user.setEmail(userEmail);
         user.setPhoneNumber(personalDataRequest.phoneNumber());
+        BigDecimal price = personalDataRequest.price();
 
         if (orderType) {
             order.setTypeOrder(true);
-            order.setTotalPrice(price);
+            order.setTotalPrice(personalDataRequest.price());
         } else {
             order.setTypeOrder(false);
             user.setAddress(personalDataRequest.deliveryAddress());
@@ -210,8 +211,9 @@ public class OrderServiceImpl implements OrderService {
             }
             order.setTotalPrice(price);
         }
-
-        order.setDiscountPrice(discountPrice);
+        if (personalDataRequest.discountPrice() != null){
+            order.setDiscountPrice(personalDataRequest.discountPrice());
+        }
         order.setNumber(orderNumber);
 
         order.setUser(user);
@@ -232,7 +234,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<AllOrderHistoryResponse> getAllOrdersHistory() {
-        List<AllOrderHistoryResponse> allHistory = orderRepo.getAllHistory(currentUser.get().getId());
+        User user = currentUser.get();
+        List<AllOrderHistoryResponse> allHistory = orderRepo.getAllHistory(user.getId());
         return allHistory.stream()
                 .map(response -> new AllOrderHistoryResponse(
                         response.id(),
@@ -252,12 +255,13 @@ public class OrderServiceImpl implements OrderService {
 
         Order foundOrder = optionalOrder.orElseThrow(() -> new NotFoundException("Order not found"));
         String paymentRussian = Payment.toRussian(foundOrder.getPayment().name());
+        String statusRussian = Status.toRussian(foundOrder.getStatus());
 
         User user = foundOrder.getUser();
         return OrderHistoryResponse.builder()
                 .number(foundOrder.getNumber())
                 .privateGadgetResponse(mapGadgets(foundOrder.getSubGadgets()))
-                .status(foundOrder.getStatus())
+                .status(statusRussian)
                 .clientFullName(user.getFirstName() + " " + user.getLastName())
                 .userName(user.getFirstName())
                 .address(user.getAddress())
@@ -298,6 +302,7 @@ public class OrderServiceImpl implements OrderService {
         user.setEmail(currentUserProfileRequest.email());
         user.setPhoneNumber(currentUserProfileRequest.phoneNumber());
         user.setAddress(currentUserProfileRequest.address());
+        userRepo.save(user);
         return CurrentUserProfileResponse.builder()
                 .userName(user.getFirstName())
                 .lastName(user.getLastName())
@@ -319,7 +324,10 @@ public class OrderServiceImpl implements OrderService {
     public UserImageResponse addPhotoAndEdit(UserImageRequest userImageRequest) {
         User user = currentUser.get();
         user.setImage(userImageRequest.image());
-        return UserImageResponse.builder().image(user.getImage()).build();
+        userRepo.save(user);
+        return UserImageResponse.builder()
+                .image(user.getImage())
+                .build();
     }
 
     @Override
@@ -338,6 +346,7 @@ public class OrderServiceImpl implements OrderService {
 
         String newPasswordEncoded = passwordEncoder.encode(changePasswordRequest.getNewPassword());
         user.setPassword(newPasswordEncoded);
+        userRepo.save(user);
 
         log.info("Password successfully changed for user: {}", user.getUsername());
 

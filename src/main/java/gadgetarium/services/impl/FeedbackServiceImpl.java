@@ -247,23 +247,17 @@ public class FeedbackServiceImpl implements FeedbackService {
         }
 
         User currentUser = currentUserr.get();
+
+        if (currentUser == null || gadgetId == null) {
+            throw new BadRequestException("Invalid user or gadget ID");
+        }
+
         Gadget gadget = gadgetRepo.getGadgetById(gadgetId);
         Feedback feedback = new Feedback();
         feedback.setRating(feedbackRequest.grade());
         feedback.setDescription(feedbackRequest.comment());
 
-        boolean hasPurchased = false;
-
-        for (SubGadget subGadget : gadget.getSubGadgets()) {
-            for (Order order : subGadget.getOrders()) {
-                if (order.getUser().getId().equals(currentUser.getId()) &&
-                    (order.getStatus().equals(Status.DELIVERED) || order.getStatus().equals(Status.RECEIVED))) {
-                    hasPurchased = true;
-                    break;
-                }
-            }
-            if (hasPurchased) break;
-        }
+        boolean hasPurchased = hasUserPurchasedGadget(currentUser, gadget);
 
         if (hasPurchased) {
             currentUser.getFeedbacks().add(feedback);
@@ -276,6 +270,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             }
 
             double rating = feedbackRating(gadgetId);
+            rating = Math.round(rating * 10.0) / 10.0;
             gadget.setRating(rating);
             feedbackRepo.save(feedback);
             gadgetRepo.save(gadget);
@@ -291,6 +286,14 @@ public class FeedbackServiceImpl implements FeedbackService {
                 .message("You haven't bought this gadget!")
                 .build();
     }
+
+    private boolean hasUserPurchasedGadget(User currentUser, Gadget gadget) {
+        return gadget.getSubGadgets().stream()
+                .flatMap(subGadget -> subGadget.getOrders().stream())
+                .anyMatch(order -> order.getUser().getId().equals(currentUser.getId()) &&
+                                   (order.getStatus().equals(Status.DELIVERED) || order.getStatus().equals(Status.RECEIVED)));
+    }
+
 
     @Override
     @Transactional

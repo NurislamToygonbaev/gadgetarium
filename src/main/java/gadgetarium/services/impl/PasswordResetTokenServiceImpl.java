@@ -57,7 +57,8 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
                 .build();
     }
 
-    private void createPasswordResetToken(User user, String token) {
+    @Transactional
+    public void createPasswordResetToken(User user, String token) {
         LocalDateTime expiryDate = LocalDateTime.now().plus(Duration.ofMinutes(30));
         PasswordResetToken passwordResetToken = new PasswordResetToken();
         passwordResetToken.setUser(user);
@@ -66,6 +67,7 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         passwordResetTokenRepo.save(passwordResetToken);
         user.addPasswordResetToken(passwordResetToken);
         passwordResetToken.setUser(user);
+        userRepo.save(user);
     }
 
     @Async

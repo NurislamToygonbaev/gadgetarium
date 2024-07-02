@@ -27,7 +27,7 @@ public interface GadgetJDBCTemplateRepository {
 
     List<GadgetsResponse> globalSearch(String request);
 
-    GadgetResponse getGadgetById(Long gadgetId, String color, Memory memory, int quantity);
+    GadgetResponse getGadgetById(Long gadgetId, String color, String memory, int quantity);
 
     List<GadgetReviewsResponse> getReviewsGadget(Long id, int page, int size);
 }

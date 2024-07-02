@@ -7,7 +7,6 @@ import lombok.Getter;
 import java.util.HashMap;
 import java.util.Map;
 
-@Getter
 public enum Ram {
     RAM_4("4"),
     RAM_6("6"),

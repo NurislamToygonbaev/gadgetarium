@@ -76,7 +76,6 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
 
             if (!userExists) {
                 User newUser = createUserFromDecodedToken(decodedToken);
-                userRepository.save(newUser);
                 return createSignResponse(newUser);
             } else {
                 User foundUser = userRepository.getByEmail(email);
@@ -103,6 +102,7 @@ public class FirebaseAuthenticationImpl implements FirebaseAuthenticationService
         String password = generateRandomPassword();
         sendEmail(newUser.getEmail(), password);
         newUser.setPassword(passwordEncoder.encode(password));
+        userRepository.save(newUser);
         return newUser;
     }
 
