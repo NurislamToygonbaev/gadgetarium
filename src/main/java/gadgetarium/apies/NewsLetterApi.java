@@ -22,7 +22,7 @@ public class NewsLetterApi {
 
     private final MailingService mailingService;
 
-    @PreAuthorize("hasAuthority('ADMIN')")
+//    @PreAuthorize("hasAuthority('ADMIN')")
     @Operation(summary = "Создать рассылку", description = "Авторизация: АДМИНСТРАТОР")
     @PostMapping
     public NewsLetterResponse sendNewsLetter(@RequestBody @Valid NewsLetterRequest newsLetterRequest){

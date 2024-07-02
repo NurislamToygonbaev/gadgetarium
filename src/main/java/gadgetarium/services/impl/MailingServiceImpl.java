@@ -45,21 +45,32 @@ public class MailingServiceImpl implements MailingService {
     private final ContactRepository contactRepo;
 
     @Async
-    public void sendHtmlEmail(String from, List<String> to, String subject, String htmlMessage) throws EmailException {
-        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-        try {
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
-            helper.setText(htmlMessage, true);
-            for (String s : to) {
-                helper.setTo(s);
+    public void sendEmail(List<String> emails, NewsLetterRequest newsLetterRequest) {
+        for (String email : emails) {
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            try {
+                MimeMessageHelper helper = getMimeMessageHelper(newsLetterRequest, mimeMessage);
+                helper.setTo(email);
+                helper.setSubject("Новая рассылка!!!");
+                helper.setFrom("GADGETARIUM <gadgetarium22@gmail.com>");
+                javaMailSender.send(mimeMessage);
+            } catch (MessagingException e) {
+                throw new BadRequestException("Failed to send email to " + email);
             }
-            helper.setSubject(subject);
-            helper.setFrom(from);
-            javaMailSender.send(mimeMessage);
-        } catch (MessagingException e) {
-            throw new BadRequestException("fail");
         }
     }
+
+    private static MimeMessageHelper getMimeMessageHelper(NewsLetterRequest newsLetterRequest, MimeMessage mimeMessage) throws MessagingException {
+        MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+        String htmlMessage = "Image: " + newsLetterRequest.image() + "<br>" +
+                             "Title: " + newsLetterRequest.nameOfNewsLetter() + "<br>" +
+                             "Description: " + newsLetterRequest.description() + "<br>" +
+                             "Start date: " + newsLetterRequest.startDateOfDiscount() + "<br>" +
+                             "End date: " + newsLetterRequest.endDateOfDiscount();
+        helper.setText(htmlMessage, true);
+        return helper;
+    }
+
 
     @Override
     public NewsLetterResponse sendNewsLetter(NewsLetterRequest newsLetterRequest) {
@@ -85,16 +96,7 @@ public class MailingServiceImpl implements MailingService {
 
         mailingRepo.save(builtMailing);
 
-        try {
-            String htmlMessage = "Image: " + newsLetterRequest.image() + "<br>" +
-                                 "Title: " + newsLetterRequest.nameOfNewsLetter() + "<br>" +
-                                 "Description: " + newsLetterRequest.description() + "<br>" +
-                                 "Start date: " + newsLetterRequest.startDateOfDiscount() + "<br>" +
-                                 "End date: " + newsLetterRequest.endDateOfDiscount();
-            sendHtmlEmail("gadgetarium22@gmail.com", allEmails, "New discounts:", htmlMessage);
-        } catch (EmailException e) {
-            throw new AuthenticationException(e.getMessage());
-        }
+        sendEmail(allEmails, newsLetterRequest);
 
         return NewsLetterResponse.builder()
                 .message("Successfully sent newsletter to emails.")
