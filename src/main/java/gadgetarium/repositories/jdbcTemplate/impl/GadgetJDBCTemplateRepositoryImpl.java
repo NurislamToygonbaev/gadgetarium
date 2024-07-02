@@ -677,7 +677,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                sg.count_sim,
                array_agg(su.uni_filed) as uniField,
                g.pdfurl,
-               c.id as categoryId
+               cat.id as categoryId
         from gadgets g
         join sub_gadgets sg on sg.gadget_id = g.id
         left join sub_gadget_images i on i.sub_gadget_id = sg.id
