@@ -208,7 +208,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
 
 
     @Override
-    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<String> memory, List<String> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
+    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
         int offset = (page - 1) * size;
         int limit = size;
 
@@ -228,11 +228,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 where += " and sg.price <= '"+costUpTo+"'";
             }
             if (memory != null && !memory.isEmpty()) {
-                List<String> englishMemoryNames = memory.stream()
-                        .map(Memory::getMemoryToEnglish)
-                        .toList();
-
-                String memoryCondition = englishMemoryNames.stream()
+                String memoryCondition = memory.stream()
                         .map(name -> " sg.memory ilike '" + name + "' ")
                         .collect(Collectors.joining(" or "));
 
@@ -240,11 +236,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
             }
 
             if (ram != null && !ram.isEmpty()) {
-                List<String> englishRamNames = ram.stream()
-                        .map(Ram::getRamToEnglish)
-                        .toList();
-
-                String ramCondition = englishRamNames.stream()
+                String ramCondition = ram.stream()
                         .map(name -> " sg.ram ilike '" + name + "' ")
                         .collect(Collectors.joining(" or "));
 
@@ -684,17 +676,20 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                sg.ram,
                sg.count_sim,
                array_agg(su.uni_filed) as uniField,
-               g.pdfurl
+               g.pdfurl,
+               c.id as categoryId
         from gadgets g
         join sub_gadgets sg on sg.gadget_id = g.id
         left join sub_gadget_images i on i.sub_gadget_id = sg.id
         left join sub_gadget_uni_filed su on su.sub_gadget_id = sg.id
         join brands b on b.id = g.brand_id
         left outer join discounts d on d.gadget_id = g.id
+        join sub_categories sc on g.sub_category_id = sc.id
+        join categories cat on cat.id = sc.category_id
         where g.id = :gadgetId
         and sg.remoteness_status = :status
         """ + condition +"""
-         group by g.id, sg.id, b.logo, g.name_of_gadget,
+         group by g.id, sg.id, b.logo, g.name_of_gadget, cat.id,
          sg.quantity, sg.article, g.rating, d.percent,
           sg.price, sg.main_colour, g.release_date, g.warranty,
           sg.memory, sg.ram, sg.count_sim, g.pdfurl
@@ -746,6 +741,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 return GadgetResponse.builder()
                     .gadgetId(id)
                     .subGadgetId(subGadgetId)
+                    .categoryId(rs.getLong("categoryId"))
                     .brandLogo(rs.getString("logo"))
                     .images(images)
                     .nameOfGadget(rs.getString("name_of_gadget"))
@@ -808,6 +804,24 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                         .responseAdmin(rs.getString("response_admin"))
                         .build()
         );
+    }
+
+    @Override
+    public Map<String, Integer> getColorsWithCount() {
+        Map<String, Integer> colors = new HashMap<>();
+
+        jdbcTemplate.query(
+                "select s.main_colour, count(s.id) as quantity " +
+                " from sub_gadgets s group by s.main_colour",
+                new Object[]{},
+                (rs, rowNum) -> {
+                    String mainColor = rs.getString("main_colour");
+                    int quantity = rs.getInt("quantity");
+                    colors.put(mainColor, quantity);
+                    return null;
+                });
+
+        return colors;
     }
 
 }

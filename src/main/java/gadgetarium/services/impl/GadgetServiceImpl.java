@@ -70,7 +70,7 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<String> memory, List<String> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
+    public PaginationSHowMoreGadget allGadgetsForEvery(Long catId, Sort sort, Discount discount, List<Memory> memory, List<Ram> ram, BigDecimal costFrom, BigDecimal costUpTo, List<String> colour, List<String> brand, int page, int size) {
         return gadgetJDBCTemplateRepo.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
     }
 
@@ -542,5 +542,10 @@ public class GadgetServiceImpl implements GadgetService {
     public List<DetailsResponse> gadgetDetails(Long gadgetId) {
         gadgetRepo.getGadgetById(gadgetId);
         return gadgetJDBCTemplateRepo.gadgetDetails(gadgetId);
+    }
+
+    @Override
+    public Map<String, Integer> getColorsWithCount() {
+        return gadgetJDBCTemplateRepo.getColorsWithCount();
     }
 }

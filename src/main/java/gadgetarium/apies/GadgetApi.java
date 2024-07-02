@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -50,8 +51,8 @@ public class GadgetApi {
                                                        @RequestParam(required = false) List<String> colour,
                                                        @RequestParam(required = false) BigDecimal costFrom,
                                                        @RequestParam(required = false) BigDecimal costUpTo,
-                                                       @RequestParam(required = false) List<String> memory,
-                                                       @RequestParam(required = false) List<String> ram,
+                                                       @RequestParam(required = false) List<Memory> memory,
+                                                       @RequestParam(required = false) List<Ram> ram,
                                                        @RequestParam(value = "page", defaultValue = "1") int page,
                                                        @RequestParam(value = "size", defaultValue = "12") int size) {
         return gadgetService.allGadgetsForEvery(catId, sort, discount, memory, ram, costFrom, costUpTo, colour, brand, page, size);
@@ -219,6 +220,12 @@ public class GadgetApi {
     @GetMapping("/global-search")
     public List<GadgetsResponse> globalSearch(@RequestParam String request){
         return gadgetService.globalSearch(request);
+    }
+
+    @Operation(summary = "Все цвета с Количеством", description = "Авторизация: ВСЕ")
+    @GetMapping("/get-colors-count")
+    public Map<String, Integer> getColorsWithCount(){
+        return gadgetService.getColorsWithCount();
     }
 }
 

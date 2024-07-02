@@ -32,6 +32,13 @@ public class PersonalAreaApi {
     }
 
     @PreAuthorize("hasAnyAuthority({'USER'})")
+    @Operation(summary = "Посмотреть свой профиль", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
+    @GetMapping("/my-profile")
+    public UserProfileResponse findUserProfile(){
+        return orderService.findUserProfile();
+    }
+
+    @PreAuthorize("hasAnyAuthority({'USER'})")
     @Operation(summary = "Посмотреть один историю заказа.", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @GetMapping("/by-id/{orderId}")
     public OrderHistoryResponse getOrderHistoryById(@PathVariable Long orderId){

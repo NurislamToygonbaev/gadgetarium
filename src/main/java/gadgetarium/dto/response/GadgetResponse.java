@@ -15,6 +15,7 @@ import java.util.Map;
 public record GadgetResponse(
         Long gadgetId,
         Long subGadgetId,
+        Long categoryId,
         String brandLogo,
         List<String> images,
         String nameOfGadget,

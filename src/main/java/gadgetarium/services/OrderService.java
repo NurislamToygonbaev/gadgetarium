@@ -41,5 +41,4 @@ public interface OrderService {
     HttpResponse clearOrders();
 
     UserProfileResponse findUserProfile();
-
 }

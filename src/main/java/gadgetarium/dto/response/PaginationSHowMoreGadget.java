@@ -19,8 +19,8 @@ public record PaginationSHowMoreGadget(
         BigDecimal costFrom,
         BigDecimal costUpTo,
         List<String> colour,
-        List<String> memory,
-        List<String> ram,
+        List<Memory> memory,
+        List<Ram> ram,
         List<GadgetsResponse> responses
 ) {
 }
