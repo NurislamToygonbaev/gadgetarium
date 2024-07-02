@@ -483,16 +483,10 @@ public class GadgetServiceImpl implements GadgetService {
         SubGadget subGadget = subGadgetRepo.getByID(subGadgetId);
         Gadget gadget = subGadget.getGadget();
 
-
-        List<User> usersWithGadget = userRepo.findByBasketContainingKey(subGadget);
-        for (User user : usersWithGadget) {
-            user.getBasket().remove(subGadget);
-
-            user.getComparison().removeIf(gadgetRemove -> gadgetRemove.getId().equals(subGadget.getId()));
-            user.getViewed().removeIf(gadgetRemove -> gadgetRemove.getId().equals(subGadget.getId()));
-            user.getLikes().removeIf(gadgetRemove -> gadgetRemove.getId().equals(subGadget.getId()));
-            userRepo.save(user);
-        }
+        userRepo.clearBasket(subGadgetId);
+        userRepo.clearComparison(subGadgetId);
+        userRepo.clearLikes(subGadgetId);
+        userRepo.clearViewed(subGadgetId);
 
         List<Order> orders = orderRepo.findBySubGadgetsContains(subGadget);
         if (!orders.isEmpty()) {
