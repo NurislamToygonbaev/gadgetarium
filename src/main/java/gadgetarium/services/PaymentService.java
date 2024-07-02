@@ -3,8 +3,6 @@ package gadgetarium.services;
 import gadgetarium.dto.request.IdsGadgetAndQuantityRequest;
 import gadgetarium.dto.response.*;
 
-import java.util.List;
-
 public interface PaymentService {
 
     HttpResponse typeOrder(Long orderId, String payment);
@@ -15,7 +13,7 @@ public interface PaymentService {
 
     PaymentIdResponse createPayment(Long orderId, String token);
 
-    HttpResponse confirmPayment(String paymentId, List<IdsGadgetAndQuantityRequest> request);
+    HttpResponse confirmPayment(String paymentId, IdsGadgetAndQuantityRequest request);
 
     OrderIdsResponse getNew();
 

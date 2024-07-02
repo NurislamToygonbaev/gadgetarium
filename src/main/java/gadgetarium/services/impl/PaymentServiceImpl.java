@@ -5,6 +5,7 @@ import com.stripe.model.PaymentIntent;
 import com.stripe.model.PaymentMethod;
 import com.stripe.param.PaymentIntentCreateParams;
 import com.stripe.param.PaymentMethodCreateParams;
+import gadgetarium.dto.request.IdsAndQuantity;
 import gadgetarium.dto.request.IdsGadgetAndQuantityRequest;
 import gadgetarium.dto.response.*;
 import gadgetarium.entities.Order;
@@ -23,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -127,16 +127,16 @@ public class PaymentServiceImpl implements PaymentService {
 
 
     @Override @Transactional
-    public HttpResponse confirmPayment(String paymentId, List<IdsGadgetAndQuantityRequest> request) {
+    public HttpResponse confirmPayment(String paymentId, IdsGadgetAndQuantityRequest request) {
         if (paymentId == null || paymentId.isEmpty()) {
             throw new BadRequestException("Payment ID cannot be null or empty");
         }
 
-        if (request == null || request.isEmpty()) {
+        if (request == null || request.idsAndQuantities().isEmpty()) {
             throw new BadRequestException("Request list cannot be null or empty");
         }
 
-        for (IdsGadgetAndQuantityRequest quantityRequest : request) {
+        for (IdsAndQuantity quantityRequest : request.idsAndQuantities()) {
             SubGadget subGadget = subGadgetRepo.getByID(quantityRequest.id());
             int newQuantity = subGadget.getQuantity() - quantityRequest.quantity();
             if (newQuantity < 0) {

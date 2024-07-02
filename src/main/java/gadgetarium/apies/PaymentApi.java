@@ -2,15 +2,12 @@ package gadgetarium.apies;
 
 import gadgetarium.dto.request.IdsGadgetAndQuantityRequest;
 import gadgetarium.dto.response.*;
-import gadgetarium.enums.Payment;
 import gadgetarium.services.PaymentService;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/payment")
@@ -31,7 +28,7 @@ public class PaymentApi {
     @Operation(summary = "Подтвердение платежа ", description = "Авторизация: ПОЛЬЗОВАТЕЛЬ")
     @PostMapping("/confirm")
     public HttpResponse confirmPayment(@RequestParam String paymentId,
-                                       @RequestBody @Valid List<IdsGadgetAndQuantityRequest> request) {
+                                       @RequestBody @Valid IdsGadgetAndQuantityRequest request) {
         return paymentService.confirmPayment(paymentId, request);
     }
 
