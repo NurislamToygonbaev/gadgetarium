@@ -158,7 +158,7 @@ public class GadgetServiceImpl implements GadgetService {
 
             UUID uuid = UUID.randomUUID();
             String hexUUID = uuid.toString().replace("-", "");
-            long article = Long.parseLong(hexUUID.substring(0, 12), 16);
+            long article = Long.parseLong(hexUUID.substring(0, 4), 16) % 1000000;
             subGadget.setArticle(article);
 
             Category category = categoryRepo.getCategoryBySubcategoryId(subCategoryId);

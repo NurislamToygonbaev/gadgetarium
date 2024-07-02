@@ -739,6 +739,10 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                 String ram = rs.getString("ram");
                 String ramRussian = Ram.getRamToRussian(ram);
 
+                double rating = rs.getDouble("rating");
+                rating = Math.round(rating * 10.0) / 10.0;
+                gadget.setRating(rating);
+
                 return GadgetResponse.builder()
                     .gadgetId(id)
                     .subGadgetId(subGadgetId)
@@ -747,7 +751,7 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
                     .nameOfGadget(rs.getString("name_of_gadget"))
                     .quantity(rs.getInt("quantity"))
                     .articleNumber(rs.getLong("article"))
-                    .rating(rs.getFloat("rating"))
+                    .rating(rating)
                     .percent(rs.getInt("percent"))
                     .newProduct(gadget.isNew())
                     .recommend(isRecommended(gadget))

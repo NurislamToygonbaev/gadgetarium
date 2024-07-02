@@ -270,6 +270,7 @@ public class FeedbackServiceImpl implements FeedbackService {
             }
 
             double rating = feedbackRating(gadgetId);
+            rating = Math.round(rating * 10.0) / 10.0;
             gadget.setRating(rating);
             feedbackRepo.save(feedback);
             gadgetRepo.save(gadget);
