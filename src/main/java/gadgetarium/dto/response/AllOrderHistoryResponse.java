@@ -1,19 +1,17 @@
 package gadgetarium.dto.response;
 
-import com.amazonaws.services.s3.internal.S3RequestEndpointResolver;
-import gadgetarium.enums.Status;
-import lombok.Builder;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
 @Builder
-public record AllOrderHistoryResponse(
-        Long id,
-        String createdAt,
-        Long number,
-        String status,
-        BigDecimal deliveryPrice
-
-
-){}
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+public class AllOrderHistoryResponse {
+    private Long id;
+    private String createdAt;
+    private Long number;
+    private String status;
+    private BigDecimal deliveryPrice;
+}

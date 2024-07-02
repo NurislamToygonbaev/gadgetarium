@@ -1,29 +1,27 @@
 package gadgetarium.dto.response;
 
-import gadgetarium.enums.Payment;
-import gadgetarium.enums.Status;
-import lombok.Builder;
+import lombok.*;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Builder
-public record OrderHistoryResponse(
-        Long number,
-        List<PrivateGadgetResponse> privateGadgetResponse,
-        String status,
-        String clientFullName,
-        String userName,
-        String address,
-        String phoneNumber,
-        String email,
-        BigDecimal discount,
-        BigDecimal currentPrice,
-        String createdAt,
-        String payment,
-        String lastName
-
-
-){
+@Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+public class OrderHistoryResponse {
+    private Long number;
+    private List<PrivateGadgetResponse> privateGadgetResponse = new ArrayList<>();
+    private String status;
+    private String clientFullName;
+    private String userName;
+    private String address;
+    private String phoneNumber;
+    private String email;
+    private BigDecimal discount;
+    private BigDecimal currentPrice;
+    private String createdAt;
+    private String payment;
+    private String lastName;
 }

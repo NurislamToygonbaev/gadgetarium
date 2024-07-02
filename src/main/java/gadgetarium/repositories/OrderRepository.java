@@ -99,7 +99,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                    " and extract(year from o.created_at) = extract(year from current_date);", nativeQuery = true)
     BigDecimal forCurrentYear();
 
-
     @Query(value = "select sum(o.total_price) from sub_gadgets s " +
                    " inner join gadgets g on s.gadget_id = g.id " +
                    " inner join orders_sub_gadgets og on og.sub_gadgets_id = s.id " +
@@ -107,13 +106,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                    "where upper(o.status) in ('DELIVERED', 'RECEIVED') " +
                    " and date_trunc('year', o.created_at) = date_trunc('year', (current_date - interval '1 year'));", nativeQuery = true)
     BigDecimal forPreviousYear();
-
-
-
-    @Query("select new gadgetarium.dto.response.AllOrderHistoryResponse(o.id, to_char(o.createdAt, 'YYYY-MM-DD'), o.number, o.status, o.totalPrice) " +
-           "from Order o join o.user u " +
-           "where u.id = :userId and o.status is not null")
-    List<AllOrderHistoryResponse> getAllHistory(@Param("userId") Long userId);
 
 
     default Order getOrderById(Long orderId) {

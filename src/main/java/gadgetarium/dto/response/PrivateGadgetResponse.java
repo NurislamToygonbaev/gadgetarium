@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 public class PrivateGadgetResponse{
     private Long id;
-    private List<String> gadgetImage;
+    private String gadgetImage;
     private String nameOfGadget;
     private String subCategoryName;
     private double rating;
