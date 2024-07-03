@@ -75,15 +75,97 @@ public class PasswordResetTokenServiceImpl implements PasswordResetTokenService 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            String htmlMsg = "<p style=\"font-size: 20px;\">Чтоб изменить пароль, нажмите на эту ссылку:</p> " +
-                             "<a href=\"" + resetLink + "\" style=\"font-size: 15px;\">Изменить пароль</a>";
+
+            String htmlMsg = String.format("""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Reset Password</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+                    body {
+                        font-family: 'Inter', sans-serif;
+                        background-color: #f4f4f4;
+                        margin: 0;
+                        padding: 0;
+                    }
+                    .container {
+                        width: 100%%;
+                        max-width: 600px;
+                        margin: 0 auto;
+                        background-color: #ffffff;
+                        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+                        padding: 20px;
+                        border-radius: 8px;
+                        overflow: hidden;
+                    }
+                    .header {
+                        text-align: center;
+                        padding: 20px 0;
+                        background-color: #007bff;
+                        color: #ffffff;
+                    }
+                    .header h1 {
+                        margin: 0;
+                        font-size: 24px;
+                    }
+                    .content {
+                        padding: 20px;
+                        text-align: center;
+                    }
+                    .content p {
+                        font-size: 16px;
+                        color: #333333;
+                    }
+                    .content a {
+                        display: inline-block;
+                        margin-top: 20px;
+                        padding: 10px 20px;
+                        font-size: 16px;
+                        color: #ffffff;
+                        background-color: #007bff;
+                        text-decoration: none;
+                        border-radius: 5px;
+                        transition: background-color 0.3s ease;
+                    }
+                    .content a:hover {
+                        background-color: #0056b3;
+                    }
+                    .footer {
+                        text-align: center;
+                        padding: 10px;
+                        font-size: 12px;
+                        color: #777777;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="header">
+                        <h1>Сброс пароля</h1>
+                    </div>
+                    <div class="content">
+                        <p>Здравствуйте,</p>
+                        <p>Чтобы изменить пароль, нажмите на эту ссылку:</p>
+                        <a href="%s">Изменить пароль</a>
+                    </div>
+                    <div class="footer">
+                        <p>Если вы не запрашивали изменение пароля, пожалуйста, проигнорируйте это сообщение.</p>
+                    </div>
+                </div>
+            </body>
+            </html>
+            """, resetLink);
+
             helper.setText(htmlMsg, true);
             helper.setTo(email);
             helper.setSubject("Забыли пароль!");
             helper.setFrom("GADGETARIUM <gadgetarium22@gmail.com>");
             javaMailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            throw new BadRequestException("Failed to send email.");
+            throw new RuntimeException("Failed to send email. Please try again later.", e);
         }
     }
 

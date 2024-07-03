@@ -62,15 +62,50 @@ public class MailingServiceImpl implements MailingService {
 
     private static MimeMessageHelper getMimeMessageHelper(NewsLetterRequest newsLetterRequest, MimeMessage mimeMessage) throws MessagingException {
         MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-        String htmlMessage = "Image: " + newsLetterRequest.image() + "<br>" +
-                             "Title: " + newsLetterRequest.nameOfNewsLetter() + "<br>" +
-                             "Description: " + newsLetterRequest.description() + "<br>" +
-                             "Start date: " + newsLetterRequest.startDateOfDiscount() + "<br>" +
-                             "End date: " + newsLetterRequest.endDateOfDiscount();
+        String htmlMessage = "<!DOCTYPE html>"
+                             + "<html lang=\"en\">"
+                             + "<head>"
+                             + "<style>"
+                             + "@import url(\"https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap\");"
+                             + "* { margin: 0 auto; box-sizing: border-box; }"
+                             + "body { width: 100%; height: 100vh; max-width: 1500px; font-family: 'Inter', sans-serif; background-color: #f4f4f9; padding: 20px; }"
+                             + ".container { max-width: 750px; background-color: #fff; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); overflow: hidden; }"
+                             + ".header { background-color: #c11bab; color: #fff; padding: 20px; text-align: center; }"
+                             + ".header img { max-width: 60px; }"
+                             + ".content { padding: 20px; }"
+                             + ".content h1 { font-size: 24px; color: #333; margin-bottom: 10px; }"
+                             + ".content p { font-size: 16px; color: #666; margin-bottom: 20px; }"
+                             + ".content .image { text-align: center; margin-bottom: 20px; }"
+                             + ".content .image img { max-width: 100%; border-radius: 8px; }"
+                             + ".content .details { font-size: 16px; color: #333; }"
+                             + ".footer { background-color: #c11bab; color: #fff; text-align: center; padding: 10px; }"
+                             + "</style>"
+                             + "</head>"
+                             + "<body>"
+                             + "<div class=\"container\">"
+                             + "<div class=\"header\">"
+                             + "<img src=\"https://gadgetarium-b12.s3.eu-central-1.amazonaws.com/a35fd672-e51f-4515-9236-dca608d5cb1b\" alt=\"GADGETARIUM\" />"
+                             + "<h1>" + newsLetterRequest.nameOfNewsLetter() + "</h1>"
+                             + "</div>"
+                             + "<div class=\"content\">"
+                             + "<div class=\"image\">"
+                             + "<img src=\"" + newsLetterRequest.image() + "\" alt=\"Newsletter Image\" />"
+                             + "</div>"
+                             + "<p>" + newsLetterRequest.description() + "</p>"
+                             + "<div class=\"details\">"
+                             + "<p><strong>Start Date:</strong> " + newsLetterRequest.startDateOfDiscount() + "</p>"
+                             + "<p><strong>End Date:</strong> " + newsLetterRequest.endDateOfDiscount() + "</p>"
+                             + "</div>"
+                             + "</div>"
+                             + "<div class=\"footer\">"
+                             + "<p>Thank you for being with us!</p>"
+                             + "</div>"
+                             + "</div>"
+                             + "</body>"
+                             + "</html>";
         helper.setText(htmlMessage, true);
         return helper;
     }
-
 
     @Override
     public NewsLetterResponse sendNewsLetter(NewsLetterRequest newsLetterRequest) {
