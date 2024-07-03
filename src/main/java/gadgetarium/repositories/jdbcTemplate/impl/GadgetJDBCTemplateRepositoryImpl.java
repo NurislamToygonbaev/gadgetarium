@@ -217,15 +217,20 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
         String status = String.valueOf(RemotenessStatus.NOT_REMOTE);
 
         if (brand != null || sort != null || discount != null || memory != null || ram != null || costFrom != null || costUpTo != null || colour != null) {
-            if (brand != null && !brand.isEmpty()) {
-                where += " and sc.sub_category_name ilike any (array" + brand.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
-            }
             if (costFrom != null && costUpTo != null){
                 where += " and sg.price between '"+costFrom+"' and '"+costUpTo+"'";
             } else if (costFrom != null){
                 where += " and sg.price >= '"+costFrom+"'";
             } else if (costUpTo != null) {
                 where += " and sg.price <= '"+costUpTo+"'";
+            }
+
+            if (brand != null && !brand.isEmpty()) {
+                where += " and sc.sub_category_name ilike any (array" + brand.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
+            }
+
+            if (colour != null){
+                where += " and sg.main_colour ilike any (array" + colour.toString().replace("[", "['").replace("]", "']").replace(", ", "','") + ")";
             }
             if (memory != null && !memory.isEmpty()) {
                 String memoryCondition = memory.stream()
@@ -807,21 +812,21 @@ public class GadgetJDBCTemplateRepositoryImpl implements GadgetJDBCTemplateRepos
     }
 
     @Override
-    public Map<String, Integer> getColorsWithCount() {
-        Map<String, Integer> colors = new HashMap<>();
-
-        jdbcTemplate.query(
+    public ColorResponse getColorsWithCount() {
+        List<ColorResponseWithCount> query = jdbcTemplate.query(
                 "select s.main_colour, count(s.id) as quantity " +
                 " from sub_gadgets s group by s.main_colour",
                 new Object[]{},
                 (rs, rowNum) -> {
                     String mainColor = rs.getString("main_colour");
                     int quantity = rs.getInt("quantity");
-                    colors.put(mainColor, quantity);
-                    return null;
+                    return new ColorResponseWithCount(
+                            mainColor, String.valueOf(quantity)
+                    );
                 });
-
-        return colors;
+        return ColorResponse.builder()
+                .countList(query)
+                .build();
     }
 
 }

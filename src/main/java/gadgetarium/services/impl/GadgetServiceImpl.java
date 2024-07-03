@@ -539,7 +539,7 @@ public class GadgetServiceImpl implements GadgetService {
     }
 
     @Override
-    public Map<String, Integer> getColorsWithCount() {
+    public ColorResponse getColorsWithCount() {
         return gadgetJDBCTemplateRepo.getColorsWithCount();
     }
 }

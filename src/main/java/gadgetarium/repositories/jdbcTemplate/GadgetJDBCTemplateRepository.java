@@ -10,7 +10,6 @@ import gadgetarium.enums.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 public interface GadgetJDBCTemplateRepository {
 
@@ -32,6 +31,6 @@ public interface GadgetJDBCTemplateRepository {
 
     List<GadgetReviewsResponse> getReviewsGadget(Long id, int page, int size);
 
-    Map<String, Integer> getColorsWithCount();
+    ColorResponse getColorsWithCount();
 
 }

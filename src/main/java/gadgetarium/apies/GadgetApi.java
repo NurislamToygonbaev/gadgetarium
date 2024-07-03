@@ -224,7 +224,7 @@ public class GadgetApi {
 
     @Operation(summary = "Все цвета с Количеством", description = "Авторизация: ВСЕ")
     @GetMapping("/get-colors-count")
-    public Map<String, Integer> getColorsWithCount(){
+    public ColorResponse getColorsWithCount(){
         return gadgetService.getColorsWithCount();
     }
 }

@@ -14,7 +14,6 @@ import java.time.LocalDate;
 import java.util.List;
 
 import java.math.BigDecimal;
-import java.util.Map;
 
 public interface GadgetService {
     ResultPaginationGadget getAll(GetType getType, String keyword, LocalDate startDate, LocalDate endDate, Sort sort, Discount discount, int page, int size);
@@ -65,6 +64,6 @@ public interface GadgetService {
 
     HttpResponse addPriceAndQuantity(List<SetPriceAndQuantityRequest> request);
 
-    Map<String, Integer> getColorsWithCount();
+    ColorResponse getColorsWithCount();
 
 }
