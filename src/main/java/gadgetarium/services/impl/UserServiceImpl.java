@@ -47,8 +47,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public SignResponse signUp(SignUpRequest signUpRequest) {
         boolean existsByEmail = userRepo.existsByEmail(signUpRequest.email());
-        if (existsByEmail)
-            throw new AlreadyExistsException("User with email " + signUpRequest.email() + " already exists.");
+        if (existsByEmail) throw new AlreadyExistsException("User with email " + signUpRequest.email() + " already exists.");
         checkEmail(signUpRequest.email());
         User buildedUser = User.builder().firstName(signUpRequest.firstName())
                 .lastName(signUpRequest.lastName()).image(signUpRequest.image())
